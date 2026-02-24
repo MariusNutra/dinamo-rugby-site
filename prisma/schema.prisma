@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  name      String
+  role      String   @default("editor")
+  createdAt DateTime @default(now())
+}
+
+model Story {
+  id         Int      @id @default(autoincrement())
+  title      String
+  slug       String   @unique
+  content    String
+  excerpt    String?
+  coverImage String?
+  videoUrl   String?
+  grupa      String?
+  category   String?
+  status     String   @default("published")
+  published  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  photos     Photo[]
+}
+
+model Photo {
+  id        Int      @id @default(autoincrement())
+  filename  String
+  path      String
+  caption   String?
+  grupa     String?
+  albumName String?
+  storyId   Int?
+  story     Story?   @relation(fields: [storyId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+}
+
+model Team {
+  id          Int      @id @default(autoincrement())
+  grupa       String   @unique
+  coachName   String
+  coachPhoto  String?
+  coachBio    String?
+  schedule    String?
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+model Match {
+  id          Int      @id @default(autoincrement())
+  grupa       String
+  date        DateTime
+  opponent    String
+  location    String?
+  scoreHome   Int?
+  scoreAway   Int?
+  description String?
+  createdAt   DateTime @default(now())
+}
+
+model TrainingSession {
+  id        Int      @id @default(autoincrement())
+  grupa     String
+  day       String
+  startTime String
+  endTime   String
+  location  String
+  coachName String?
+  createdAt DateTime @default(now())
+}
+
+model Banner {
+  id          Int      @id @default(autoincrement())
+  title       String
+  image       String
+  textOverlay String?
+  subtitle    String?
+  linkUrl     String?
+  position    String   @default("header")
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SiteText {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model Video {
+  id          Int      @id @default(autoincrement())
+  title       String
+  youtubeUrl  String
+  description String?
+  grupa       String?
+  createdAt   DateTime @default(now())
+}
