@@ -14,6 +14,11 @@ interface ChildData {
   photoConsentWA: boolean
   photoConsentDate: string | null
   signatureData: boolean
+  sportivStats?: {
+    attendancePercent: number
+    lastEvalAvg: number | null
+    lastEvalDate: string | null
+  }
 }
 
 interface ParentData {
@@ -97,14 +102,27 @@ export default function DashboardPage() {
         ) : (
           <div className="space-y-3">
             {parent.children.map(child => (
-              <div key={child.id} className="flex items-center justify-between border rounded-lg p-3">
-                <div>
-                  <span className="font-medium">{child.name}</span>
-                  <span className="text-gray-500 text-sm ml-2">({child.birthYear})</span>
-                  {child.teamName && (
-                    <span className="ml-2 text-xs bg-dinamo-blue text-white px-2 py-0.5 rounded-full">{child.teamName}</span>
-                  )}
+              <div key={child.id} className="border rounded-lg p-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-medium">{child.name}</span>
+                    <span className="text-gray-500 text-sm ml-2">({child.birthYear})</span>
+                    {child.teamName && (
+                      <span className="ml-2 text-xs bg-dinamo-blue text-white px-2 py-0.5 rounded-full">{child.teamName}</span>
+                    )}
+                  </div>
+                  <Link href={`/parinti/sportiv/${child.id}`} className="text-xs bg-dinamo-red text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors font-medium">
+                    Profil sportiv &rarr;
+                  </Link>
                 </div>
+                {child.sportivStats && (
+                  <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                    <span>Prezenta: <strong className="text-gray-700">{child.sportivStats.attendancePercent}%</strong></span>
+                    {child.sportivStats.lastEvalAvg !== null && (
+                      <span>Ultima evaluare: <strong className="text-gray-700">{child.sportivStats.lastEvalAvg.toFixed(1)}</strong></span>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>

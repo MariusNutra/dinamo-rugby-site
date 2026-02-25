@@ -22,23 +22,51 @@ export async function GET() {
     return NextResponse.json({ error: 'Parinte negasit' }, { status: 404 })
   }
 
+  // Fetch sportiv mini-stats per child
+  const now = new Date()
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+  const childrenWithStats = await Promise.all(
+    parent.children.map(async (c) => {
+      const [attendances, lastEval] = await Promise.all([
+        prisma.attendance.findMany({
+          where: { childId: c.id, date: { gte: startOfMonth } },
+        }),
+        prisma.evaluation.findFirst({
+          where: { childId: c.id },
+          orderBy: { date: 'desc' },
+        }),
+      ])
+
+      const attTotal = attendances.length
+      const attPresent = attendances.filter(a => a.present).length
+
+      return {
+        id: c.id,
+        name: c.name,
+        birthYear: c.birthYear,
+        teamId: c.teamId,
+        teamName: c.team?.grupa ?? null,
+        photoConsent: c.photoConsent,
+        photoConsentWA: c.photoConsentWA,
+        photoConsentDate: c.photoConsentDate,
+        signatureData: c.signatureData ? true : false,
+        medicalCert: c.medicalCert,
+        sportivStats: {
+          attendancePercent: attTotal > 0 ? Math.round((attPresent / attTotal) * 100) : 0,
+          lastEvalAvg: lastEval ? (lastEval.physical + lastEval.technical + lastEval.tactical + lastEval.mental + lastEval.social) / 5 : null,
+          lastEvalDate: lastEval?.date?.toISOString() ?? null,
+        },
+      }
+    })
+  )
+
   return NextResponse.json({
     id: parent.id,
     name: parent.name,
     email: parent.email,
     phone: parent.phone,
-    children: parent.children.map(c => ({
-      id: c.id,
-      name: c.name,
-      birthYear: c.birthYear,
-      teamId: c.teamId,
-      teamName: c.team?.grupa ?? null,
-      photoConsent: c.photoConsent,
-      photoConsentWA: c.photoConsentWA,
-      photoConsentDate: c.photoConsentDate,
-      signatureData: c.signatureData ? true : false,
-      medicalCert: c.medicalCert,
-    })),
+    children: childrenWithStats,
   })
 }
 

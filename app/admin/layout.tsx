@@ -77,6 +77,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: '/admin/parinti', label: 'Parinti', icon: '👨‍👩‍👧' },
     { href: '/admin/cereri-acces', label: 'Cereri', icon: '📩', badge: pendingRequests },
     { href: '/admin/acorduri', label: 'Acorduri', icon: '📋' },
+    { href: '/admin/sportivi', label: 'Sportivi', icon: '🏃' },
+    { href: '/admin/evaluari', label: 'Evaluari', icon: '📊' },
+    { href: '/admin/prezente', label: 'Prezente', icon: '✅' },
   ]
 
   const handleLogout = async () => {

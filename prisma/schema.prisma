@@ -62,6 +62,7 @@ model Team {
   coaches        Coach[]
   children       Child[]
   accessRequests AccessRequest[]
+  attendances    Attendance[]
 }
 
 model Coach {
@@ -161,6 +162,11 @@ model Child {
   medicalCert      Boolean   @default(false)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+  physicalProfiles PhysicalProfile[]
+  evaluations      Evaluation[]
+  attendances      Attendance[]
+  medicalRecords   MedicalRecord[]
+  childPhotos      ChildPhoto[]
 }
 
 model AccessRequest {
@@ -177,4 +183,75 @@ model AccessRequest {
   reviewedAt     DateTime?
   reviewedBy     String?
   createdAt      DateTime  @default(now())
+}
+
+model PhysicalProfile {
+  id        String   @id @default(cuid())
+  childId   String
+  child     Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  date      DateTime @default(now())
+  height    Float?
+  weight    Float?
+  position  String?
+  notes     String?
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Evaluation {
+  id        String   @id @default(cuid())
+  childId   String
+  child     Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  date      DateTime @default(now())
+  period    String
+  physical  Int
+  technical Int
+  tactical  Int
+  mental    Int
+  social    Int
+  comments  String?
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  childId   String
+  child     Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  date      DateTime
+  type      String   @default("antrenament")
+  present   Boolean  @default(true)
+  notes     String?
+  teamId    Int?
+  team      Team?    @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+}
+
+model MedicalRecord {
+  id          String    @id @default(cuid())
+  childId     String
+  child       Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
+  date        DateTime  @default(now())
+  type        String
+  description String
+  severity    String?
+  returnDate  DateTime?
+  resolved    Boolean   @default(false)
+  createdBy   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model ChildPhoto {
+  id         String    @id @default(cuid())
+  childId    String
+  child      Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
+  url        String
+  caption    String?
+  date       DateTime?
+  event      String?
+  uploadedBy String?
+  createdAt  DateTime  @default(now())
 }

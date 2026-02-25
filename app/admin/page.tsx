@@ -18,6 +18,7 @@ interface AccessRequest {
 export default function AdminDashboard() {
   const [stats, setStats] = useState({ stories: 0, photos: 0, teams: 0, matches: 0 })
   const [parentStats, setParentStats] = useState({ parents: 0, acorduriSigned: 0, acorduriTotal: 0 })
+  const [sportivStats, setSportivStats] = useState({ evaluariLuna: 0, prezenteAzi: 0, medicalActiv: 0 })
   const [pendingRequests, setPendingRequests] = useState<AccessRequest[]>([])
   const [processingId, setProcessingId] = useState<string | null>(null)
 
@@ -51,6 +52,10 @@ export default function AdminDashboard() {
 
     fetch('/api/admin/acorduri').then(r => r.ok ? r.json() : null).then(data => {
       if (data?.stats) setParentStats(prev => ({ ...prev, acorduriSigned: data.stats.signed, acorduriTotal: data.stats.total }))
+    }).catch(() => {})
+
+    fetch('/api/admin/sportivi/stats').then(r => r.ok ? r.json() : null).then(data => {
+      if (data) setSportivStats(data)
     }).catch(() => {})
 
     fetchPending()
@@ -88,6 +93,9 @@ export default function AdminDashboard() {
     { label: 'Meciuri', count: stats.matches, href: '/admin/meciuri', icon: '🏆', color: 'bg-purple-500' },
     { label: 'Parinti', count: parentStats.parents, href: '/admin/parinti', icon: '👨‍👩‍👧', color: 'bg-indigo-500' },
     { label: 'Acorduri', count: `${acorduriPercent}%`, href: '/admin/acorduri', icon: '📋', color: 'bg-amber-500' },
+    { label: 'Evaluari', count: sportivStats.evaluariLuna, href: '/admin/evaluari', icon: '📊', color: 'bg-teal-500' },
+    { label: 'Prezente', count: sportivStats.prezenteAzi, href: '/admin/prezente', icon: '✅', color: 'bg-emerald-500' },
+    { label: 'Medical', count: sportivStats.medicalActiv, href: '/admin/sportivi', icon: '🏥', color: 'bg-rose-500' },
   ]
 
   return (
