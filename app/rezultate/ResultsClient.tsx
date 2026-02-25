@@ -12,21 +12,21 @@ type SubTab = 'results' | 'standings'
 export default function ResultsClient({ data }: Props) {
   const categories = Object.keys(data.categories)
 
-  // Default to category with most recent Dinamo match
-  const defaultCategory = useMemo(() => {
+  // Default to category and region with Dinamo matches
+  const { defaultCategory, defaultRegion } = useMemo(() => {
     for (const cat of categories) {
       const catData = data.categories[cat]
-      for (const regionData of Object.values(catData.regions)) {
+      for (const [region, regionData] of Object.entries(catData.regions)) {
         if (regionData.results.some((e) => e.matches.some((m) => m.isDinamo))) {
-          return cat
+          return { defaultCategory: cat, defaultRegion: region }
         }
       }
     }
-    return categories[0] || 'U16'
+    return { defaultCategory: categories[0] || 'U16', defaultRegion: '' }
   }, [categories, data.categories])
 
   const [activeCategory, setActiveCategory] = useState(defaultCategory)
-  const [activeRegion, setActiveRegion] = useState<string>('')
+  const [activeRegion, setActiveRegion] = useState(defaultRegion)
   const [activeSubTab, setActiveSubTab] = useState<SubTab>('results')
   const [dinamoOnly, setDinamoOnly] = useState(false)
 
