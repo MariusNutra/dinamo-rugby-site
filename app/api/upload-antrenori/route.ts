@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isAuthenticated } from '@/lib/auth'
 import sharp from 'sharp'
 import path from 'path'
 import fs from 'fs/promises'
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
 const coaches = [
   'hildan-cristian',
@@ -11,6 +14,10 @@ const coaches = [
 ]
 
 export async function POST(req: NextRequest) {
+  if (!await isAuthenticated()) {
+    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
+  }
+
   try {
     const formData = await req.formData()
     const outputDir = path.join(process.cwd(), 'public', 'images', 'antrenori')
@@ -21,6 +28,7 @@ export async function POST(req: NextRequest) {
     for (const key of coaches) {
       const file = formData.get(key) as File | null
       if (!file) continue
+      if (file.size > MAX_FILE_SIZE) continue
 
       const buffer = Buffer.from(await file.arrayBuffer())
 

@@ -1,15 +1,19 @@
 import jwt from 'jsonwebtoken'
 import { cookies } from 'next/headers'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'default-secret'
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET
+  if (!secret) throw new Error('JWT_SECRET environment variable is required')
+  return secret
+}
 
 export function createToken(): string {
-  return jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: '7d' })
+  return jwt.sign({ role: 'admin' }, getJwtSecret(), { expiresIn: '7d' })
 }
 
 export function verifyToken(token: string): boolean {
   try {
-    jwt.verify(token, JWT_SECRET)
+    jwt.verify(token, getJwtSecret())
     return true
   } catch {
     return false
