@@ -8,18 +8,19 @@ function getJwtSecret(): string {
 }
 
 interface ParentTokenPayload {
-  role: 'parent'
+  type: 'parent'
   parentId: string
+  email: string
 }
 
-export function createParentToken(parentId: string): string {
-  return jwt.sign({ role: 'parent', parentId }, getJwtSecret(), { expiresIn: '30d' })
+export function createParentToken(parentId: string, email: string): string {
+  return jwt.sign({ type: 'parent', parentId, email }, getJwtSecret(), { expiresIn: '7d' })
 }
 
 export function verifyParentToken(token: string): ParentTokenPayload | null {
   try {
     const payload = jwt.verify(token, getJwtSecret()) as ParentTokenPayload
-    if (payload.role !== 'parent') return null
+    if (payload.type !== 'parent') return null
     return payload
   } catch {
     return null

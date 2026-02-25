@@ -31,6 +31,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       })
   }, [pathname, router])
 
+  const [pendingRequests, setPendingRequests] = useState(0)
+
   useEffect(() => {
     if (!auth) return
     fetchUnread()
@@ -44,6 +46,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       document.removeEventListener('visibilitychange', onVisible)
     }
   }, [auth, fetchUnread])
+
+  useEffect(() => {
+    if (!auth) return
+    fetch('/api/admin/cereri-acces?status=pending')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data && Array.isArray(data.requests)) setPendingRequests(data.requests.length)
+      })
+      .catch(() => {})
+  }, [auth, pathname])
 
   if (pathname === '/admin/login') return <>{children}</>
 
@@ -62,6 +74,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: '/admin/echipe', label: 'Echipe', icon: '🏉' },
     { href: '/admin/program', label: 'Program', icon: '📅' },
     { href: '/admin/meciuri', label: 'Meciuri', icon: '🏆' },
+    { href: '/admin/parinti', label: 'Parinti', icon: '👨‍👩‍👧' },
+    { href: '/admin/cereri-acces', label: 'Cereri', icon: '📩', badge: pendingRequests },
     { href: '/admin/acorduri', label: 'Acorduri', icon: '📋' },
   ]
 
@@ -79,10 +93,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="hidden md:flex gap-1">
               {navItems.map(item => (
                 <Link key={item.href} href={item.href}
-                  className={`px-3 py-2 rounded text-sm transition-colors ${
+                  className={`px-3 py-2 rounded text-sm transition-colors relative ${
                     pathname === item.href ? 'bg-white/20' : 'hover:bg-white/10'
                   }`}>
                   {item.icon} {item.label}
+                  {'badge' in item && (item as { badge?: number }).badge ? (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                      {(item as { badge?: number }).badge}
+                    </span>
+                  ) : null}
                 </Link>
               ))}
             </div>
@@ -113,10 +132,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="md:hidden flex overflow-x-auto px-4 pb-2 gap-1">
           {navItems.map(item => (
             <Link key={item.href} href={item.href}
-              className={`px-3 py-1 rounded text-xs whitespace-nowrap transition-colors ${
+              className={`px-3 py-1 rounded text-xs whitespace-nowrap transition-colors relative ${
                 pathname === item.href ? 'bg-white/20' : 'hover:bg-white/10'
               }`}>
               {item.icon} {item.label}
+              {'badge' in item && (item as { badge?: number }).badge ? (
+                <span className="ml-1 inline-flex w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full items-center justify-center">
+                  {(item as { badge?: number }).badge}
+                </span>
+              ) : null}
             </Link>
           ))}
         </div>

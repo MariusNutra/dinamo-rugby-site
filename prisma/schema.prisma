@@ -58,9 +58,10 @@ model Team {
   sortOrder   Int      @default(0)
   ageRange    String?
   birthYear   String?
-  updatedAt   DateTime @updatedAt
-  coaches     Coach[]
-  children    Child[]
+  updatedAt      DateTime        @updatedAt
+  coaches        Coach[]
+  children       Child[]
+  accessRequests AccessRequest[]
 }
 
 model Coach {
@@ -134,16 +135,15 @@ model Video {
 }
 
 model Parent {
-  id              String    @id @default(cuid())
-  name            String    @default("")
-  email           String    @unique
-  phone           String?
-  token           String?
-  tokenExpiry     DateTime?
-  whatsappConsent Boolean   @default(false)
-  children        Child[]
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id          String    @id @default(cuid())
+  name        String
+  email       String    @unique
+  phone       String?
+  token       String?
+  tokenExpiry DateTime?
+  children    Child[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model Child {
@@ -161,4 +161,20 @@ model Child {
   medicalCert      Boolean   @default(false)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+}
+
+model AccessRequest {
+  id             String    @id @default(cuid())
+  parentName     String
+  email          String
+  phone          String?
+  childName      String
+  childBirthYear Int
+  teamId         Int?
+  team           Team?     @relation(fields: [teamId], references: [id])
+  message        String?
+  status         String    @default("pending")
+  reviewedAt     DateTime?
+  reviewedBy     String?
+  createdAt      DateTime  @default(now())
 }

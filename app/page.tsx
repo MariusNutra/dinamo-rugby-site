@@ -135,6 +135,19 @@ export default async function HomePage() {
         )}
       </section>
 
+      {/* Parent Portal CTA */}
+      <section className="bg-dinamo-blue text-white py-12">
+        <div className="max-w-4xl mx-auto text-center px-4">
+          <h2 className="font-heading font-bold text-2xl mb-3">Portal Parinti</h2>
+          <p className="text-lg opacity-90 mb-6">
+            Accesează portalul dedicat părinților pentru acorduri foto, documente și informații despre echipă.
+          </p>
+          <Link href="/parinti" className="inline-block bg-white text-dinamo-blue px-8 py-3 rounded-full font-heading font-bold hover:bg-gray-100 transition-colors shadow-lg">
+            Acceseaza Portalul
+          </Link>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="bg-dinamo-red text-white py-16">
         <div className="max-w-4xl mx-auto text-center px-4">

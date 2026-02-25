@@ -77,6 +77,10 @@ export default function Header() {
               </Link>
             )
           ))}
+          <Link href="/parinti"
+            className="ml-2 px-3 py-1.5 text-sm font-bold text-white bg-dinamo-red rounded-md hover:bg-red-700 transition-colors">
+            Portal Parinti
+          </Link>
         </nav>
 
         <button className="md:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
@@ -112,6 +116,11 @@ export default function Header() {
               </Link>
             )
           ))}
+          <Link href="/parinti"
+            onClick={() => setMobileOpen(false)}
+            className="block px-4 py-3 text-sm font-bold text-dinamo-red hover:bg-dinamo-red hover:text-white border-b border-gray-100">
+            Portal Parinti
+          </Link>
         </div>
       )}
     </header>

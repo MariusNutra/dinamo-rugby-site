@@ -7,14 +7,12 @@ const transporter = nodemailer.createTransport({
   host: 'localhost',
   port: 25,
   secure: false,
-  tls: {
-    rejectUnauthorized: false,
-  },
+  tls: { rejectUnauthorized: false },
 })
 
 const magicLinkAttempts = new Map<string, { count: number; lastAttempt: number }>()
 const MAX_ATTEMPTS = 5
-const WINDOW_MS = 60 * 60 * 1000 // 1 hour
+const WINDOW_MS = 60 * 60 * 1000
 
 function getClientIp(req: NextRequest): string {
   return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
@@ -30,7 +28,7 @@ export async function POST(req: NextRequest) {
       magicLinkAttempts.delete(ip)
     } else if (record.count >= MAX_ATTEMPTS) {
       return NextResponse.json(
-        { error: 'Prea multe încercări. Reîncearcă mai târziu.' },
+        { error: 'Prea multe incercari. Reincearca mai tarziu.' },
         { status: 429 }
       )
     }
@@ -39,22 +37,31 @@ export async function POST(req: NextRequest) {
   const { email } = await req.json()
 
   if (!email || typeof email !== 'string') {
-    return NextResponse.json({ error: 'Email-ul este obligatoriu' }, { status: 400 })
+    return NextResponse.json({ error: 'Email-ul este obligatoriu.' }, { status: 400 })
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(email)) {
-    return NextResponse.json({ error: 'Adresa de email este invalidă' }, { status: 400 })
+    return NextResponse.json({ error: 'Adresa de email este invalida.' }, { status: 400 })
   }
 
   const normalizedEmail = email.toLowerCase().trim()
-  const token = randomBytes(32).toString('hex')
-  const tokenExpiry = new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
 
-  await prisma.parent.upsert({
-    where: { email: normalizedEmail },
-    update: { token, tokenExpiry },
-    create: { email: normalizedEmail, name: '', token, tokenExpiry },
+  // Only allow existing parents to login
+  const parent = await prisma.parent.findUnique({ where: { email: normalizedEmail } })
+  if (!parent) {
+    return NextResponse.json({
+      error: 'not_registered',
+      message: 'Acest email nu este inregistrat. Solicita acces mai jos sau contacteaza antrenorul.',
+    }, { status: 404 })
+  }
+
+  const token = randomBytes(32).toString('hex')
+  const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+
+  await prisma.parent.update({
+    where: { id: parent.id },
+    data: { token, tokenExpiry },
   })
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
@@ -62,24 +69,29 @@ export async function POST(req: NextRequest) {
 
   try {
     await transporter.sendMail({
-      from: `"Dinamo Rugby - Portal Părinți" <noreply@dinamorugby.ro>`,
+      from: '"Dinamo Rugby Juniori" <noreply@dinamorugby.ro>',
       to: normalizedEmail,
-      subject: 'Link de acces - Portal Părinți Dinamo Rugby',
-      text: `Salut!\n\nAccesează linkul de mai jos pentru a intra în Portalul Părinților:\n\n${magicLink}\n\nLinkul expiră în 15 minute.\n\nDacă nu ai solicitat acest link, ignoră acest email.\n\n— Echipa Dinamo Rugby`,
+      subject: 'Conectare Portal Parinti — Dinamo Rugby Juniori',
+      text: `Salut ${parent.name},\n\nAcceseaza linkul de mai jos pentru a intra in Portalul Parintilor:\n\n${magicLink}\n\nLinkul expira in 24 de ore.\n\nDaca nu ai solicitat acest link, ignora acest email.\n\n— Echipa Dinamo Rugby Juniori`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #1e3a5f;">Portal Părinți - Dinamo Rugby</h2>
-          <p>Salut!</p>
-          <p>Accesează butonul de mai jos pentru a intra în Portalul Părinților:</p>
-          <p style="text-align: center; margin: 30px 0;">
-            <a href="${magicLink}" style="background: #c41e3a; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-              Intră în portal
-            </a>
+          <div style="text-align: center; padding: 20px 0;">
+            <h2 style="color: #1e3a5f; margin: 0;">Dinamo Rugby Juniori</h2>
+            <p style="color: #666; margin: 5px 0 0;">Portal Parinti</p>
+          </div>
+          <div style="background: #f9fafb; border-radius: 8px; padding: 30px; margin: 20px 0;">
+            <p style="margin: 0 0 15px;">Salut <strong>${parent.name}</strong>,</p>
+            <p style="margin: 0 0 25px;">Apasa butonul de mai jos pentru a accesa portalul parintilor:</p>
+            <p style="text-align: center; margin: 0 0 25px;">
+              <a href="${magicLink}" style="background: #DC2626; color: white; padding: 14px 35px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block;">
+                Acceseaza Portalul
+              </a>
+            </p>
+            <p style="color: #666; font-size: 13px; margin: 0;">Linkul expira in 24 de ore.</p>
+          </div>
+          <p style="color: #999; font-size: 12px; text-align: center;">
+            Daca nu ai solicitat acest link, ignora acest email.
           </p>
-          <p style="color: #666; font-size: 14px;">Linkul expiră în 15 minute.</p>
-          <p style="color: #666; font-size: 14px;">Dacă nu ai solicitat acest link, ignoră acest email.</p>
-          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-          <p style="color: #999; font-size: 12px;">Dinamo Rugby București</p>
         </div>
       `,
     })

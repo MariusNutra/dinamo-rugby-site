@@ -27,15 +27,14 @@ export async function GET(req: NextRequest) {
     data: { token: null, tokenExpiry: null },
   })
 
-  const jwt = createParentToken(parent.id)
-  const redirectPath = parent.name ? '/parinti/dashboard' : '/parinti/inregistrare'
-  const response = NextResponse.redirect(`${siteUrl}${redirectPath}`)
+  const jwt = createParentToken(parent.id, parent.email)
+  const response = NextResponse.redirect(`${siteUrl}/parinti/dashboard`)
 
   response.cookies.set('parent_token', jwt, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 30, // 30 days
+    sameSite: 'strict',
+    maxAge: 60 * 60 * 24 * 7, // 7 days
     path: '/',
   })
 

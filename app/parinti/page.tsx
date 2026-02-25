@@ -3,16 +3,18 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
+import Link from 'next/link'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  const [notRegistered, setNotRegistered] = useState(false)
   const searchParams = useSearchParams()
 
   useEffect(() => {
     if (searchParams.get('error') === 'invalid_token') {
-      setErrorMsg('Link-ul este invalid sau a expirat. Te rugam sa soliciti un link nou.')
+      setErrorMsg('Link-ul este invalid sau a expirat. Solicita un link nou.')
     }
   }, [searchParams])
 
@@ -20,6 +22,7 @@ function LoginForm() {
     e.preventDefault()
     setStatus('sending')
     setErrorMsg('')
+    setNotRegistered(false)
 
     try {
       const res = await fetch('/api/parinti/auth', {
@@ -30,8 +33,13 @@ function LoginForm() {
       const data = await res.json()
 
       if (!res.ok) {
-        setStatus('error')
-        setErrorMsg(data.error || 'Eroare la trimitere.')
+        if (data.error === 'not_registered') {
+          setNotRegistered(true)
+          setStatus('error')
+        } else {
+          setErrorMsg(data.error || data.message || 'Eroare la trimitere.')
+          setStatus('error')
+        }
         return
       }
 
@@ -54,12 +62,21 @@ function LoginForm() {
             className="w-20 h-20 mx-auto mb-4 object-contain"
           />
           <h1 className="font-heading text-3xl font-bold text-dinamo-blue mb-2">Portal Parinti</h1>
-          <p className="text-gray-600">Dinamo Rugby Bucuresti</p>
+          <p className="text-gray-600">Acceseaza informatiile echipei copilului tau</p>
         </div>
 
-        {errorMsg && status !== 'sent' && (
+        {errorMsg && !notRegistered && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
             {errorMsg}
+          </div>
+        )}
+
+        {notRegistered && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg mb-4">
+            <p className="font-medium mb-1">Acest email nu este inregistrat.</p>
+            <p className="text-sm">
+              Solicita acces mai jos sau contacteaza antrenorul echipei.
+            </p>
           </div>
         )}
 
@@ -73,6 +90,7 @@ function LoginForm() {
               Am trimis un link de acces la <strong>{email}</strong>.
               Verifica si folderul Spam daca nu gasesti email-ul.
             </p>
+            <p className="text-green-600 text-sm mt-2">Linkul este valid 24 de ore.</p>
             <button
               onClick={() => { setStatus('idle'); setEmail('') }}
               className="mt-4 text-sm text-green-600 hover:underline"
@@ -81,29 +99,38 @@ function LoginForm() {
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border p-6">
-            <label className="block mb-2 text-sm font-medium text-gray-700">
-              Adresa de email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="parinte@exemplu.ro"
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dinamo-red focus:border-transparent outline-none mb-4"
-            />
-            <button
-              type="submit"
-              disabled={status === 'sending'}
-              className="w-full bg-dinamo-red text-white py-3 px-6 rounded-lg font-heading font-bold text-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-            >
-              {status === 'sending' ? 'Se trimite...' : 'Trimite link de acces'}
-            </button>
-            <p className="text-center text-xs text-gray-500 mt-3">
-              Vei primi un email cu un link de acces valid 15 minute.
-            </p>
-          </form>
+          <>
+            <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border p-6">
+              <label className="block mb-2 text-sm font-medium text-gray-700">
+                Adresa de email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="parinte@exemplu.ro"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dinamo-red focus:border-transparent outline-none mb-4 text-base"
+              />
+              <button
+                type="submit"
+                disabled={status === 'sending'}
+                className="w-full bg-dinamo-red text-white py-3 px-6 rounded-lg font-heading font-bold text-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {status === 'sending' ? 'Se trimite...' : 'Conecteaza-te'}
+              </button>
+            </form>
+
+            <div className="text-center mt-6">
+              <p className="text-sm text-gray-500 mb-2">Accesul este gestionat de antrenorii echipei</p>
+              <Link
+                href="/parinti/solicita-acces"
+                className="text-dinamo-red font-medium text-sm hover:underline"
+              >
+                Nu ai cont? Solicita acces &rarr;
+              </Link>
+            </div>
+          </>
         )}
       </div>
     </div>

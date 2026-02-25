@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 
-const PUBLIC_PATHS = ['/parinti', '/parinti/verify']
+const PUBLIC_PATHS = ['/parinti', '/parinti/verify', '/parinti/solicita-acces']
 
 export default function ParintiLayout({ children }: { children: React.ReactNode }) {
   const [auth, setAuth] = useState<boolean | null>(null)
+  const [parentName, setParentName] = useState('')
   const router = useRouter()
   const pathname = usePathname()
 
@@ -26,6 +27,9 @@ export default function ParintiLayout({ children }: { children: React.ReactNode 
           router.push('/parinti')
         } else {
           setAuth(true)
+          fetch('/api/parinti/me').then(r => r.json()).then(d => {
+            if (d.name) setParentName(d.name)
+          }).catch(() => {})
         }
       })
   }, [pathname, router, isPublic])
@@ -50,12 +54,15 @@ export default function ParintiLayout({ children }: { children: React.ReactNode 
           <Link href="/parinti/dashboard" className="font-heading font-bold text-dinamo-blue text-lg">
             Portal Parinti
           </Link>
-          <button
-            onClick={handleLogout}
-            className="text-sm text-gray-500 hover:text-dinamo-red transition-colors"
-          >
-            Deconectare
-          </button>
+          <div className="flex items-center gap-4">
+            {parentName && <span className="text-sm text-gray-600 hidden sm:block">{parentName}</span>}
+            <button
+              onClick={handleLogout}
+              className="text-sm text-gray-500 hover:text-dinamo-red transition-colors"
+            >
+              Deconectare
+            </button>
+          </div>
         </div>
       )}
       {children}
