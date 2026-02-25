@@ -13,32 +13,18 @@ interface Team {
   description: string | null
 }
 
-interface Match {
-  id: number
-  grupa: string
-  date: string
-  opponent: string
-  scoreHome: number | null
-  scoreAway: number | null
-  description: string | null
-}
-
 const grupe = ['U10', 'U12', 'U14', 'U16', 'U18']
 
 export default function AdminTeams() {
   const [activeTab, setActiveTab] = useState('U10')
   const [teams, setTeams] = useState<Team[]>([])
-  const [matches, setMatches] = useState<Match[]>([])
   const [teamForm, setTeamForm] = useState({ coachName: '', coachPhoto: '', coachBio: '', schedule: '', description: '' })
-  const [matchForm, setMatchForm] = useState({ date: '', opponent: '', scoreHome: '', scoreAway: '', description: '' })
   const [saving, setSaving] = useState(false)
 
   const loadTeams = () => fetch('/api/teams').then(r => r.json()).then(setTeams)
-  const loadMatches = () => fetch(`/api/matches?grupa=${activeTab}`).then(r => r.json()).then(setMatches)
 
   useEffect(() => { loadTeams() }, [])
   useEffect(() => {
-    loadMatches()
     const team = teams.find(t => t.grupa === activeTab)
     if (team) {
       setTeamForm({
@@ -71,30 +57,6 @@ export default function AdminTeams() {
     })
     setSaving(false)
     loadTeams()
-  }
-
-  const addMatch = async (e: React.FormEvent) => {
-    e.preventDefault()
-    await fetch('/api/matches', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        grupa: activeTab,
-        date: matchForm.date,
-        opponent: matchForm.opponent,
-        scoreHome: matchForm.scoreHome || null,
-        scoreAway: matchForm.scoreAway || null,
-        description: matchForm.description || null,
-      }),
-    })
-    setMatchForm({ date: '', opponent: '', scoreHome: '', scoreAway: '', description: '' })
-    loadMatches()
-  }
-
-  const deleteMatch = async (id: number) => {
-    if (!confirm('Sigur?')) return
-    await fetch(`/api/matches/${id}`, { method: 'DELETE' })
-    loadMatches()
   }
 
   return (
@@ -163,48 +125,15 @@ export default function AdminTeams() {
         </form>
       </div>
 
-      {/* Match results */}
+      {/* Link to matches management */}
       <div className="bg-white rounded-xl shadow-md p-6">
-        <h2 className="font-heading font-bold text-lg mb-4">Rezultate meciuri {activeTab}</h2>
-        <form onSubmit={addMatch} className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
-          <input type="date" required value={matchForm.date}
-            onChange={e => setMatchForm({ ...matchForm, date: e.target.value })}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-          <input type="text" required placeholder="Adversar" value={matchForm.opponent}
-            onChange={e => setMatchForm({ ...matchForm, opponent: e.target.value })}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-          <input type="number" placeholder="Scor Dinamo" value={matchForm.scoreHome}
-            onChange={e => setMatchForm({ ...matchForm, scoreHome: e.target.value })}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-          <input type="number" placeholder="Scor adversar" value={matchForm.scoreAway}
-            onChange={e => setMatchForm({ ...matchForm, scoreAway: e.target.value })}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-          <input type="text" placeholder="Descriere" value={matchForm.description}
-            onChange={e => setMatchForm({ ...matchForm, description: e.target.value })}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-          <button type="submit"
-            className="bg-dinamo-red text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-dinamo-dark transition-colors">
-            + Adaugă
-          </button>
-        </form>
-
-        <div className="space-y-2">
-          {matches.map(m => (
-            <div key={m.id} className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-500">{new Date(m.date).toLocaleDateString('ro-RO')}</span>
-                <span className="font-medium">Dinamo vs {m.opponent}</span>
-                {m.scoreHome !== null && m.scoreAway !== null && (
-                  <span className="font-bold text-dinamo-red">{m.scoreHome} - {m.scoreAway}</span>
-                )}
-              </div>
-              <button onClick={() => deleteMatch(m.id)} className="text-red-500 hover:bg-red-50 px-2 py-1 rounded text-sm">
-                Șterge
-              </button>
-            </div>
-          ))}
-          {matches.length === 0 && <p className="text-gray-400 text-center py-4">Nu sunt meciuri înregistrate.</p>}
+        <div className="flex items-center justify-between">
+          <h2 className="font-heading font-bold text-lg">Meciuri {activeTab}</h2>
+          <a href="/admin/meciuri" className="text-dinamo-red hover:text-dinamo-dark font-medium text-sm">
+            Gestionează meciuri →
+          </a>
         </div>
+        <p className="text-gray-500 text-sm mt-2">Meciurile se gestionează din pagina dedicată.</p>
       </div>
     </div>
   )

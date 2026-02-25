@@ -43,6 +43,19 @@ export default function Footer() {
         </div>
         <div className="border-t border-gray-600 mt-8 pt-8 text-center text-sm text-gray-400">
           <p>&copy; {new Date().getFullYear()} CS Dinamo București — Secția Rugby Juniori. Toate drepturile rezervate.</p>
+          <p className="mt-2">
+            <Link href="/politica-cookies-gdpr" className="text-gray-400 hover:text-white transition-colors underline">
+              Politica de Cookies &amp; GDPR
+            </Link>
+            <span className="mx-2 text-gray-600">|</span>
+            <Link href="/politica-confidentialitate" className="text-gray-400 hover:text-white transition-colors underline">
+              Confidențialitate
+            </Link>
+            <span className="mx-2 text-gray-600">|</span>
+            <Link href="/termeni-si-conditii" className="text-gray-400 hover:text-white transition-colors underline">
+              Termeni și Condiții
+            </Link>
+          </p>
         </div>
       </div>
     </footer>

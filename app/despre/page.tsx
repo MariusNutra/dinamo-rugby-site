@@ -1,14 +1,9 @@
-import { prisma } from '@/lib/prisma'
-
-export const dynamic = 'force-dynamic'
-
 export const metadata = {
   title: 'Despre Noi — Dinamo Rugby Juniori',
   description: 'Istoria și valorile secției de juniori rugby CS Dinamo București. 16 titluri de campion, 14 cupe.',
 }
 
-export default async function DesprePage() {
-  const teams = await prisma.team.findMany({ orderBy: { grupa: 'asc' } })
+export default function DesprePage() {
 
   return (
     <>
@@ -90,28 +85,13 @@ export default async function DesprePage() {
         {/* Staff tehnic */}
         <section>
           <h2 className="font-heading font-bold text-3xl mb-6 text-dinamo-red">Staff tehnic</h2>
-          {teams.length > 0 ? (
-            <div className="space-y-4">
-              {teams.map(team => (
-                <div key={team.id} className="bg-white rounded-xl shadow-md p-6 flex items-center gap-4">
-                  {team.coachPhoto ? (
-                    <img src={team.coachPhoto} alt={team.coachName} className="w-16 h-16 rounded-full object-cover" />
-                  ) : (
-                    <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-xl">👤</div>
-                  )}
-                  <div>
-                    <div className="font-heading font-bold text-gray-900">{team.coachName}</div>
-                    <div className="text-sm text-dinamo-red font-medium">Antrenor {team.grupa}</div>
-                    {team.coachBio && <p className="text-sm text-gray-500 mt-1">{team.coachBio}</p>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-gray-50 rounded-xl p-8 text-center text-gray-400">
-              <p>Stafful tehnic va fi adăugat în curând.</p>
-            </div>
-          )}
+          <a href="/antrenori" className="block bg-white rounded-xl shadow-md p-8 text-center hover:shadow-lg transition-shadow group">
+            <div className="text-4xl mb-3">🏉</div>
+            <h3 className="font-heading font-bold text-xl text-gray-900 group-hover:text-dinamo-red transition-colors">
+              Vezi staff-ul tehnic
+            </h3>
+            <p className="text-gray-500 text-sm mt-2">Antrenorii secției de juniori rugby CS Dinamo București</p>
+          </a>
         </section>
       </div>
     </>

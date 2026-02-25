@@ -3,33 +3,36 @@
 import { useEffect, useState } from 'react'
 
 interface Match {
-  id: number
-  grupa: string
+  id: string
+  category: string
+  matchType: string
+  round: string | null
   date: string
-  opponent: string
   location: string | null
-  scoreHome: number | null
-  scoreAway: number | null
-  description: string | null
+  homeTeam: string
+  awayTeam: string
+  homeScore: number | null
+  awayScore: number | null
+  isDinamo: boolean
+  notes: string | null
 }
 
-const grupe = ['Toate', 'U10', 'U12', 'U14', 'U16', 'U18']
+const categories = ['Toate', 'U10', 'U12', 'U14'] as const
 
-const grupaColors: Record<string, string> = {
+const catColors: Record<string, string> = {
   U10: 'bg-green-100 text-green-800',
   U12: 'bg-blue-100 text-blue-800',
   U14: 'bg-red-100 text-red-800',
-  U16: 'bg-purple-100 text-purple-800',
-  U18: 'bg-gray-100 text-gray-800',
 }
 
 export default function MeciuriPage() {
   const [matches, setMatches] = useState<Match[]>([])
-  const [filter, setFilter] = useState('Toate')
+  const [filter, setFilter] = useState<string>('Toate')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const url = filter === 'Toate' ? '/api/matches' : `/api/matches?grupa=${filter}`
+    setLoading(true)
+    const url = filter === 'Toate' ? '/api/matches' : `/api/matches?category=${filter}`
     fetch(url).then(r => r.json()).then(data => {
       setMatches(data)
       setLoading(false)
@@ -45,19 +48,22 @@ export default function MeciuriPage() {
       <section className="bg-gradient-to-br from-dinamo-blue to-gray-900 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h1 className="font-heading font-extrabold text-4xl md:text-5xl mb-3">Calendar Meciuri</h1>
-          <p className="text-lg opacity-90">Meciuri viitoare și rezultate pentru echipele Dinamo Rugby Juniori</p>
+          <p className="text-lg opacity-90">Meciuri și rezultate pentru echipele de mini rugby Dinamo</p>
         </div>
       </section>
 
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* Filter tabs */}
         <div className="flex flex-wrap gap-2 mb-8">
-          {grupe.map(g => (
-            <button key={g} onClick={() => { setFilter(g); setLoading(true) }}
+          {categories.map(c => (
+            <button
+              key={c}
+              onClick={() => setFilter(c)}
               className={`px-5 py-2 rounded-full text-sm font-bold transition-colors ${
-                filter === g ? 'bg-dinamo-red text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}>
-              {g}
+                filter === c ? 'bg-dinamo-red text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {c}
             </button>
           ))}
         </div>
@@ -77,33 +83,7 @@ export default function MeciuriPage() {
               {upcoming.length > 0 ? (
                 <div className="space-y-3">
                   {upcoming.map(match => (
-                    <div key={match.id} className="bg-white rounded-xl shadow-md p-5 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                      <div className="flex items-start gap-4">
-                        <div className="text-center min-w-[60px]">
-                          <div className="text-2xl font-heading font-bold text-dinamo-red">
-                            {new Date(match.date).getDate()}
-                          </div>
-                          <div className="text-xs text-gray-500 uppercase">
-                            {new Date(match.date).toLocaleDateString('ro-RO', { month: 'short' })}
-                          </div>
-                          <div className="text-xs text-gray-400">
-                            {new Date(match.date).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' })}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="font-bold text-gray-900">Dinamo vs {match.opponent}</div>
-                          {match.location && (
-                            <p className="text-sm text-gray-500 mt-1">{match.location}</p>
-                          )}
-                          {match.description && (
-                            <p className="text-sm text-gray-400 mt-1">{match.description}</p>
-                          )}
-                        </div>
-                      </div>
-                      <span className={`text-xs font-bold px-3 py-1 rounded-full ${grupaColors[match.grupa] || 'bg-gray-100 text-gray-700'}`}>
-                        {match.grupa}
-                      </span>
-                    </div>
+                    <MatchCard key={match.id} match={match} isUpcoming />
                   ))}
                 </div>
               ) : (
@@ -122,48 +102,7 @@ export default function MeciuriPage() {
               {past.length > 0 ? (
                 <div className="space-y-3">
                   {past.map(match => (
-                    <div key={match.id} className="bg-white rounded-xl shadow-md p-5 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                      <div className="flex items-start gap-4">
-                        <div className="text-center min-w-[60px]">
-                          <div className="text-sm font-medium text-gray-600">
-                            {new Date(match.date).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short' })}
-                          </div>
-                          <div className="text-xs text-gray-400">
-                            {new Date(match.date).getFullYear()}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="font-bold text-gray-900">Dinamo vs {match.opponent}</div>
-                          {match.location && (
-                            <p className="text-sm text-gray-500 mt-1">{match.location}</p>
-                          )}
-                          {match.description && (
-                            <p className="text-sm text-gray-400 mt-1">{match.description}</p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className={`text-xs font-bold px-3 py-1 rounded-full ${grupaColors[match.grupa] || 'bg-gray-100 text-gray-700'}`}>
-                          {match.grupa}
-                        </span>
-                        {match.scoreHome !== null && match.scoreAway !== null ? (
-                          <div className="text-right">
-                            <div className={`text-xl font-heading font-bold ${
-                              match.scoreHome > match.scoreAway ? 'text-green-600' :
-                              match.scoreHome < match.scoreAway ? 'text-red-600' : 'text-gray-600'
-                            }`}>
-                              {match.scoreHome} - {match.scoreAway}
-                            </div>
-                            <span className="text-xs text-gray-400">
-                              {match.scoreHome > match.scoreAway ? 'Victorie' :
-                               match.scoreHome < match.scoreAway ? 'Înfrângere' : 'Egal'}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-sm text-gray-400">Fără scor</span>
-                        )}
-                      </div>
-                    </div>
+                    <MatchCard key={match.id} match={match} />
                   ))}
                 </div>
               ) : (
@@ -176,5 +115,94 @@ export default function MeciuriPage() {
         )}
       </div>
     </>
+  )
+}
+
+function MatchCard({ match, isUpcoming }: { match: Match; isUpcoming?: boolean }) {
+  const hasScore = match.homeScore != null && match.awayScore != null
+  const isDinamoHome = /dinamo/i.test(match.homeTeam)
+
+  let resultColor = 'text-gray-600'
+  if (hasScore && match.isDinamo) {
+    const dinamoScore = isDinamoHome ? match.homeScore! : match.awayScore!
+    const opponentScore = isDinamoHome ? match.awayScore! : match.homeScore!
+    if (dinamoScore > opponentScore) resultColor = 'text-green-600'
+    else if (dinamoScore < opponentScore) resultColor = 'text-red-600'
+  }
+
+  return (
+    <div className={`bg-white rounded-xl shadow-md p-5 flex flex-col md:flex-row md:items-center justify-between gap-3 ${
+      match.isDinamo ? 'border-l-4 border-l-dinamo-red' : ''
+    }`}>
+      <div className="flex items-start gap-4">
+        <div className="text-center min-w-[60px]">
+          {isUpcoming ? (
+            <>
+              <div className="text-2xl font-heading font-bold text-dinamo-red">
+                {new Date(match.date).getDate()}
+              </div>
+              <div className="text-xs text-gray-500 uppercase">
+                {new Date(match.date).toLocaleDateString('ro-RO', { month: 'short' })}
+              </div>
+              <div className="text-xs text-gray-400">
+                {new Date(match.date).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' })}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="text-sm font-medium text-gray-600">
+                {new Date(match.date).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short' })}
+              </div>
+              <div className="text-xs text-gray-400">
+                {new Date(match.date).getFullYear()}
+              </div>
+            </>
+          )}
+        </div>
+        <div>
+          <div className={`${match.isDinamo ? 'font-bold' : 'font-medium'} text-gray-900`}>
+            {match.homeTeam} vs {match.awayTeam}
+          </div>
+          {match.round && (
+            <p className="text-xs text-gray-400 mt-0.5">{match.round}</p>
+          )}
+          {match.location && (
+            <p className="text-sm text-gray-500 mt-1">{match.location}</p>
+          )}
+          {match.notes && (
+            <p className="text-sm text-gray-400 mt-1">{match.notes}</p>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className={`text-xs font-bold px-3 py-1 rounded-full ${catColors[match.category] || 'bg-gray-100 text-gray-700'}`}>
+          {match.category}
+        </span>
+        {hasScore ? (
+          <div className="text-right">
+            <div className={`text-xl font-heading font-bold ${resultColor}`}>
+              {match.homeScore} - {match.awayScore}
+            </div>
+            {match.isDinamo && (
+              <span className="text-xs text-gray-400">
+                {(() => {
+                  const ds = isDinamoHome ? match.homeScore! : match.awayScore!
+                  const os = isDinamoHome ? match.awayScore! : match.homeScore!
+                  return ds > os ? 'Victorie' : ds < os ? 'Înfrângere' : 'Egal'
+                })()}
+              </span>
+            )}
+          </div>
+        ) : isUpcoming ? (
+          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-medium">
+            Urmează
+          </span>
+        ) : (
+          <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded">
+            Fără scor
+          </span>
+        )}
+      </div>
+    </div>
   )
 }

@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAuthenticated } from '@/lib/auth'
+import { isDinamoTeam } from '@/lib/teams'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
-  const grupa = searchParams.get('grupa')
+  const category = searchParams.get('category')
 
   const matches = await prisma.match.findMany({
-    where: grupa ? { grupa } : {},
+    where: category ? { category } : {},
     orderBy: { date: 'desc' },
-    take: 20,
   })
   return NextResponse.json(matches)
 }
@@ -21,13 +21,17 @@ export async function POST(req: NextRequest) {
   const data = await req.json()
   const match = await prisma.match.create({
     data: {
-      grupa: data.grupa,
+      category: data.category,
+      matchType: data.matchType || 'turneu',
+      round: data.round || null,
       date: new Date(data.date),
-      opponent: data.opponent,
       location: data.location || null,
-      scoreHome: data.scoreHome ? parseInt(data.scoreHome) : null,
-      scoreAway: data.scoreAway ? parseInt(data.scoreAway) : null,
-      description: data.description,
+      homeTeam: data.homeTeam,
+      awayTeam: data.awayTeam,
+      homeScore: data.homeScore != null && data.homeScore !== '' ? parseInt(data.homeScore) : null,
+      awayScore: data.awayScore != null && data.awayScore !== '' ? parseInt(data.awayScore) : null,
+      isDinamo: isDinamoTeam(data.homeTeam) || isDinamoTeam(data.awayTeam),
+      notes: data.notes || null,
     },
   })
   return NextResponse.json(match)

@@ -25,7 +25,7 @@ export default async function TeamPage({ params }: { params: { grupa: string } }
     orderBy: { startTime: 'asc' },
   })
   const matches = await prisma.match.findMany({
-    where: { grupa },
+    where: { category: grupa, isDinamo: true },
     orderBy: { date: 'desc' },
     take: 10,
   })
@@ -126,25 +126,34 @@ export default async function TeamPage({ params }: { params: { grupa: string } }
           <h2 className="font-heading font-bold text-2xl mb-6 text-gray-900">Rezultate recente</h2>
           {matches.length > 0 ? (
             <div className="space-y-3">
-              {matches.map(match => (
-                <div key={match.id} className="bg-white rounded-xl shadow-md p-4 flex items-center justify-between">
-                  <div>
-                    <span className="text-sm text-gray-500">{new Date(match.date).toLocaleDateString('ro-RO')}</span>
-                    <div className="font-bold text-gray-900 mt-1">Dinamo {grupa} vs {match.opponent}</div>
-                    {match.description && <p className="text-sm text-gray-500 mt-1">{match.description}</p>}
-                  </div>
-                  {match.scoreHome !== null && match.scoreAway !== null && (
-                    <div className="text-right">
-                      <div className={`text-2xl font-heading font-bold ${match.scoreHome > match.scoreAway ? 'text-green-600' : match.scoreHome < match.scoreAway ? 'text-red-600' : 'text-gray-600'}`}>
-                        {match.scoreHome} - {match.scoreAway}
-                      </div>
-                      <span className="text-xs text-gray-400">
-                        {match.scoreHome > match.scoreAway ? 'Victorie' : match.scoreHome < match.scoreAway ? 'Înfrângere' : 'Egal'}
-                      </span>
+              {matches.map(match => {
+                const isDinamoHome = /dinamo/i.test(match.homeTeam)
+                const hasScore = match.homeScore != null && match.awayScore != null
+                const dinamoScore = isDinamoHome ? match.homeScore : match.awayScore
+                const opponentScore = isDinamoHome ? match.awayScore : match.homeScore
+                return (
+                  <div key={match.id} className="bg-white rounded-xl shadow-md p-4 flex items-center justify-between">
+                    <div>
+                      <span className="text-sm text-gray-500">{new Date(match.date).toLocaleDateString('ro-RO')}</span>
+                      <div className="font-bold text-gray-900 mt-1">{match.homeTeam} vs {match.awayTeam}</div>
+                      {match.round && <p className="text-sm text-gray-500 mt-1">{match.round}</p>}
                     </div>
-                  )}
-                </div>
-              ))}
+                    {hasScore && (
+                      <div className="text-right">
+                        <div className={`text-2xl font-heading font-bold ${
+                          dinamoScore! > opponentScore! ? 'text-green-600' :
+                          dinamoScore! < opponentScore! ? 'text-red-600' : 'text-gray-600'
+                        }`}>
+                          {match.homeScore} - {match.awayScore}
+                        </div>
+                        <span className="text-xs text-gray-400">
+                          {dinamoScore! > opponentScore! ? 'Victorie' : dinamoScore! < opponentScore! ? 'Înfrângere' : 'Egal'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           ) : (
             <div className="bg-gray-50 rounded-xl p-8 text-center text-gray-400">

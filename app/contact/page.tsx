@@ -3,7 +3,7 @@
 import { useState } from 'react'
 
 export default function ContactPage() {
-  const [form, setForm] = useState({ name: '', email: '', message: '' })
+  const [form, setForm] = useState({ name: '', email: '', message: '', gdpr: false })
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -17,7 +17,7 @@ export default function ContactPage() {
       })
       if (res.ok) {
         setStatus('sent')
-        setForm({ name: '', email: '', message: '' })
+        setForm({ name: '', email: '', message: '', gdpr: false })
       } else {
         setStatus('error')
       }
@@ -84,9 +84,29 @@ export default function ContactPage() {
                     placeholder="Scrie mesajul tău aici..."
                   />
                 </div>
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="gdpr-consent"
+                    required
+                    checked={form.gdpr}
+                    onChange={e => setForm({ ...form, gdpr: e.target.checked })}
+                    className="mt-1 w-4 h-4 accent-dinamo-red cursor-pointer flex-shrink-0"
+                  />
+                  <label htmlFor="gdpr-consent" className="text-sm text-gray-600 cursor-pointer">
+                    Sunt de acord cu prelucrarea datelor personale conform{' '}
+                    <a href="/politica-confidentialitate" target="_blank" className="text-dinamo-red underline hover:text-dinamo-dark">
+                      Politicii de Confidențialitate
+                    </a>{' '}
+                    și{' '}
+                    <a href="/politica-cookies-gdpr" target="_blank" className="text-dinamo-red underline hover:text-dinamo-dark">
+                      Politicii de Cookies &amp; GDPR
+                    </a>. *
+                  </label>
+                </div>
                 <button
                   type="submit"
-                  disabled={status === 'sending'}
+                  disabled={status === 'sending' || !form.gdpr}
                   className="w-full bg-dinamo-red text-white py-3 rounded-lg font-heading font-bold hover:bg-dinamo-dark transition-colors disabled:opacity-50"
                 >
                   {status === 'sending' ? 'Se trimite...' : 'Trimite mesajul'}
