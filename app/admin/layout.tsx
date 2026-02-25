@@ -1,14 +1,23 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [auth, setAuth] = useState<boolean | null>(null)
-  const [emailCopied, setEmailCopied] = useState(false)
+  const [unreadCount, setUnreadCount] = useState<number | null>(null)
   const router = useRouter()
   const pathname = usePathname()
+
+  const fetchUnread = useCallback(() => {
+    fetch('/api/email/unread')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data && data.unread !== null) setUnreadCount(data.unread)
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     fetch('/api/auth/check')
@@ -21,6 +30,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }
       })
   }, [pathname, router])
+
+  useEffect(() => {
+    if (!auth) return
+    fetchUnread()
+    const interval = setInterval(fetchUnread, 5 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [auth, fetchUnread])
 
   if (pathname === '/admin/login') return <>{children}</>
 
@@ -64,21 +80,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <a href="mailto:contact@dinamorugby.ro"
-              className="text-sm text-white/70 hover:text-white flex items-center gap-1" title="Trimite email">
+            <a href="https://mail.dinamorugby.ro" target="_blank" rel="noopener noreferrer"
+              className="relative text-sm text-white/70 hover:text-white flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded hover:bg-white/20 transition-colors"
+              title="Deschide Webmail">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
-              <span className="hidden sm:inline">Email</span>
+              <span className="hidden sm:inline">Webmail</span>
+              {unreadCount !== null && unreadCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
             </a>
-            <button onClick={() => {
-              navigator.clipboard.writeText('contact@dinamorugby.ro')
-              setEmailCopied(true)
-              setTimeout(() => setEmailCopied(false), 2000)
-            }}
-              className="text-xs text-white/50 hover:text-white transition-colors" title="Copiază adresa email">
-              {emailCopied ? 'Copiat!' : 'Copiază'}
-            </button>
             <Link href="/" className="text-sm text-white/70 hover:text-white" target="_blank">
               Vezi site-ul →
             </Link>
