@@ -35,7 +35,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (!auth) return
     fetchUnread()
     const interval = setInterval(fetchUnread, 5 * 60 * 1000)
-    return () => clearInterval(interval)
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') fetchUnread()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [auth, fetchUnread])
 
   if (pathname === '/admin/login') return <>{children}</>
