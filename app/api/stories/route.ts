@@ -6,10 +6,11 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const grupa = searchParams.get('grupa')
   const limit = parseInt(searchParams.get('limit') || '50')
+  const all = searchParams.get('all') === '1'
 
   const stories = await prisma.story.findMany({
     where: {
-      published: true,
+      ...(!all ? { published: true } : {}),
       ...(grupa ? { grupa } : {}),
     },
     orderBy: { createdAt: 'desc' },

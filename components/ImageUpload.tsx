@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useId } from 'react'
 
 interface ImageUploadProps {
   onUpload: (files: File[]) => void
@@ -9,6 +9,7 @@ interface ImageUploadProps {
 }
 
 export default function ImageUpload({ onUpload, multiple = true, label = 'Încarcă imagini' }: ImageUploadProps) {
+  const inputId = useId()
   const [dragActive, setDragActive] = useState(false)
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -43,10 +44,10 @@ export default function ImageUpload({ onUpload, multiple = true, label = 'Încar
       onDragLeave={handleDrag}
       onDragOver={handleDrag}
       onDrop={handleDrop}
-      onClick={() => document.getElementById('file-upload')?.click()}
+      onClick={() => document.getElementById(inputId)?.click()}
     >
       <input
-        id="file-upload"
+        id={inputId}
         type="file"
         accept="image/*"
         multiple={multiple}
