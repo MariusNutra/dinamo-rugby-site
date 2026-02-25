@@ -57,6 +57,11 @@ export default function Footer() {
             </Link>
           </p>
         </div>
+        <p className="mt-4">
+          <Link href="/admin" className="text-white/40 text-[11px] no-underline hover:underline transition-colors">
+            Administrare
+          </Link>
+        </p>
       </div>
     </footer>
   )

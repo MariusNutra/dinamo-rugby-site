@@ -19,7 +19,10 @@ export default async function TeamPage({ params }: { params: { grupa: string } }
   const { grupa } = params
   if (!validGrupe.includes(grupa)) notFound()
 
-  const team = await prisma.team.findUnique({ where: { grupa } })
+  const team = await prisma.team.findUnique({
+    where: { grupa },
+    include: { coaches: { orderBy: { order: 'asc' } } },
+  })
   const trainingSessions = await prisma.trainingSession.findMany({
     where: { grupa },
     orderBy: { startTime: 'asc' },
@@ -58,22 +61,35 @@ export default async function TeamPage({ params }: { params: { grupa: string } }
       </section>
 
       <div className="max-w-7xl mx-auto px-4 py-12">
-        {team ? (
-          <section className="mb-12">
-            <h2 className="font-heading font-bold text-2xl mb-6 text-gray-900">Antrenor</h2>
-            <div className="bg-white rounded-xl shadow-md p-6 flex flex-col md:flex-row gap-6 items-center md:items-start">
-              {team.coachPhoto ? (
-                <img src={team.coachPhoto} alt={team.coachName} className="w-32 h-32 rounded-full object-cover" />
-              ) : (
-                <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-4xl">?</div>
-              )}
-              <div>
-                <h3 className="font-heading font-bold text-xl">{team.coachName}</h3>
-                {team.coachBio && <p className="text-gray-600 mt-2">{team.coachBio}</p>}
+        {team ? (() => {
+          const coaches = team.coaches.length > 0
+            ? team.coaches
+            : team.coachName?.trim()
+              ? [{ id: 'legacy', name: team.coachName, description: team.coachBio, photo: team.coachPhoto }]
+              : []
+          return coaches.length > 0 ? (
+            <section className="mb-12">
+              <h2 className="font-heading font-bold text-2xl mb-6 text-gray-900">
+                {coaches.length === 1 ? 'Antrenor' : 'Antrenori'}
+              </h2>
+              <div className={`grid gap-6 ${coaches.length > 1 ? 'md:grid-cols-2' : 'grid-cols-1'}`}>
+                {coaches.map(coach => (
+                  <div key={coach.id} className="bg-white rounded-xl shadow-md p-6 flex flex-col sm:flex-row gap-6 items-center sm:items-start">
+                    {coach.photo ? (
+                      <img src={coach.photo} alt={coach.name} className="w-32 h-32 rounded-full object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-4xl flex-shrink-0">?</div>
+                    )}
+                    <div>
+                      <h3 className="font-heading font-bold text-xl">{coach.name}</h3>
+                      {coach.description && <p className="text-gray-600 mt-2">{coach.description}</p>}
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-          </section>
-        ) : (
+            </section>
+          ) : null
+        })() : (
           <section className="mb-12 bg-gray-50 rounded-xl p-8 text-center text-gray-400">
             <p>Informațiile despre echipă vor fi adăugate în curând.</p>
           </section>

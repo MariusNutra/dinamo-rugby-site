@@ -13,6 +13,15 @@ interface Team {
   description: string | null
 }
 
+interface Coach {
+  id: string
+  name: string
+  description: string | null
+  photo: string | null
+  order: number
+  teamId: number
+}
+
 interface TrainingSession {
   id: number
   grupa: string
@@ -27,13 +36,21 @@ const grupe = ['U10', 'U12', 'U14', 'U16', 'U18']
 const days = ['Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă', 'Duminică']
 
 const emptySessionForm = { day: 'Luni', startTime: '16:00', endTime: '18:00', location: '', coachName: '' }
+const emptyCoachForm = { name: '', description: '', photo: '' }
 
 export default function AdminTeams() {
   const [activeTab, setActiveTab] = useState('U10')
   const [teams, setTeams] = useState<Team[]>([])
+  const [coaches, setCoaches] = useState<Coach[]>([])
   const [sessions, setSessions] = useState<TrainingSession[]>([])
-  const [teamForm, setTeamForm] = useState({ coachName: '', coachPhoto: '', coachBio: '', schedule: '', description: '' })
+  const [teamForm, setTeamForm] = useState({ schedule: '', description: '' })
   const [saving, setSaving] = useState(false)
+
+  // Coach form state
+  const [coachForm, setCoachForm] = useState({ ...emptyCoachForm })
+  const [editingCoachId, setEditingCoachId] = useState<string | null>(null)
+  const [showAddCoach, setShowAddCoach] = useState(false)
+  const [savingCoach, setSavingCoach] = useState(false)
 
   // Session form state
   const [sessionForm, setSessionForm] = useState({ ...emptySessionForm })
@@ -43,52 +60,149 @@ export default function AdminTeams() {
   const [savingSession, setSavingSession] = useState(false)
 
   const loadTeams = () => fetch('/api/teams').then(r => r.json()).then(setTeams)
+
+  const currentTeam = teams.find(t => t.grupa === activeTab)
+
+  const loadCoaches = useCallback(() => {
+    if (currentTeam) {
+      fetch(`/api/coaches?teamId=${currentTeam.id}`).then(r => r.json()).then(setCoaches)
+    } else {
+      setCoaches([])
+    }
+  }, [currentTeam])
+
   const loadSessions = useCallback(() => {
     fetch(`/api/training?grupa=${activeTab}`).then(r => r.json()).then(setSessions)
   }, [activeTab])
 
   useEffect(() => { loadTeams() }, [])
+
   useEffect(() => {
     loadSessions()
-    const team = teams.find(t => t.grupa === activeTab)
-    if (team) {
+    loadCoaches()
+    if (currentTeam) {
       setTeamForm({
-        coachName: team.coachName || '',
-        coachPhoto: team.coachPhoto || '',
-        coachBio: team.coachBio || '',
-        schedule: team.schedule || '',
-        description: team.description || '',
+        schedule: currentTeam.schedule || '',
+        description: currentTeam.description || '',
       })
     } else {
-      setTeamForm({ coachName: '', coachPhoto: '', coachBio: '', schedule: '', description: '' })
+      setTeamForm({ schedule: '', description: '' })
     }
-    // Reset session editing state on tab change
+    // Reset editing states on tab change
     setEditingSessionId(null)
     setShowAddSession(false)
     setSessionError('')
-  }, [activeTab, teams, loadSessions])
+    setEditingCoachId(null)
+    setShowAddCoach(false)
+  }, [activeTab, currentTeam, loadSessions, loadCoaches])
+
+  const saveTeam = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    // Keep existing coachName so the Team model stays valid
+    await fetch('/api/teams', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        grupa: activeTab,
+        coachName: currentTeam?.coachName || '—',
+        coachPhoto: currentTeam?.coachPhoto || null,
+        coachBio: currentTeam?.coachBio || null,
+        ...teamForm,
+      }),
+    })
+    setSaving(false)
+    loadTeams()
+  }
+
+  // ── Coach CRUD ──
 
   const handleCoachPhotoUpload = async (files: File[]) => {
     const fd = new FormData()
     fd.append('files', files[0])
     const res = await fetch('/api/photos', { method: 'POST', body: fd })
     const photos = await res.json()
-    if (photos[0]) setTeamForm(f => ({ ...f, coachPhoto: photos[0].path }))
+    if (photos[0]) setCoachForm(f => ({ ...f, photo: photos[0].path }))
   }
 
-  const saveTeam = async (e: React.FormEvent) => {
+  const startAddCoach = () => {
+    setCoachForm({ ...emptyCoachForm })
+    setEditingCoachId(null)
+    setShowAddCoach(true)
+  }
+
+  const startEditCoach = (c: Coach) => {
+    setCoachForm({ name: c.name, description: c.description || '', photo: c.photo || '' })
+    setEditingCoachId(c.id)
+    setShowAddCoach(false)
+  }
+
+  const cancelCoachForm = () => {
+    setEditingCoachId(null)
+    setShowAddCoach(false)
+  }
+
+  const saveCoach = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSaving(true)
-    await fetch('/api/teams', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ grupa: activeTab, ...teamForm, coachPhoto: teamForm.coachPhoto || null }),
-    })
-    setSaving(false)
-    loadTeams()
+    if (!currentTeam) return
+    setSavingCoach(true)
+
+    const payload = {
+      name: coachForm.name,
+      description: coachForm.description || null,
+      photo: coachForm.photo || null,
+      teamId: currentTeam.id,
+    }
+
+    if (editingCoachId) {
+      await fetch(`/api/coaches/${editingCoachId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+    } else {
+      await fetch('/api/coaches', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+    }
+
+    setSavingCoach(false)
+    cancelCoachForm()
+    loadCoaches()
   }
 
-  // Session CRUD
+  const deleteCoach = async (id: string) => {
+    if (!confirm('Sigur vrei să ștergi acest antrenor?')) return
+    await fetch(`/api/coaches/${id}`, { method: 'DELETE' })
+    loadCoaches()
+  }
+
+  const moveCoach = async (id: string, direction: 'up' | 'down') => {
+    const idx = coaches.findIndex(c => c.id === id)
+    if (idx < 0) return
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1
+    if (swapIdx < 0 || swapIdx >= coaches.length) return
+
+    const newOrder = [...coaches]
+    const temp = newOrder[idx]
+    newOrder[idx] = newOrder[swapIdx]
+    newOrder[swapIdx] = temp
+
+    // Optimistic update
+    setCoaches(newOrder)
+
+    await fetch('/api/coaches/reorder', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: newOrder.map(c => c.id) }),
+    })
+    loadCoaches()
+  }
+
+  // ── Session CRUD ──
+
   const startAddSession = () => {
     setSessionForm({ ...emptySessionForm })
     setEditingSessionId(null)
@@ -176,36 +290,118 @@ export default function AdminTeams() {
         ))}
       </div>
 
-      {/* Team info */}
+      {/* ══════ Coaches section ══════ */}
+      <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-heading font-bold text-lg">Antrenori — {activeTab}</h2>
+          {!showAddCoach && editingCoachId === null && (
+            <button onClick={startAddCoach}
+              className="bg-dinamo-red text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-dinamo-dark transition-colors">
+              + Adaugă antrenor
+            </button>
+          )}
+        </div>
+
+        {/* Add / Edit coach form */}
+        {(showAddCoach || editingCoachId !== null) && (
+          <div className="bg-gray-50 rounded-lg p-4 mb-4 border-l-4 border-dinamo-red">
+            <h3 className="font-medium text-sm text-gray-700 mb-3">
+              {editingCoachId ? 'Editează antrenor' : 'Antrenor nou'}
+            </h3>
+            <form onSubmit={saveCoach} className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Nume antrenor *</label>
+                  <input type="text" required value={coachForm.name}
+                    onChange={e => setCoachForm({ ...coachForm, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-dinamo-red outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Poză antrenor</label>
+                  {coachForm.photo ? (
+                    <div className="flex items-center gap-2">
+                      <img src={coachForm.photo} alt="" className="w-10 h-10 rounded-full object-cover" />
+                      <button type="button" onClick={() => setCoachForm({ ...coachForm, photo: '' })}
+                        className="text-red-500 text-xs">Elimină</button>
+                    </div>
+                  ) : (
+                    <ImageUpload onUpload={handleCoachPhotoUpload} multiple={false} label="Încarcă poză" />
+                  )}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Descriere</label>
+                <textarea rows={3} value={coachForm.description}
+                  onChange={e => setCoachForm({ ...coachForm, description: e.target.value })}
+                  placeholder="Experiență, certificări, filosofie..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-dinamo-red outline-none" />
+              </div>
+              <div className="flex gap-2">
+                <button type="submit" disabled={savingCoach}
+                  className="bg-dinamo-red text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-dinamo-dark transition-colors disabled:opacity-50">
+                  {savingCoach ? 'Se salvează...' : editingCoachId ? 'Salvează' : '+ Adaugă'}
+                </button>
+                <button type="button" onClick={cancelCoachForm}
+                  className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-300 transition-colors">
+                  Anulează
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Coaches list */}
+        {coaches.length > 0 ? (
+          <div className="space-y-2">
+            {coaches.map((c, idx) => (
+              <div key={c.id} className={`flex items-center justify-between rounded-lg p-3 ${
+                editingCoachId === c.id ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'
+              }`}>
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  {c.photo ? (
+                    <img src={c.photo} alt={c.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-lg shrink-0">?</div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="font-medium text-gray-900 text-sm">{c.name}</p>
+                    {c.description && (
+                      <p className="text-xs text-gray-500 truncate max-w-[300px]">
+                        {c.description.length > 100 ? c.description.substring(0, 100) + '...' : c.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button onClick={() => moveCoach(c.id, 'up')} disabled={idx === 0}
+                    className="text-gray-400 hover:text-gray-700 px-1 py-1 rounded text-xs disabled:opacity-30"
+                    title="Mută sus">▲</button>
+                  <button onClick={() => moveCoach(c.id, 'down')} disabled={idx === coaches.length - 1}
+                    className="text-gray-400 hover:text-gray-700 px-1 py-1 rounded text-xs disabled:opacity-30"
+                    title="Mută jos">▼</button>
+                  <button onClick={() => startEditCoach(c)}
+                    className="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded text-xs font-medium">
+                    Editează
+                  </button>
+                  <button onClick={() => deleteCoach(c.id)}
+                    className="text-red-500 hover:bg-red-50 px-2 py-1 rounded text-xs font-medium">
+                    Șterge
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-400 text-center py-4 text-sm">
+            Nu sunt antrenori adăugați pentru {activeTab}.
+          </p>
+        )}
+      </div>
+
+      {/* ══════ Team info (schedule + description) ══════ */}
       <div className="bg-white rounded-xl shadow-md p-6 mb-8">
         <h2 className="font-heading font-bold text-lg mb-4">Informații echipă {activeTab}</h2>
         <form onSubmit={saveTeam} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nume antrenor</label>
-              <input type="text" required value={teamForm.coachName}
-                onChange={e => setTeamForm({ ...teamForm, coachName: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dinamo-red outline-none" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Poză antrenor</label>
-              {teamForm.coachPhoto ? (
-                <div className="flex items-center gap-2">
-                  <img src={teamForm.coachPhoto} alt="" className="w-12 h-12 rounded-full object-cover" />
-                  <button type="button" onClick={() => setTeamForm({ ...teamForm, coachPhoto: '' })}
-                    className="text-red-500 text-sm">Elimină</button>
-                </div>
-              ) : (
-                <ImageUpload onUpload={handleCoachPhotoUpload} multiple={false} label="Încarcă poză" />
-              )}
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descriere antrenor</label>
-            <textarea rows={3} value={teamForm.coachBio}
-              onChange={e => setTeamForm({ ...teamForm, coachBio: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dinamo-red outline-none" />
-          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Program antrenamente (text)</label>
             <textarea rows={3} value={teamForm.schedule}
@@ -230,7 +426,7 @@ export default function AdminTeams() {
         </form>
       </div>
 
-      {/* Training sessions */}
+      {/* ══════ Training sessions ══════ */}
       <div className="bg-white rounded-xl shadow-md p-6 mb-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-heading font-bold text-lg">Sesiuni antrenament — {activeTab}</h2>
@@ -242,7 +438,7 @@ export default function AdminTeams() {
           )}
         </div>
 
-        {/* Add / Edit form */}
+        {/* Add / Edit session form */}
         {(showAddSession || editingSessionId !== null) && (
           <div className="bg-gray-50 rounded-lg p-4 mb-4 border-l-4 border-dinamo-red">
             <h3 className="font-medium text-sm text-gray-700 mb-3">

@@ -48,11 +48,24 @@ model Photo {
 model Team {
   id          Int      @id @default(autoincrement())
   grupa       String   @unique
-  coachName   String
-  coachPhoto  String?
-  coachBio    String?
+  coachName   String   // deprecated — use Coach model
+  coachPhoto  String?  // deprecated — use Coach model
+  coachBio    String?  // deprecated — use Coach model
   schedule    String?
   description String?
+  updatedAt   DateTime @updatedAt
+  coaches     Coach[]
+}
+
+model Coach {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  photo       String?
+  order       Int      @default(0)
+  teamId      Int
+  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
