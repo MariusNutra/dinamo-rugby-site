@@ -18,6 +18,7 @@ const navLinks = [
   { href: '/meciuri', label: 'Meciuri' },
   { href: '/povesti', label: 'Povești' },
   { href: '/galerie', label: 'Galerie' },
+  { href: '/rezultate', label: 'Rezultate' },
   { href: '/despre', label: 'Despre noi' },
   { href: '/contact', label: 'Contact' },
 ]
