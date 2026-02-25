@@ -1,38 +1,21 @@
 import { prisma } from '@/lib/prisma'
-import { getActiveGrupe } from '@/lib/active-teams'
+import { getColorConfig } from '@/lib/team-colors'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
-
-const grupaColors: Record<string, string> = {
-  U10: 'border-green-500 bg-green-50',
-  U12: 'border-blue-500 bg-blue-50',
-  U14: 'border-red-500 bg-red-50',
-  U16: 'border-purple-500 bg-purple-50',
-  U18: 'border-gray-500 bg-gray-50',
-}
-
-const grupaTextColors: Record<string, string> = {
-  U10: 'text-green-700',
-  U12: 'text-blue-700',
-  U14: 'text-red-700',
-  U16: 'text-purple-700',
-  U18: 'text-gray-700',
-}
 
 const dayOrder: Record<string, number> = {
   'Luni': 1, 'Marți': 2, 'Miercuri': 3, 'Joi': 4, 'Vineri': 5, 'Sâmbătă': 6, 'Duminică': 7,
 }
 
 export default async function ProgramPage() {
-  const grupe = await getActiveGrupe()
+  const teams = await prisma.team.findMany({ where: { active: true }, orderBy: { sortOrder: 'asc' } })
+  const teamMap = Object.fromEntries(teams.map(t => [t.grupa, t]))
+  const grupe = teams.map(t => t.grupa)
 
   const sessions = await prisma.trainingSession.findMany({
     orderBy: [{ grupa: 'asc' }, { startTime: 'asc' }],
   })
-
-  const teams = await prisma.team.findMany({ where: { active: true } })
-  const teamMap = Object.fromEntries(teams.map(t => [t.grupa, t]))
 
   const sessionsByGrupa = grupe.reduce((acc, g) => {
     const grupaSessions = sessions
@@ -55,12 +38,13 @@ export default async function ProgramPage() {
         {grupe.map(grupa => {
           const grupaSessions = sessionsByGrupa[grupa] || []
           const team = teamMap[grupa]
+          const colorConfig = getColorConfig(team?.color || 'green')
 
           return (
             <section key={grupa} className="mb-12">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-heading font-bold text-2xl text-gray-900">
-                  <span className={grupaTextColors[grupa]}>{grupa}</span>
+                  <span className={colorConfig.text}>{grupa}</span>
                   {team && <span className="text-base font-normal text-gray-500 ml-3">Antrenor: {team.coachName}</span>}
                 </h2>
                 <Link href={`/echipe/${grupa}`}
@@ -70,7 +54,7 @@ export default async function ProgramPage() {
               </div>
 
               {grupaSessions.length > 0 ? (
-                <div className={`rounded-xl border-l-4 ${grupaColors[grupa]} overflow-hidden`}>
+                <div className={`rounded-xl border-l-4 ${colorConfig.border} overflow-hidden`}>
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-200">

@@ -1,18 +1,11 @@
 import { prisma } from '@/lib/prisma'
 import { getActiveGrupe } from '@/lib/active-teams'
+import { getColorConfig } from '@/lib/team-colors'
 import { notFound } from 'next/navigation'
 import PhotoGrid from '@/components/PhotoGrid'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
-
-const grupaColors: Record<string, string> = {
-  U10: 'from-green-500 to-green-700',
-  U12: 'from-blue-500 to-blue-700',
-  U14: 'from-red-600 to-red-900',
-  U16: 'from-purple-500 to-purple-700',
-  U18: 'from-gray-700 to-gray-900',
-}
 
 export default async function TeamPage({ params }: { params: { grupa: string } }) {
   const { grupa } = params
@@ -46,7 +39,7 @@ export default async function TeamPage({ params }: { params: { grupa: string } }
 
   return (
     <>
-      <section className={`bg-gradient-to-br ${grupaColors[grupa] || 'from-gray-500 to-gray-700'} text-white py-20`}>
+      <section className={`bg-gradient-to-br ${getColorConfig(team.color).gradient} text-white py-20`}>
         <div className="max-w-7xl mx-auto px-4 text-center fade-in">
           <h1 className="font-heading font-extrabold text-6xl md:text-8xl mb-2">{grupa}</h1>
           <p className="text-xl opacity-90">Echipa de juniori Dinamo Rugby</p>

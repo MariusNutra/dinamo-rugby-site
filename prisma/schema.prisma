@@ -54,6 +54,10 @@ model Team {
   schedule    String?
   description String?
   active      Boolean  @default(true)
+  color       String   @default("green")
+  sortOrder   Int      @default(0)
+  ageRange    String?
+  birthYear   String?
   updatedAt   DateTime @updatedAt
   coaches     Coach[]
 }

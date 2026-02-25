@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { getActiveGrupe } from '@/lib/active-teams'
+import { getActiveTeams } from '@/lib/active-teams'
 import TeamCard from '@/components/TeamCard'
 import StoryCard from '@/components/StoryCard'
 import UpcomingMatch from '@/components/UpcomingMatch'
@@ -10,7 +10,7 @@ import Link from 'next/link'
 export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
-  const grupe = await getActiveGrupe()
+  const activeTeams = await getActiveTeams()
 
   const stories = await prisma.story.findMany({
     where: { published: true },
@@ -57,8 +57,8 @@ export default async function HomePage() {
         <h2 className="font-heading font-bold text-3xl text-center mb-2 text-gray-900">Grupele noastre</h2>
         <p className="text-center text-gray-500 mb-10">Alege grupa de vârstă potrivită</p>
         <div className="flex flex-wrap justify-center gap-4">
-          {grupe.map((g) => (
-            <TeamCard key={g} grupa={g} />
+          {activeTeams.map((t) => (
+            <TeamCard key={t.grupa} grupa={t.grupa} color={t.color} ageRange={t.ageRange} />
           ))}
         </div>
       </section>
