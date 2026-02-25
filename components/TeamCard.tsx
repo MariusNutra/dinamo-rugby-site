@@ -24,7 +24,7 @@ const grupaAges: Record<string, string> = {
 export default function TeamCard({ grupa, description }: TeamCardProps) {
   return (
     <Link href={`/echipe/${grupa}`}
-      className="group block rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all hover:-translate-y-1">
+      className="group block w-40 sm:w-44 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all hover:-translate-y-1">
       <div className={`bg-gradient-to-br ${grupaColors[grupa] || 'from-gray-500 to-gray-700'} p-8 text-white text-center`}>
         <div className="text-5xl font-heading font-extrabold mb-2 group-hover:scale-110 transition-transform">
           {grupa}

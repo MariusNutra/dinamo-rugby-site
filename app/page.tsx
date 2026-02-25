@@ -56,7 +56,7 @@ export default async function HomePage() {
       <section className="max-w-7xl mx-auto px-4 py-16">
         <h2 className="font-heading font-bold text-3xl text-center mb-2 text-gray-900">Grupele noastre</h2>
         <p className="text-center text-gray-500 mb-10">Alege grupa de vârstă potrivită</p>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="flex flex-wrap justify-center gap-4">
           {grupe.map((g) => (
             <TeamCard key={g} grupa={g} />
           ))}
