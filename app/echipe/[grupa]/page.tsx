@@ -79,9 +79,9 @@ export default async function TeamPage({ params }: { params: { grupa: string } }
           </section>
         )}
 
-        {sortedSessions.length > 0 ? (
-          <section className="mb-12">
-            <h2 className="font-heading font-bold text-2xl mb-6 text-gray-900">Program antrenamente</h2>
+        <section className="mb-12">
+          <h2 className="font-heading font-bold text-2xl mb-6 text-gray-900">Program antrenamente</h2>
+          {sortedSessions.length > 0 ? (
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
               <table className="w-full">
                 <thead>
@@ -104,15 +104,19 @@ export default async function TeamPage({ params }: { params: { grupa: string } }
                 </tbody>
               </table>
             </div>
-          </section>
-        ) : team?.schedule ? (
-          <section className="mb-12">
-            <h2 className="font-heading font-bold text-2xl mb-6 text-gray-900">Program antrenamente</h2>
+          ) : team?.schedule ? (
             <div className="bg-white rounded-xl shadow-md p-6">
               <p className="text-gray-700 whitespace-pre-line">{team.schedule}</p>
             </div>
-          </section>
-        ) : null}
+          ) : (
+            <div className="bg-gray-50 rounded-xl p-8 text-center">
+              <p className="text-gray-500">Programul antrenamentelor va fi publicat în curând.</p>
+              <Link href="/contact" className="text-dinamo-red hover:text-dinamo-dark font-medium text-sm mt-2 inline-block">
+                Contactează-ne pentru detalii →
+              </Link>
+            </div>
+          )}
+        </section>
 
         {team?.description && (
           <section className="mb-12">
