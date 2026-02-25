@@ -6,6 +6,7 @@ import Link from 'next/link'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [auth, setAuth] = useState<boolean | null>(null)
+  const [emailCopied, setEmailCopied] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
 
@@ -62,7 +63,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               ))}
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <a href="mailto:contact@dinamorugby.ro"
+              className="text-sm text-white/70 hover:text-white flex items-center gap-1" title="Trimite email">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <span className="hidden sm:inline">Email</span>
+            </a>
+            <button onClick={() => {
+              navigator.clipboard.writeText('contact@dinamorugby.ro')
+              setEmailCopied(true)
+              setTimeout(() => setEmailCopied(false), 2000)
+            }}
+              className="text-xs text-white/50 hover:text-white transition-colors" title="Copiază adresa email">
+              {emailCopied ? 'Copiat!' : 'Copiază'}
+            </button>
             <Link href="/" className="text-sm text-white/70 hover:text-white" target="_blank">
               Vezi site-ul →
             </Link>
