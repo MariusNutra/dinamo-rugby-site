@@ -11,6 +11,7 @@ interface Team {
   coachBio: string | null
   schedule: string | null
   description: string | null
+  active: boolean
 }
 
 interface Coach {
@@ -58,8 +59,22 @@ export default function AdminTeams() {
   const [showAddSession, setShowAddSession] = useState(false)
   const [sessionError, setSessionError] = useState('')
   const [savingSession, setSavingSession] = useState(false)
+  const [togglingActive, setTogglingActive] = useState(false)
 
   const loadTeams = () => fetch('/api/teams').then(r => r.json()).then(setTeams)
+
+  const toggleActive = async (grupa: string, currentActive: boolean) => {
+    const action = currentActive ? 'dezactiva' : 'activa'
+    if (!confirm(`Sigur vrei să ${action} echipa ${grupa}? ${currentActive ? 'Echipa nu va mai fi vizibilă pe site.' : 'Echipa va redeveni vizibilă pe site.'}`)) return
+    setTogglingActive(true)
+    await fetch(`/api/teams/${grupa}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ active: !currentActive }),
+    })
+    setTogglingActive(false)
+    loadTeams()
+  }
 
   const currentTeam = teams.find(t => t.grupa === activeTab)
 
@@ -280,15 +295,48 @@ export default function AdminTeams() {
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6 overflow-x-auto">
-        {grupe.map(g => (
-          <button key={g} onClick={() => setActiveTab(g)}
-            className={`px-5 py-2 rounded-full text-sm font-bold transition-colors shrink-0 ${
-              activeTab === g ? 'bg-dinamo-red text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}>
-            {g}
-          </button>
-        ))}
+        {grupe.map(g => {
+          const team = teams.find(t => t.grupa === g)
+          const isInactive = team && !team.active
+          return (
+            <button key={g} onClick={() => setActiveTab(g)}
+              className={`px-5 py-2 rounded-full text-sm font-bold transition-colors shrink-0 ${
+                activeTab === g ? 'bg-dinamo-red text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              } ${isInactive ? 'opacity-50' : ''}`}>
+              {g}
+              {isInactive && <span className="ml-1 text-xs font-normal">(inactivă)</span>}
+            </button>
+          )
+        })}
       </div>
+
+      {/* ══════ Active toggle ══════ */}
+      {currentTeam && (
+        <div className={`rounded-xl shadow-md p-4 mb-8 flex items-center justify-between ${currentTeam.active ? 'bg-white' : 'bg-red-50 border border-red-200'}`}>
+          <div className="flex items-center gap-3">
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
+              currentTeam.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            }`}>
+              {currentTeam.active ? 'Activă' : 'Inactivă'}
+            </span>
+            <span className="text-sm text-gray-600">
+              {currentTeam.active
+                ? 'Echipa este vizibilă pe site.'
+                : 'Echipa nu este vizibilă pe site. Toate datele sunt păstrate.'}
+            </span>
+          </div>
+          <button
+            onClick={() => toggleActive(currentTeam.grupa, currentTeam.active)}
+            disabled={togglingActive}
+            className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-50 ${
+              currentTeam.active
+                ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                : 'bg-green-100 text-green-700 hover:bg-green-200'
+            }`}>
+            {togglingActive ? 'Se procesează...' : currentTeam.active ? 'Dezactivează' : 'Activează'}
+          </button>
+        </div>
+      )}
 
       {/* ══════ Coaches section ══════ */}
       <div className="bg-white rounded-xl shadow-md p-6 mb-8">

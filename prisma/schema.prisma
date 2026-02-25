@@ -53,6 +53,7 @@ model Team {
   coachBio    String?  // deprecated — use Coach model
   schedule    String?
   description String?
+  active      Boolean  @default(true)
   updatedAt   DateTime @updatedAt
   coaches     Coach[]
 }

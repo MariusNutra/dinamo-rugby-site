@@ -1,9 +1,8 @@
 import { prisma } from '@/lib/prisma'
+import { getActiveGrupe } from '@/lib/active-teams'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
-
-const grupe = ['U10', 'U12', 'U14', 'U16', 'U18']
 
 const grupaColors: Record<string, string> = {
   U10: 'border-green-500 bg-green-50',
@@ -26,11 +25,13 @@ const dayOrder: Record<string, number> = {
 }
 
 export default async function ProgramPage() {
+  const grupe = await getActiveGrupe()
+
   const sessions = await prisma.trainingSession.findMany({
     orderBy: [{ grupa: 'asc' }, { startTime: 'asc' }],
   })
 
-  const teams = await prisma.team.findMany()
+  const teams = await prisma.team.findMany({ where: { active: true } })
   const teamMap = Object.fromEntries(teams.map(t => [t.grupa, t]))
 
   const sessionsByGrupa = grupe.reduce((acc, g) => {

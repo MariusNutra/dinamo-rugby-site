@@ -2,17 +2,12 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
-const navLinks = [
+const defaultGrupe = ['U10', 'U12', 'U14', 'U16', 'U18']
+
+const staticLinks = [
   { href: '/', label: 'Acasă' },
-  { href: '/echipe/U10', label: 'Echipe', dropdown: [
-    { href: '/echipe/U10', label: 'U10' },
-    { href: '/echipe/U12', label: 'U12' },
-    { href: '/echipe/U14', label: 'U14' },
-    { href: '/echipe/U16', label: 'U16' },
-    { href: '/echipe/U18', label: 'U18' },
-  ]},
   { href: '/antrenori', label: 'Antrenori' },
   { href: '/program', label: 'Program' },
   { href: '/meciuri', label: 'Meciuri' },
@@ -26,6 +21,24 @@ const navLinks = [
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [grupe, setGrupe] = useState<string[]>(defaultGrupe)
+
+  useEffect(() => {
+    fetch('/api/teams?active=1')
+      .then(r => r.json())
+      .then((teams: { grupa: string }[]) => {
+        if (teams.length > 0) {
+          setGrupe(teams.map(t => t.grupa))
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  const navLinks = [
+    staticLinks[0],
+    { href: grupe[0] ? `/echipe/${grupe[0]}` : '/echipe/U10', label: 'Echipe', dropdown: grupe.map(g => ({ href: `/echipe/${g}`, label: g })) },
+    ...staticLinks.slice(1),
+  ]
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
@@ -39,7 +52,7 @@ export default function Header() {
 
         <nav className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => (
-            link.dropdown ? (
+            'dropdown' in link && link.dropdown ? (
               <div key={link.label} className="relative"
                 onMouseEnter={() => setDropdownOpen(true)}
                 onMouseLeave={() => setDropdownOpen(false)}>
@@ -80,7 +93,7 @@ export default function Header() {
       {mobileOpen && (
         <div className="md:hidden bg-white border-t">
           {navLinks.map((link) => (
-            link.dropdown ? (
+            'dropdown' in link && link.dropdown ? (
               <div key={link.label}>
                 <div className="px-4 py-2 text-sm font-bold text-gray-500 uppercase">{link.label}</div>
                 {link.dropdown.map((item) => (

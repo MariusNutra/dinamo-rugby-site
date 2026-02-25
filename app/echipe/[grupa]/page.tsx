@@ -1,11 +1,10 @@
 import { prisma } from '@/lib/prisma'
+import { getActiveGrupe } from '@/lib/active-teams'
 import { notFound } from 'next/navigation'
 import PhotoGrid from '@/components/PhotoGrid'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
-
-const validGrupe = ['U10', 'U12', 'U14', 'U16', 'U18']
 
 const grupaColors: Record<string, string> = {
   U10: 'from-green-500 to-green-700',
@@ -17,12 +16,14 @@ const grupaColors: Record<string, string> = {
 
 export default async function TeamPage({ params }: { params: { grupa: string } }) {
   const { grupa } = params
-  if (!validGrupe.includes(grupa)) notFound()
 
   const team = await prisma.team.findUnique({
     where: { grupa },
     include: { coaches: { orderBy: { order: 'asc' } } },
   })
+  if (!team || !team.active) notFound()
+
+  const activeGrupe = await getActiveGrupe()
   const trainingSessions = await prisma.trainingSession.findMany({
     where: { grupa },
     orderBy: { startTime: 'asc' },
@@ -50,7 +51,7 @@ export default async function TeamPage({ params }: { params: { grupa: string } }
           <h1 className="font-heading font-extrabold text-6xl md:text-8xl mb-2">{grupa}</h1>
           <p className="text-xl opacity-90">Echipa de juniori Dinamo Rugby</p>
           <div className="flex justify-center gap-2 mt-6">
-            {validGrupe.map(g => (
+            {activeGrupe.map(g => (
               <Link key={g} href={`/echipe/${g}`}
                 className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${g === grupa ? 'bg-white text-gray-900' : 'bg-white/20 hover:bg-white/30'}`}>
                 {g}

@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { getActiveGrupe } from '@/lib/active-teams'
 import TeamCard from '@/components/TeamCard'
 import StoryCard from '@/components/StoryCard'
 import UpcomingMatch from '@/components/UpcomingMatch'
@@ -8,9 +9,9 @@ import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
-const grupe = ['U10', 'U12', 'U14', 'U16', 'U18']
-
 export default async function HomePage() {
+  const grupe = await getActiveGrupe()
+
   const stories = await prisma.story.findMany({
     where: { published: true },
     orderBy: { createdAt: 'desc' },

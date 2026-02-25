@@ -17,18 +17,30 @@ interface Match {
   notes: string | null
 }
 
-const categories = ['Toate', 'U10', 'U12', 'U14'] as const
-
 const catColors: Record<string, string> = {
   U10: 'bg-green-100 text-green-800',
   U12: 'bg-blue-100 text-blue-800',
   U14: 'bg-red-100 text-red-800',
+  U16: 'bg-purple-100 text-purple-800',
+  U18: 'bg-gray-100 text-gray-800',
 }
 
 export default function MeciuriPage() {
   const [matches, setMatches] = useState<Match[]>([])
   const [filter, setFilter] = useState<string>('Toate')
   const [loading, setLoading] = useState(true)
+  const [categories, setCategories] = useState<string[]>(['Toate'])
+
+  useEffect(() => {
+    fetch('/api/teams?active=1')
+      .then(r => r.json())
+      .then((teams: { grupa: string }[]) => {
+        if (teams.length > 0) {
+          setCategories(['Toate', ...teams.map(t => t.grupa)])
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     setLoading(true)

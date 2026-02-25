@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAuthenticated } from '@/lib/auth'
 
-export async function GET() {
-  const teams = await prisma.team.findMany({ orderBy: { grupa: 'asc' } })
+export async function GET(req: NextRequest) {
+  const active = req.nextUrl.searchParams.get('active')
+  const where = active === '1' ? { active: true } : {}
+  const teams = await prisma.team.findMany({ where, orderBy: { grupa: 'asc' } })
   return NextResponse.json(teams)
 }
 
