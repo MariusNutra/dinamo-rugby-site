@@ -132,7 +132,7 @@ export default function AntrenoriPage() {
                       src={coach.photo}
                       alt={`Portret ${coach.name}`}
                       loading="lazy"
-                      className="coach-photo w-[116px] h-[116px] rounded-full object-cover border-[3px] border-white/90 mb-5"
+                      className="coach-photo w-[116px] h-[116px] rounded-full object-cover object-top border-[3px] border-white/90 mb-5"
                       style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.3), inset 0 1px 3px rgba(0,0,0,0.15)' }}
                     />
                   ) : (

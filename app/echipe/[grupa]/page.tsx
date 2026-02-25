@@ -75,13 +75,15 @@ export default async function TeamPage({ params }: { params: { grupa: string } }
               </h2>
               <div className={`grid gap-6 ${coaches.length > 1 ? 'md:grid-cols-2' : 'grid-cols-1'}`}>
                 {coaches.map(coach => (
-                  <div key={coach.id} className="bg-white rounded-xl shadow-md p-6 flex flex-col sm:flex-row gap-6 items-center sm:items-start">
-                    {coach.photo ? (
-                      <img src={coach.photo} alt={coach.name} className="w-32 h-32 rounded-full object-cover flex-shrink-0" />
-                    ) : (
-                      <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-4xl flex-shrink-0">?</div>
-                    )}
-                    <div>
+                  <div key={coach.id} className="bg-white rounded-xl shadow-md p-6 flex flex-col sm:flex-row gap-6 items-center sm:items-center">
+                    <div className="w-24 h-24 sm:w-[120px] sm:h-[120px] rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+                      {coach.photo ? (
+                        <img src={coach.photo} alt={coach.name} className="w-full h-full object-cover object-top" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-4xl">?</div>
+                      )}
+                    </div>
+                    <div className="text-center sm:text-left">
                       <h3 className="font-heading font-bold text-xl">{coach.name}</h3>
                       {coach.description && <p className="text-gray-600 mt-2">{coach.description}</p>}
                     </div>
