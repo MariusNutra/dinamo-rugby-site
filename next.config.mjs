@@ -14,6 +14,23 @@ const nextConfig = {
         source: '/uploads/:path*',
         destination: '/api/uploads/:path*',
       },
+      // Security: route parinti auth/verify through secure versions
+      {
+        source: '/api/parinti/auth',
+        destination: '/api/parinti-secure/auth',
+      },
+      {
+        source: '/api/parinti/verify',
+        destination: '/api/parinti-secure/verify',
+      },
+      {
+        source: '/api/parinti/solicita-acces',
+        destination: '/api/parinti-secure/solicita-acces',
+      },
+{
+        source: '/api/admin/sportivi',
+        destination: '/api/admin-sportivi',
+      },
     ]
   },
   async headers() {
