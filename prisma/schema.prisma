@@ -60,6 +60,7 @@ model Team {
   birthYear   String?
   updatedAt   DateTime @updatedAt
   coaches     Coach[]
+  children    Child[]
 }
 
 model Coach {
@@ -130,4 +131,34 @@ model Video {
   description String?
   grupa       String?
   createdAt   DateTime @default(now())
+}
+
+model Parent {
+  id              String    @id @default(cuid())
+  name            String    @default("")
+  email           String    @unique
+  phone           String?
+  token           String?
+  tokenExpiry     DateTime?
+  whatsappConsent Boolean   @default(false)
+  children        Child[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Child {
+  id               String    @id @default(cuid())
+  name             String
+  birthYear        Int
+  parentId         String
+  parent           Parent    @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  teamId           Int?
+  team             Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  photoConsent     Boolean   @default(false)
+  photoConsentWA   Boolean   @default(false)
+  photoConsentDate DateTime?
+  signatureData    String?
+  medicalCert      Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }

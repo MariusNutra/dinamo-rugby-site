@@ -62,6 +62,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: '/admin/echipe', label: 'Echipe', icon: '🏉' },
     { href: '/admin/program', label: 'Program', icon: '📅' },
     { href: '/admin/meciuri', label: 'Meciuri', icon: '🏆' },
+    { href: '/admin/acorduri', label: 'Acorduri', icon: '📋' },
   ]
 
   const handleLogout = async () => {
