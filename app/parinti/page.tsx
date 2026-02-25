@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
@@ -45,6 +46,13 @@ function LoginForm() {
     <div className="min-h-[60vh] flex items-center justify-center">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
+          <Image
+            src="/images/dinamo-rugby-bulldog.png"
+            alt="Dinamo Rugby"
+            width={80}
+            height={80}
+            className="w-20 h-20 mx-auto mb-4 object-contain"
+          />
           <h1 className="font-heading text-3xl font-bold text-dinamo-blue mb-2">Portal Parinti</h1>
           <p className="text-gray-600">Dinamo Rugby Bucuresti</p>
         </div>
