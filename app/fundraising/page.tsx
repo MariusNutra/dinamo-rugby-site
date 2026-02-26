@@ -81,8 +81,8 @@ export default function FundraisingPage() {
             return (
               <div key={campaign.id} className="bg-white rounded-xl shadow-sm border overflow-hidden">
                 {campaign.image && (
-                  <div className="h-48 md:h-64 bg-gray-100 overflow-hidden">
-                    <img src={campaign.image} alt={campaign.title} className="w-full h-full object-cover" />
+                  <div className="max-h-[450px] bg-white flex items-center justify-center overflow-hidden">
+                    <img src={campaign.image} alt={campaign.title} className="w-full h-full max-h-[450px] object-contain object-center" />
                   </div>
                 )}
                 <div className="p-6 md:p-8">
