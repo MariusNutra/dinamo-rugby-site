@@ -21,7 +21,7 @@ const MODULE_ROUTE_MAP: Record<string, string[]> = {
 
 let cachedSettings: Record<string, boolean> | null = null
 let cacheTime = 0
-const CACHE_TTL = 60_000 // 60 seconds
+const CACHE_TTL = 5_000 // 5 seconds
 
 async function getModuleSettingsCached(req: NextRequest): Promise<Record<string, boolean> | null> {
   const now = Date.now()
@@ -33,7 +33,7 @@ async function getModuleSettingsCached(req: NextRequest): Promise<Record<string,
     const url = req.nextUrl.clone()
     url.pathname = '/api/modules/active'
     url.search = ''
-    const res = await fetch(url.toString())
+    const res = await fetch(url.toString(), { cache: 'no-store' })
     if (res.ok) {
       cachedSettings = await res.json()
       cacheTime = now
@@ -66,6 +66,13 @@ export async function middleware(req: NextRequest) {
     return NextResponse.rewrite(url)
   }
 
+  // Invalidate cache when admin updates settings
+  if (req.nextUrl.pathname === '/api/admin/settings/modules' && req.method === 'PUT') {
+    cachedSettings = null
+    cacheTime = 0
+    return NextResponse.next()
+  }
+
   // Check if this is a public route that might be disabled
   const pathname = req.nextUrl.pathname
   for (const [moduleKey, routes] of Object.entries(MODULE_ROUTE_MAP)) {
@@ -87,6 +94,7 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     '/api/parinti/verify',
+    '/api/admin/settings/modules',
     '/admin/sportivi',
     '/echipe/:path*',
     '/antrenori/:path*',
