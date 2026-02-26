@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
+import { exportFisaSportiv } from '@/lib/pdf-export'
 import EvalSlider from '@/components/sportiv/EvalSlider'
 import AttendanceCalendar from '@/components/sportiv/AttendanceCalendar'
 import AttendanceStats from '@/components/sportiv/AttendanceStats'
@@ -197,13 +198,25 @@ export default function AdminSportivPage() {
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <Link href="/admin/sportivi" className="text-gray-400 hover:text-gray-600">&larr;</Link>
-        <div>
+        <div className="flex-1">
           <h1 className="font-heading font-bold text-2xl">{child.name}</h1>
           <p className="text-sm text-gray-500">
             An nastere: {child.birthYear}
             {child.team && <span className="ml-2 text-xs bg-dinamo-blue text-white px-2 py-0.5 rounded-full">{child.team.grupa}</span>}
           </p>
         </div>
+        <button
+          onClick={async () => {
+            const res = await fetch(`/api/admin/export/sportiv?childId=${childId}`)
+            if (res.ok) {
+              const data = await res.json()
+              exportFisaSportiv(data)
+            }
+          }}
+          className="px-4 py-2 bg-dinamo-blue text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shrink-0"
+        >
+          Export PDF
+        </button>
       </div>
 
       {/* Tabs */}

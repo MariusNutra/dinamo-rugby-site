@@ -1,7 +1,8 @@
-import { prisma } from '@/lib/prisma'
-import Link from 'next/link'
+'use client'
 
-export const revalidate = 60
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import DonationForm from '@/components/DonationForm'
 
 interface DonationPublic {
   id: string
@@ -20,28 +21,35 @@ interface CampaignPublic {
   currentAmount: number
   deadline: string | null
   showDonors: boolean
+  allowAnonymous: boolean
   donations: DonationPublic[]
 }
 
-export default async function FundraisingPage() {
-  const campaigns = await prisma.campaign.findMany({
-    where: { active: true },
-    include: {
-      donations: {
-        where: { status: 'completed' },
-        select: {
-          id: true,
-          donorName: true,
-          amount: true,
-          anonymous: true,
-          createdAt: true,
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 20,
-      },
-    },
-    orderBy: { createdAt: 'desc' },
-  }) as unknown as CampaignPublic[]
+export default function FundraisingPage() {
+  const [campaigns, setCampaigns] = useState<CampaignPublic[]>([])
+  const [loading, setLoading] = useState(true)
+  const [donatingCampaign, setDonatingCampaign] = useState<CampaignPublic | null>(null)
+  const [showSuccess, setShowSuccess] = useState(false)
+
+  const loadCampaigns = () => {
+    fetch('/api/fundraising')
+      .then(r => r.json())
+      .then(data => {
+        setCampaigns(Array.isArray(data) ? data : [])
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }
+
+  useEffect(() => { loadCampaigns() }, [])
+
+  if (loading) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 py-20 flex justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-dinamo-red border-t-transparent rounded-full"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
@@ -74,18 +82,13 @@ export default async function FundraisingPage() {
               <div key={campaign.id} className="bg-white rounded-xl shadow-sm border overflow-hidden">
                 {campaign.image && (
                   <div className="h-48 md:h-64 bg-gray-100 overflow-hidden">
-                    <img
-                      src={campaign.image}
-                      alt={campaign.title}
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={campaign.image} alt={campaign.title} className="w-full h-full object-cover" />
                   </div>
                 )}
                 <div className="p-6 md:p-8">
                   <h2 className="font-heading text-2xl font-bold text-dinamo-blue mb-2">{campaign.title}</h2>
                   <p className="text-gray-600 mb-6 whitespace-pre-line">{campaign.description}</p>
 
-                  {/* Progress bar */}
                   <div className="mb-4">
                     <div className="flex justify-between text-sm mb-1.5">
                       <span className="font-bold text-dinamo-red">
@@ -96,10 +99,8 @@ export default async function FundraisingPage() {
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-dinamo-red to-red-500 transition-all duration-500"
-                        style={{ width: `${percent}%` }}
-                      />
+                      <div className="h-full rounded-full bg-gradient-to-r from-dinamo-red to-red-500 transition-all duration-500"
+                        style={{ width: `${percent}%` }} />
                     </div>
                     <div className="flex justify-between text-xs mt-1.5">
                       <span className="font-bold text-dinamo-red">{percent}% completat</span>
@@ -111,17 +112,13 @@ export default async function FundraisingPage() {
                     </div>
                   </div>
 
-                  {/* Donate button */}
                   <div className="mt-6">
-                    <Link
-                      href={`/fundraising/succes?campaign=${campaign.id}`}
-                      className="inline-block px-8 py-3 bg-dinamo-red text-white rounded-lg hover:bg-red-700 transition-colors font-bold text-lg shadow-md hover:shadow-lg"
-                    >
+                    <button onClick={() => setDonatingCampaign(campaign)}
+                      className="px-8 py-3 bg-dinamo-red text-white rounded-lg hover:bg-red-700 transition-colors font-bold text-lg shadow-md hover:shadow-lg">
                       Doneaza acum
-                    </Link>
+                    </button>
                   </div>
 
-                  {/* Donors list */}
                   {campaign.showDonors && campaign.donations.length > 0 && (
                     <div className="mt-8 border-t pt-6">
                       <h3 className="font-heading font-bold text-sm text-gray-700 mb-3">
@@ -150,6 +147,28 @@ export default async function FundraisingPage() {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {/* Donation modal */}
+      {donatingCampaign && (
+        <DonationForm
+          campaignId={donatingCampaign.id}
+          campaignTitle={donatingCampaign.title}
+          onClose={() => setDonatingCampaign(null)}
+          onSuccess={() => {
+            setDonatingCampaign(null)
+            setShowSuccess(true)
+            loadCampaigns()
+            setTimeout(() => setShowSuccess(false), 5000)
+          }}
+        />
+      )}
+
+      {/* Success toast */}
+      {showSuccess && (
+        <div className="fixed bottom-6 right-6 px-4 py-2 rounded-lg shadow-lg text-white text-sm font-medium z-50 bg-green-600">
+          Multumim pentru donatie! Veti primi un email de confirmare.
         </div>
       )}
     </div>

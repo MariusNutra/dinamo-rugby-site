@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { getCsrfToken } from '@/lib/csrf-client'
+import { exportRaportPlati } from '@/lib/pdf-export'
 
 interface PaymentRecord {
   id: string
@@ -138,13 +139,32 @@ export default function AdminPlatiPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-heading text-2xl font-bold text-dinamo-blue">Plati & Cotizatii</h1>
-        <button
-          onClick={handleSendReminders}
-          disabled={sendingReminder}
-          className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors text-sm font-medium disabled:opacity-50"
-        >
-          {sendingReminder ? 'Se trimite...' : 'Trimite reminder restantieri'}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={async () => {
+              const params = new URLSearchParams()
+              if (filterStatus) params.set('status', filterStatus)
+              const res = await fetch(`/api/admin/export/plati?${params}`)
+              if (res.ok) {
+                const data = await res.json()
+                exportRaportPlati(data)
+                showToast('PDF generat cu succes')
+              } else {
+                showToast('Eroare la generare PDF', 'err')
+              }
+            }}
+            className="px-4 py-2 bg-dinamo-blue text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+          >
+            Export PDF
+          </button>
+          <button
+            onClick={handleSendReminders}
+            disabled={sendingReminder}
+            className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors text-sm font-medium disabled:opacity-50"
+          >
+            {sendingReminder ? 'Se trimite...' : 'Trimite reminder restantieri'}
+          </button>
+        </div>
       </div>
 
       {/* Stats */}

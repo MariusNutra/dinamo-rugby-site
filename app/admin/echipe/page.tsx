@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import ImageUpload from '@/components/ImageUpload'
 import { teamColorOptions } from '@/lib/team-colors'
+import { exportListaEchipa } from '@/lib/pdf-export'
 
 interface Team {
   id: number
@@ -835,6 +836,27 @@ export default function AdminTeams() {
               </a>
             </div>
             <p className="text-gray-500 text-sm mt-2">Meciurile se gestionează din pagina dedicată.</p>
+          </div>
+
+          {/* Export PDF Lista Echipa */}
+          <div className="bg-white rounded-xl shadow-md p-6 mt-8">
+            <div className="flex items-center justify-between">
+              <h2 className="font-heading font-bold text-lg">Export Lista {activeTab}</h2>
+              <button
+                onClick={async () => {
+                  if (!currentTeam) return
+                  const res = await fetch(`/api/admin/export/echipa?teamId=${currentTeam.id}`)
+                  if (res.ok) {
+                    const data = await res.json()
+                    exportListaEchipa(data)
+                  }
+                }}
+                className="px-4 py-2 bg-dinamo-blue text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+              >
+                Export PDF Lista
+              </button>
+            </div>
+            <p className="text-gray-500 text-sm mt-2">Generează un PDF cu lista jucătorilor din echipă.</p>
           </div>
         </>
       )}
