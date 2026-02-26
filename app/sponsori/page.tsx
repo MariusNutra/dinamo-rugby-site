@@ -110,7 +110,7 @@ export default function SponsoriPage() {
 
   const renderSponsorCard = (sponsor: Sponsor, size: 'lg' | 'md' | 'sm') => {
     const config = tierConfig[sponsor.tier] || tierConfig.bronze
-    const logoSizeClass = size === 'lg' ? 'w-24 h-24' : size === 'md' ? 'w-16 h-16' : 'w-12 h-12'
+    const logoSizeClass = size === 'lg' ? 'w-40 h-40' : size === 'md' ? 'w-28 h-28' : 'w-20 h-20'
     const textSizeClass = size === 'lg' ? 'text-xl' : size === 'md' ? 'text-lg' : 'text-base'
 
     return (
