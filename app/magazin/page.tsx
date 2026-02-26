@@ -84,7 +84,7 @@ export default function MagazinPage() {
                 className="bg-white rounded-xl shadow-sm border overflow-hidden hover:shadow-md transition-shadow"
               >
                 {/* Product image or placeholder */}
-                <div className="aspect-square bg-gray-100 flex items-center justify-center overflow-hidden">
+                <div className="aspect-[4/3] bg-gray-50 flex items-center justify-center overflow-hidden">
                   {product.image ? (
                     <img
                       src={product.image}
@@ -93,9 +93,12 @@ export default function MagazinPage() {
                       loading="lazy"
                     />
                   ) : (
-                    <svg className="w-16 h-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z" />
-                    </svg>
+                    <div className="flex flex-col items-center gap-2 text-gray-300">
+                      <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                      </svg>
+                      <span className="text-xs font-medium">Imagine indisponibila</span>
+                    </div>
                   )}
                 </div>
 
