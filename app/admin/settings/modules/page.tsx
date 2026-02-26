@@ -78,6 +78,8 @@ export default function ModulesSettingsPage() {
       }
 
       showToast(newValue ? 'Modul activat' : 'Modul dezactivat')
+      // Notify admin layout to refresh sidebar
+      window.dispatchEvent(new Event('modules-changed'))
     } catch {
       setSettings(prev => ({ ...prev, [key]: !newValue }))
       showToast('Eroare la salvare', 'err')

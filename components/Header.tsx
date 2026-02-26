@@ -41,10 +41,21 @@ export default function Header() {
       })
       .catch(() => {})
 
-    fetch('/api/modules/active')
-      .then(r => r.json())
-      .then(data => setModuleSettings(data))
-      .catch(() => {})
+    const fetchModules = () => {
+      fetch('/api/modules/active', { cache: 'no-store' })
+        .then(r => r.json())
+        .then(data => setModuleSettings(data))
+        .catch(() => {})
+    }
+
+    fetchModules()
+
+    // Re-fetch when user switches back to this tab (e.g. after toggling in admin)
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') fetchModules()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
   }, [])
 
   const staticLinks = allStaticLinks.filter(link => {

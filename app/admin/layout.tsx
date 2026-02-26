@@ -60,10 +60,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (!auth) return
-    fetch('/api/modules/active')
-      .then(r => r.json())
-      .then(data => setModuleSettings(data))
-      .catch(() => {})
+    const fetchModules = () => {
+      fetch('/api/modules/active', { cache: 'no-store' })
+        .then(r => r.json())
+        .then(data => setModuleSettings(data))
+        .catch(() => {})
+    }
+    fetchModules()
+    // Re-fetch when switching tabs or after saving settings
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') fetchModules()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    // Re-fetch when modules are toggled in settings page
+    window.addEventListener('modules-changed', fetchModules)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('modules-changed', fetchModules)
+    }
   }, [auth])
 
   if (pathname === '/admin/login') return <>{children}</>
