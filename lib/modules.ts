@@ -1,5 +1,13 @@
 import { prisma } from './prisma'
 
+export type PackageTier = 'starter' | 'club' | 'pro'
+
+export const PACKAGE_TIERS: { key: PackageTier; label: string; icon: string; description: string; color: string }[] = [
+  { key: 'starter', label: 'Starter', icon: '🌱', description: 'Functionalitati de baza pentru prezenta online', color: 'gray' },
+  { key: 'club', label: 'Club', icon: '🏉', description: 'Gestionare completa + comunicare cu parintii', color: 'blue' },
+  { key: 'pro', label: 'Pro', icon: '🏆', description: 'Toate functionalitatile inclusiv plati si magazin', color: 'red' },
+]
+
 export interface ModuleDefinition {
   key: string
   label: string
@@ -7,6 +15,7 @@ export interface ModuleDefinition {
   icon: string
   isNew: boolean
   canDisable: boolean
+  tier: PackageTier
   publicRoutes: string[]
   adminRoutes: string[]
   headerLink?: { href: string; label: string }
@@ -20,6 +29,7 @@ export const MODULE_DEFINITIONS: ModuleDefinition[] = [
     icon: '🏠',
     isNew: false,
     canDisable: false,
+    tier: 'starter',
     publicRoutes: ['/'],
     adminRoutes: ['/admin'],
     headerLink: { href: '/', label: 'Acasa' },
@@ -31,6 +41,7 @@ export const MODULE_DEFINITIONS: ModuleDefinition[] = [
     icon: '🏉',
     isNew: false,
     canDisable: true,
+    tier: 'starter',
     publicRoutes: ['/echipe', '/antrenori'],
     adminRoutes: ['/admin/echipe'],
     headerLink: { href: '/echipe', label: 'Echipe' },
@@ -42,6 +53,7 @@ export const MODULE_DEFINITIONS: ModuleDefinition[] = [
     icon: '📅',
     isNew: false,
     canDisable: true,
+    tier: 'starter',
     publicRoutes: ['/program'],
     adminRoutes: ['/admin/program'],
     headerLink: { href: '/program', label: 'Program' },
@@ -53,6 +65,7 @@ export const MODULE_DEFINITIONS: ModuleDefinition[] = [
     icon: '🏆',
     isNew: false,
     canDisable: true,
+    tier: 'starter',
     publicRoutes: ['/meciuri', '/rezultate'],
     adminRoutes: ['/admin/meciuri'],
     headerLink: { href: '/meciuri', label: 'Meciuri' },
@@ -64,6 +77,7 @@ export const MODULE_DEFINITIONS: ModuleDefinition[] = [
     icon: '📸',
     isNew: false,
     canDisable: true,
+    tier: 'starter',
     publicRoutes: ['/galerie'],
     adminRoutes: ['/admin/galerie'],
     headerLink: { href: '/galerie', label: 'Galerie' },
@@ -75,6 +89,7 @@ export const MODULE_DEFINITIONS: ModuleDefinition[] = [
     icon: '📝',
     isNew: false,
     canDisable: true,
+    tier: 'starter',
     publicRoutes: ['/povesti'],
     adminRoutes: ['/admin/povesti'],
     headerLink: { href: '/povesti', label: 'Povesti' },
@@ -86,6 +101,7 @@ export const MODULE_DEFINITIONS: ModuleDefinition[] = [
     icon: '✉️',
     isNew: false,
     canDisable: true,
+    tier: 'starter',
     publicRoutes: ['/contact'],
     adminRoutes: [],
     headerLink: { href: '/contact', label: 'Contact' },
@@ -97,6 +113,7 @@ export const MODULE_DEFINITIONS: ModuleDefinition[] = [
     icon: 'ℹ️',
     isNew: false,
     canDisable: true,
+    tier: 'starter',
     publicRoutes: ['/despre'],
     adminRoutes: [],
     headerLink: { href: '/despre', label: 'Despre noi' },
@@ -108,29 +125,9 @@ export const MODULE_DEFINITIONS: ModuleDefinition[] = [
     icon: '👨‍👩‍👧',
     isNew: false,
     canDisable: true,
+    tier: 'club',
     publicRoutes: ['/parinti'],
     adminRoutes: ['/admin/parinti', '/admin/cereri-acces', '/admin/acorduri'],
-  },
-  {
-    key: 'moduleFundraising',
-    label: 'Fundraising',
-    description: 'Campanii de strangere de fonduri si donatii',
-    icon: '💰',
-    isNew: true,
-    canDisable: true,
-    publicRoutes: ['/fundraising'],
-    adminRoutes: ['/admin/fundraising'],
-    headerLink: { href: '/fundraising', label: 'Donatii' },
-  },
-  {
-    key: 'modulePlati',
-    label: 'Plati / Cotizatii',
-    description: 'Sistem de plati si cotizatii cu Stripe',
-    icon: '💳',
-    isNew: true,
-    canDisable: true,
-    publicRoutes: [],
-    adminRoutes: ['/admin/plati'],
   },
   {
     key: 'moduleInscrieri',
@@ -139,6 +136,7 @@ export const MODULE_DEFINITIONS: ModuleDefinition[] = [
     icon: '📋',
     isNew: true,
     canDisable: true,
+    tier: 'club',
     publicRoutes: ['/inscrieri'],
     adminRoutes: [],
     headerLink: { href: '/inscrieri', label: 'Inscrieri' },
@@ -150,6 +148,7 @@ export const MODULE_DEFINITIONS: ModuleDefinition[] = [
     icon: '🗓️',
     isNew: true,
     canDisable: true,
+    tier: 'club',
     publicRoutes: ['/calendar'],
     adminRoutes: [],
     headerLink: { href: '/calendar', label: 'Calendar' },
@@ -161,6 +160,7 @@ export const MODULE_DEFINITIONS: ModuleDefinition[] = [
     icon: '🔔',
     isNew: true,
     canDisable: true,
+    tier: 'club',
     publicRoutes: [],
     adminRoutes: [],
   },
@@ -171,9 +171,33 @@ export const MODULE_DEFINITIONS: ModuleDefinition[] = [
     icon: '📊',
     isNew: true,
     canDisable: true,
+    tier: 'club',
     publicRoutes: ['/statistici'],
     adminRoutes: [],
     headerLink: { href: '/statistici', label: 'Statistici' },
+  },
+  {
+    key: 'modulePlati',
+    label: 'Plati / Cotizatii',
+    description: 'Sistem de plati si cotizatii cu Stripe',
+    icon: '💳',
+    isNew: true,
+    canDisable: true,
+    tier: 'pro',
+    publicRoutes: [],
+    adminRoutes: ['/admin/plati'],
+  },
+  {
+    key: 'moduleFundraising',
+    label: 'Fundraising',
+    description: 'Campanii de strangere de fonduri si donatii',
+    icon: '💰',
+    isNew: true,
+    canDisable: true,
+    tier: 'pro',
+    publicRoutes: ['/fundraising'],
+    adminRoutes: ['/admin/fundraising'],
+    headerLink: { href: '/fundraising', label: 'Donatii' },
   },
   {
     key: 'moduleMagazin',
@@ -182,6 +206,7 @@ export const MODULE_DEFINITIONS: ModuleDefinition[] = [
     icon: '🛒',
     isNew: true,
     canDisable: true,
+    tier: 'pro',
     publicRoutes: ['/magazin'],
     adminRoutes: [],
     headerLink: { href: '/magazin', label: 'Magazin' },
@@ -193,6 +218,7 @@ export const MODULE_DEFINITIONS: ModuleDefinition[] = [
     icon: '🎬',
     isNew: true,
     canDisable: true,
+    tier: 'pro',
     publicRoutes: ['/video-highlights'],
     adminRoutes: [],
     headerLink: { href: '/video-highlights', label: 'Video' },
@@ -204,11 +230,16 @@ export const MODULE_DEFINITIONS: ModuleDefinition[] = [
     icon: '🤝',
     isNew: true,
     canDisable: true,
+    tier: 'pro',
     publicRoutes: ['/sponsori'],
     adminRoutes: [],
     headerLink: { href: '/sponsori', label: 'Sponsori' },
   },
 ]
+
+export function getModulesByTier(tier: PackageTier): ModuleDefinition[] {
+  return MODULE_DEFINITIONS.filter(mod => mod.tier === tier)
+}
 
 export type ModuleSettings = Record<string, boolean>
 
