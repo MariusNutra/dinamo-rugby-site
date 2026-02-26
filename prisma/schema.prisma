@@ -134,6 +134,7 @@ model Video {
   youtubeUrl  String
   description String?
   grupa       String?
+  featured    Boolean  @default(false)
   createdAt   DateTime @default(now())
 }
 

@@ -9,6 +9,7 @@ interface Video {
   youtubeUrl: string
   description: string
   grupa: string | null
+  featured: boolean
   createdAt: string
 }
 
@@ -50,6 +51,7 @@ export default function AdminVideoHighlightsPage() {
   const [youtubeUrl, setYoutubeUrl] = useState('')
   const [description, setDescription] = useState('')
   const [grupa, setGrupa] = useState('')
+  const [featured, setFeatured] = useState(false)
 
   const showToast = (msg: string, type: 'ok' | 'err' = 'ok') => {
     setToast({ msg, type })
@@ -83,6 +85,7 @@ export default function AdminVideoHighlightsPage() {
     setYoutubeUrl('')
     setDescription('')
     setGrupa('')
+    setFeatured(false)
     setEditing(null)
     setCreating(false)
   }
@@ -92,6 +95,7 @@ export default function AdminVideoHighlightsPage() {
     setYoutubeUrl(v.youtubeUrl)
     setDescription(v.description)
     setGrupa(v.grupa || '')
+    setFeatured(v.featured)
     setEditing(v)
     setCreating(false)
   }
@@ -112,6 +116,7 @@ export default function AdminVideoHighlightsPage() {
       youtubeUrl,
       description,
       grupa: grupa || null,
+      featured,
     }
 
     const url = editing
@@ -204,6 +209,13 @@ export default function AdminVideoHighlightsPage() {
                 ))}
               </select>
             </div>
+            <div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={featured} onChange={e => setFeatured(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 text-dinamo-red focus:ring-dinamo-red" />
+                <span className="text-sm font-medium text-gray-700">Afiseaza pe pagina principala</span>
+              </label>
+            </div>
             <div className="flex gap-3 pt-2">
               <button onClick={handleSave}
                 className="px-6 py-2 bg-dinamo-red text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
@@ -244,11 +256,18 @@ export default function AdminVideoHighlightsPage() {
                       <div className="flex items-start justify-between gap-2">
                         <h3 className="font-heading font-bold text-sm line-clamp-2">{v.title}</h3>
                       </div>
-                      {v.grupa && (
-                        <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-dinamo-blue/10 text-dinamo-blue font-medium">
-                          {v.grupa}
-                        </span>
-                      )}
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {v.featured && (
+                          <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 font-medium">
+                            Homepage
+                          </span>
+                        )}
+                        {v.grupa && (
+                          <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-dinamo-blue/10 text-dinamo-blue font-medium">
+                            {v.grupa}
+                          </span>
+                        )}
+                      </div>
                       {v.description && (
                         <p className="text-xs text-gray-500 mt-1 line-clamp-2">{v.description}</p>
                       )}

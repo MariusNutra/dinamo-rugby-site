@@ -4,6 +4,7 @@ import TeamCard from '@/components/TeamCard'
 import StoryCard from '@/components/StoryCard'
 import UpcomingMatch from '@/components/UpcomingMatch'
 import LatestResults from '@/components/LatestResults'
+import VideoCard from '@/components/VideoCard'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -16,6 +17,12 @@ export default async function HomePage() {
     where: { published: true },
     orderBy: { createdAt: 'desc' },
     take: 3,
+  })
+
+  const featuredVideos = await prisma.video.findMany({
+    where: { featured: true },
+    orderBy: { createdAt: 'desc' },
+    take: 2,
   })
 
   const photos = await prisma.photo.findMany({
@@ -62,6 +69,36 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* Video Highlights */}
+      {featuredVideos.length > 0 && (
+        <section className="bg-gray-50 py-16">
+          <div className="max-w-7xl mx-auto px-4">
+            <h2 className="font-heading font-bold text-3xl text-center mb-2 text-gray-900">Video Highlights</h2>
+            <p className="text-center text-gray-500 mb-10">Cele mai recente momente de pe teren</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {featuredVideos.map((v) => {
+                const match = v.youtubeUrl.match(/(?:youtube\.com\/watch\?.*v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/)
+                const youtubeId = match ? match[1] : (/^[a-zA-Z0-9_-]{11}$/.test(v.youtubeUrl) ? v.youtubeUrl : null)
+                if (!youtubeId) return null
+                return (
+                  <VideoCard
+                    key={v.id}
+                    title={v.title}
+                    youtubeId={youtubeId}
+                    description={v.description}
+                  />
+                )
+              })}
+            </div>
+            <div className="text-center mt-8">
+              <Link href="/video-highlights" className="text-dinamo-red font-bold hover:underline">
+                Vezi toate videoclipurile →
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Meciuri și Rezultate Dinamo */}
       <section className="bg-gray-50 py-12">

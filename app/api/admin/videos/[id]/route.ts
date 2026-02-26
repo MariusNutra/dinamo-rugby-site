@@ -11,7 +11,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (csrfError) return csrfError
 
   const body = await req.json()
-  const { title, youtubeUrl, description, grupa } = body
+  const { title, youtubeUrl, description, grupa, featured } = body
 
   const video = await prisma.video.update({
     where: { id: Number(params.id) },
@@ -20,6 +20,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       ...(youtubeUrl !== undefined && { youtubeUrl: String(youtubeUrl).slice(0, 500) }),
       ...(description !== undefined && { description: description ? String(description).slice(0, 2000) : null }),
       ...(grupa !== undefined && { grupa }),
+      ...(featured !== undefined && { featured: featured === true }),
     },
   })
   return NextResponse.json(video)

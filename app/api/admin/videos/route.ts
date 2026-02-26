@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   if (csrfError) return csrfError
 
   const body = await req.json()
-  const { title, youtubeUrl, description, grupa } = body
+  const { title, youtubeUrl, description, grupa, featured } = body
 
   if (!title || !youtubeUrl) {
     return NextResponse.json({ error: 'Titlul si URL-ul YouTube sunt obligatorii' }, { status: 400 })
@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
       youtubeUrl: String(youtubeUrl).slice(0, 500),
       description: description ? String(description).slice(0, 2000) : null,
       grupa: grupa || null,
+      featured: featured === true,
     },
   })
   return NextResponse.json(video, { status: 201 })
