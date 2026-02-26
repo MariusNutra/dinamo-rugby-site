@@ -155,8 +155,8 @@ export default async function HomePage() {
           <p className="text-lg opacity-90 mb-8">
             Înscrierile sunt deschise pentru toate grupele de vârstă. Vino la un antrenament de probă!
           </p>
-          <Link href="/contact" className="inline-block bg-white text-dinamo-red px-8 py-3 rounded-full font-heading font-bold hover:bg-gray-100 transition-colors shadow-lg">
-            Contactează-ne
+          <Link href="/inscrieri" className="inline-block bg-white text-dinamo-red px-8 py-3 rounded-full font-heading font-bold hover:bg-gray-100 transition-colors shadow-lg">
+            Înscrie-te acum
           </Link>
         </div>
       </section>

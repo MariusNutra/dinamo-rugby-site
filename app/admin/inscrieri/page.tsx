@@ -22,7 +22,15 @@ interface Registration {
   gdprConsent: boolean
   status: string
   notes: string | null
+  rejectionReason: string | null
   createdAt: string
+}
+
+interface ConfirmDialog {
+  reg: Registration
+  newStatus: string
+  teamId: number | null
+  rejectionReason: string
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
@@ -30,6 +38,21 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   contactata: { label: 'Contactata', color: 'bg-yellow-100 text-yellow-700' },
   acceptata: { label: 'Acceptata', color: 'bg-green-100 text-green-700' },
   respinsa: { label: 'Respinsa', color: 'bg-red-100 text-red-700' },
+}
+
+const EMAIL_PREVIEW: Record<string, (reg: Registration) => { subject: string; summary: string }> = {
+  contactata: (reg) => ({
+    subject: `Am primit cererea de inscriere pentru ${reg.childFirstName} ${reg.childLastName}`,
+    summary: 'Se va trimite un email de confirmare a primirii cererii. Parintele va fi informat ca va fi contactat telefonic.',
+  }),
+  acceptata: (reg) => ({
+    subject: `Felicitari! Inscrierea lui ${reg.childFirstName} ${reg.childLastName} la CS Dinamo București Rugby a fost acceptata!`,
+    summary: 'Se va trimite un email cu: grupa repartizata, program antrenamente, ce trebuie adus, informatii antrenor si link de acces la Portalul Parintilor.',
+  }),
+  respinsa: () => ({
+    subject: 'Informare privind cererea de inscriere',
+    summary: 'Se va trimite un email prin care parintele este informat ca cererea nu a fost acceptata, impreuna cu motivul respingerii.',
+  }),
 }
 
 export default function AdminInscrieriPage() {
@@ -40,6 +63,8 @@ export default function AdminInscrieriPage() {
   const [filterTeam, setFilterTeam] = useState('')
   const [toast, setToast] = useState<{ msg: string; type: 'ok' | 'err' } | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialog | null>(null)
+  const [confirmLoading, setConfirmLoading] = useState(false)
 
   const showToast = (msg: string, type: 'ok' | 'err' = 'ok') => {
     setToast({ msg, type })
@@ -69,18 +94,59 @@ export default function AdminInscrieriPage() {
 
   useEffect(() => { loadRegistrations() }, [filterStatus, filterTeam]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const updateStatus = async (id: string, status: string) => {
-    const res = await fetch(`/api/admin/inscrieri/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'x-csrf-token': getCsrfToken() },
-      body: JSON.stringify({ status }),
-    })
-    if (res.ok) {
-      showToast(`Status schimbat: ${STATUS_LABELS[status]?.label}`)
-      loadRegistrations()
-    } else {
-      showToast('Eroare la actualizare', 'err')
+  const openConfirmDialog = (reg: Registration, newStatus: string) => {
+    // For 'noua' status, update directly without dialog
+    if (newStatus === 'noua') {
+      updateStatus(reg.id, 'noua', {})
+      return
     }
+    setConfirmDialog({
+      reg,
+      newStatus,
+      teamId: reg.teamId,
+      rejectionReason: '',
+    })
+  }
+
+  const updateStatus = async (id: string, status: string, extra: { rejectionReason?: string; teamId?: number | null }) => {
+    setConfirmLoading(true)
+    try {
+      const res = await fetch(`/api/admin/inscrieri/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-csrf-token': getCsrfToken() },
+        body: JSON.stringify({ status, ...extra }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        const statusLabel = STATUS_LABELS[status]?.label || status
+        let msg = `Status schimbat: ${statusLabel}`
+        if (status === 'acceptata' && data.childCreated) {
+          msg += ' — Sportiv creat automat'
+        }
+        if (status !== 'noua') {
+          msg += ' — Email trimis'
+        }
+        showToast(msg)
+        loadRegistrations()
+      } else {
+        const errData = await res.json().catch(() => ({}))
+        showToast(errData.error || 'Eroare la actualizare', 'err')
+      }
+    } catch {
+      showToast('Eroare la actualizare', 'err')
+    } finally {
+      setConfirmLoading(false)
+      setConfirmDialog(null)
+    }
+  }
+
+  const handleConfirm = () => {
+    if (!confirmDialog) return
+    const { reg, newStatus, teamId, rejectionReason } = confirmDialog
+    updateStatus(reg.id, newStatus, {
+      ...(newStatus === 'respinsa' && { rejectionReason }),
+      ...(newStatus === 'acceptata' && { teamId }),
+    })
   }
 
   const handleDelete = async (id: string) => {
@@ -110,6 +176,8 @@ export default function AdminInscrieriPage() {
     acceptata: registrations.filter(r => r.status === 'acceptata').length,
     respinsa: registrations.filter(r => r.status === 'respinsa').length,
   }
+
+  const isConfirmDisabled = confirmDialog?.newStatus === 'respinsa' && !confirmDialog.rejectionReason.trim()
 
   if (loading) {
     return (
@@ -144,6 +212,19 @@ export default function AdminInscrieriPage() {
           </div>
         ))}
       </div>
+
+      {/* Card: In asteptare plata */}
+      {counts.acceptata > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 flex items-center gap-3">
+          <div className="text-2xl">💰</div>
+          <div>
+            <p className="font-medium text-amber-800">
+              {counts.acceptata} {counts.acceptata === 1 ? 'inscriere acceptata' : 'inscrieri acceptate'} &mdash; verificati plata cotizatiei
+            </p>
+            <p className="text-sm text-amber-600 mt-0.5">Asigurati-va ca parintii au efectuat plata inainte de primul antrenament.</p>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex gap-3 mb-4 flex-wrap">
@@ -197,12 +278,13 @@ export default function AdminInscrieriPage() {
                       <div><span className="text-gray-500">Telefon:</span> <a href={`tel:${r.phone}`} className="text-dinamo-red">{r.phone}</a></div>
                       <div><span className="text-gray-500">Email:</span> <a href={`mailto:${r.email}`} className="text-dinamo-red">{r.email}</a></div>
                       {r.experience && <div className="md:col-span-2"><span className="text-gray-500">Experienta:</span> {r.experience}</div>}
+                      {r.rejectionReason && <div className="md:col-span-2"><span className="text-gray-500">Motiv respingere:</span> <span className="text-red-600">{r.rejectionReason}</span></div>}
                     </div>
 
                     <div className="flex items-center gap-2 flex-wrap pt-2 border-t">
                       <span className="text-xs text-gray-500 mr-2">Schimba status:</span>
                       {Object.entries(STATUS_LABELS).map(([key, { label, color }]) => (
-                        <button key={key} onClick={() => updateStatus(r.id, key)}
+                        <button key={key} onClick={() => openConfirmDialog(r, key)}
                           className={`text-xs px-2.5 py-1 rounded-full transition-colors ${r.status === key ? color + ' font-bold ring-2 ring-offset-1 ring-gray-300' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                           {label}
                         </button>
@@ -219,6 +301,88 @@ export default function AdminInscrieriPage() {
           })}
         </div>
       )}
+
+      {/* Confirmation Dialog */}
+      {confirmDialog && (() => {
+        const preview = EMAIL_PREVIEW[confirmDialog.newStatus]?.(confirmDialog.reg)
+        const statusLabel = STATUS_LABELS[confirmDialog.newStatus]?.label || confirmDialog.newStatus
+        return (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => !confirmLoading && setConfirmDialog(null)}>
+            <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <div className="p-6 space-y-4">
+                <h3 className="text-lg font-bold text-dinamo-blue">
+                  Schimba status la &ldquo;{statusLabel}&rdquo;
+                </h3>
+                <p className="text-sm text-gray-600">
+                  <strong>{confirmDialog.reg.childLastName} {confirmDialog.reg.childFirstName}</strong> &mdash; {confirmDialog.reg.parentName}
+                </p>
+
+                {/* Email preview */}
+                {preview && (
+                  <div className="bg-gray-50 rounded-lg p-4 border text-sm space-y-2">
+                    <p className="font-medium text-gray-700">Email catre parinte:</p>
+                    <p className="text-gray-600"><strong>Subiect:</strong> {preview.subject}</p>
+                    <p className="text-gray-500">{preview.summary}</p>
+                  </div>
+                )}
+
+                {/* Grupa selector for acceptata */}
+                {confirmDialog.newStatus === 'acceptata' && (
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Grupa repartizata:</label>
+                    <select
+                      value={confirmDialog.teamId || ''}
+                      onChange={e => setConfirmDialog({ ...confirmDialog, teamId: e.target.value ? Number(e.target.value) : null })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    >
+                      <option value="">Selecteaza grupa</option>
+                      {teams.map(t => (
+                        <option key={t.id} value={t.id}>{t.grupa}</option>
+                      ))}
+                    </select>
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800">
+                      Se va crea automat sportivul in baza de date si se va genera un link de acces la Portalul Parintilor.
+                    </div>
+                  </div>
+                )}
+
+                {/* Rejection reason for respinsa */}
+                {confirmDialog.newStatus === 'respinsa' && (
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Motivul respingerii: <span className="text-red-500">*</span></label>
+                    <textarea
+                      value={confirmDialog.rejectionReason}
+                      onChange={e => setConfirmDialog({ ...confirmDialog, rejectionReason: e.target.value })}
+                      placeholder="Explicati motivul respingerii..."
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-dinamo-red focus:border-dinamo-red"
+                    />
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={handleConfirm}
+                    disabled={confirmLoading || !!isConfirmDisabled || (confirmDialog.newStatus === 'acceptata' && !confirmDialog.teamId)}
+                    className="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-lg font-medium text-sm hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {confirmLoading && <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>}
+                    {confirmLoading ? 'Se proceseaza...' : 'Confirma si trimite email'}
+                  </button>
+                  <button
+                    onClick={() => setConfirmDialog(null)}
+                    disabled={confirmLoading}
+                    className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium text-sm hover:bg-gray-200 transition-colors disabled:opacity-50"
+                  >
+                    Anuleaza
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {toast && (
         <div className={`fixed bottom-6 right-6 px-4 py-2 rounded-lg shadow-lg text-white text-sm font-medium z-50 ${
