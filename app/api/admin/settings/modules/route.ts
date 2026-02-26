@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isAuthenticated } from '@/lib/auth'
-import { validateCsrf } from '@/lib/csrf'
+import { validateCsrf, setCsrfCookie } from '@/lib/csrf'
 import { prisma } from '@/lib/prisma'
 import { MODULE_DEFINITIONS } from '@/lib/modules'
 
@@ -15,7 +15,8 @@ export async function GET() {
     create: { id: 1 },
   })
 
-  return NextResponse.json(settings)
+  const response = NextResponse.json(settings)
+  return setCsrfCookie(response)
 }
 
 export async function PUT(req: NextRequest) {
