@@ -29,11 +29,14 @@ export async function POST(req: NextRequest) {
   const albumName = formData.get('albumName') as string | null
   const storyId = formData.get('storyId') as string | null
 
+  // Determine subfolder: stories if storyId present, otherwise gallery
+  const subfolder = storyId ? 'stories' : 'gallery'
+
   const photos = []
 
   for (const file of files) {
     const buffer = Buffer.from(await file.arrayBuffer())
-    const { filename, path } = await saveImage(buffer, file.name)
+    const { filename, path } = await saveImage(buffer, file.name, subfolder)
 
     const photo = await prisma.photo.create({
       data: {

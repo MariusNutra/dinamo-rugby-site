@@ -40,7 +40,7 @@ export async function POST(req: NextRequest, { params }: { params: { childId: st
   }
 
   const buffer = Buffer.from(await file.arrayBuffer())
-  const { path } = await saveImage(buffer, file.name)
+  const { path } = await saveImage(buffer, file.name, 'gallery')
 
   const photo = await prisma.childPhoto.create({
     data: {

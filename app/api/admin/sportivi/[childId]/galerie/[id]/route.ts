@@ -19,8 +19,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { childId: 
 
   // Delete file from disk
   try {
-    const filePath = path.join(process.cwd(), 'uploads', path.basename(photo.url))
-    await fs.unlink(filePath)
+    const uploadDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads')
+    // photo.url is like /uploads/gallery/timestamp-name.jpg — strip /uploads/ prefix
+    const relativePath = photo.url.replace(/^\/uploads\//, '')
+    await fs.unlink(path.join(uploadDir, relativePath))
   } catch {
     // File may already be deleted
   }

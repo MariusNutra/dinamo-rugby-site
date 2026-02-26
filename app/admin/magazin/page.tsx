@@ -29,6 +29,7 @@ export default function AdminMagazinPage() {
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState(0)
   const [image, setImage] = useState('')
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [stock, setStock] = useState(0)
   const [category, setCategory] = useState(CATEGORIES[0])
 
@@ -168,9 +169,38 @@ export default function AdminMagazinPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg" rows={4} placeholder="Descrierea produsului" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">URL Imagine (optional)</label>
-              <input type="text" value={image} onChange={e => setImage(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="https://..." />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Imagine (optional)</label>
+              <div className="flex items-center gap-3">
+                <label className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors ${
+                  uploadingImage ? 'bg-gray-200 text-gray-500' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}>
+                  {uploadingImage ? 'Se incarca...' : image ? 'Schimba imaginea' : 'Incarca imagine'}
+                  <input type="file" accept="image/*" className="hidden" disabled={uploadingImage}
+                    onChange={async e => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      setUploadingImage(true)
+                      const fd = new FormData()
+                      fd.append('file', file)
+                      fd.append('folder', 'products')
+                      try {
+                        const res = await fetch('/api/admin/upload', { method: 'POST', body: fd })
+                        const data = await res.json()
+                        if (data.url) setImage(data.url)
+                        else showToast(data.error || 'Eroare upload', 'err')
+                      } catch { showToast('Eroare upload', 'err') }
+                      setUploadingImage(false)
+                      e.target.value = ''
+                    }}
+                  />
+                </label>
+                {image && (
+                  <>
+                    <img src={image} alt="Preview" className="w-10 h-10 rounded object-cover border" />
+                    <button type="button" onClick={() => setImage('')} className="text-xs text-red-500 hover:text-red-700">Sterge</button>
+                  </>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>

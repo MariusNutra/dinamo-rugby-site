@@ -39,6 +39,7 @@ export default function AdminSponsoriPage() {
   // Form state
   const [name, setName] = useState('')
   const [logo, setLogo] = useState('')
+  const [uploadingLogo, setUploadingLogo] = useState(false)
   const [website, setWebsite] = useState('')
   const [description, setDescription] = useState('')
   const [tier, setTier] = useState(TIERS[0])
@@ -180,9 +181,38 @@ export default function AdminSponsoriPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg" rows={4} placeholder="Descrierea sponsorului" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">URL Logo (optional)</label>
-              <input type="text" value={logo} onChange={e => setLogo(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="https://..." />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Logo (optional)</label>
+              <div className="flex items-center gap-3">
+                <label className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors ${
+                  uploadingLogo ? 'bg-gray-200 text-gray-500' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}>
+                  {uploadingLogo ? 'Se incarca...' : logo ? 'Schimba logo' : 'Incarca logo'}
+                  <input type="file" accept="image/*" className="hidden" disabled={uploadingLogo}
+                    onChange={async e => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      setUploadingLogo(true)
+                      const fd = new FormData()
+                      fd.append('file', file)
+                      fd.append('folder', 'sponsors')
+                      try {
+                        const res = await fetch('/api/admin/upload', { method: 'POST', body: fd })
+                        const data = await res.json()
+                        if (data.url) setLogo(data.url)
+                        else showToast(data.error || 'Eroare upload', 'err')
+                      } catch { showToast('Eroare upload', 'err') }
+                      setUploadingLogo(false)
+                      e.target.value = ''
+                    }}
+                  />
+                </label>
+                {logo && (
+                  <>
+                    <img src={logo} alt="Preview" className="w-10 h-10 rounded object-contain border bg-gray-50 p-0.5" />
+                    <button type="button" onClick={() => setLogo('')} className="text-xs text-red-500 hover:text-red-700">Sterge</button>
+                  </>
+                )}
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Website (optional)</label>

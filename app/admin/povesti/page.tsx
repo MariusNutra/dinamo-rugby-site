@@ -110,10 +110,11 @@ export default function AdminStories() {
   const handleCoverUpload = async (files: File[]) => {
     setUploadingCover(true)
     const fd = new FormData()
-    fd.append('files', files[0])
-    const res = await fetch('/api/photos', { method: 'POST', body: fd })
-    const photos = await res.json()
-    if (photos[0]) setCoverImage(photos[0].path)
+    fd.append('file', files[0])
+    fd.append('folder', 'stories')
+    const res = await fetch('/api/admin/upload', { method: 'POST', body: fd })
+    const data = await res.json()
+    if (data.url) setCoverImage(data.url)
     setUploadingCover(false)
   }
 
