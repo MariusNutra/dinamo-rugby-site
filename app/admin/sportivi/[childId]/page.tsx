@@ -227,7 +227,20 @@ export default function AdminSportivPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <input type="number" placeholder="Inaltime (cm)" value={pfForm.height} onChange={e => setPfForm(p => ({ ...p, height: e.target.value }))} className="border rounded px-3 py-2 text-sm" />
               <input type="number" placeholder="Greutate (kg)" value={pfForm.weight} onChange={e => setPfForm(p => ({ ...p, weight: e.target.value }))} className="border rounded px-3 py-2 text-sm" />
-              <input type="text" placeholder="Pozitie" value={pfForm.position} onChange={e => setPfForm(p => ({ ...p, position: e.target.value }))} className="border rounded px-3 py-2 text-sm" />
+              <select value={pfForm.position} onChange={e => setPfForm(p => ({ ...p, position: e.target.value }))} className="border rounded px-3 py-2 text-sm bg-white">
+                <option value="">Pozitie...</option>
+                <option value="Pilon stanga">Pilon stanga</option>
+                <option value="Talonat">Talonat</option>
+                <option value="Pilon dreapta">Pilon dreapta</option>
+                <option value="A doua linie">A doua linie</option>
+                <option value="Flanker">Flanker</option>
+                <option value="Nr. 8">Nr. 8</option>
+                <option value="Mijlocas la gramada">Mijlocas la gramada</option>
+                <option value="Deschizator">Deschizator</option>
+                <option value="Centru">Centru</option>
+                <option value="Aripa">Aripa</option>
+                <option value="Fundas">Fundas</option>
+              </select>
               <input type="text" placeholder="Note" value={pfForm.notes} onChange={e => setPfForm(p => ({ ...p, notes: e.target.value }))} className="border rounded px-3 py-2 text-sm" />
             </div>
             <button onClick={handleAddProfile} disabled={pfSaving} className="mt-3 bg-dinamo-blue text-white px-4 py-2 rounded text-sm hover:bg-blue-700 disabled:opacity-50">

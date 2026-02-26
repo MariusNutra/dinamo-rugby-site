@@ -46,6 +46,7 @@ export default function SportiviManagePage() {
   const [formParentName, setFormParentName] = useState('')
   const [formParentEmail, setFormParentEmail] = useState('')
   const [formParentPhone, setFormParentPhone] = useState('')
+  const [formSendInvite, setFormSendInvite] = useState(true)
   const [formError, setFormError] = useState('')
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState('')
@@ -98,6 +99,7 @@ export default function SportiviManagePage() {
     setFormParentName('')
     setFormParentEmail('')
     setFormParentPhone('')
+    setFormSendInvite(true)
     setFormError('')
   }
 
@@ -154,6 +156,7 @@ export default function SportiviManagePage() {
           email: formParentEmail.trim(),
           phone: formParentPhone.trim() || null,
         }
+        payload.sendInvite = formSendInvite
       }
 
       const res = await fetch('/api/admin/sportivi', {
@@ -403,6 +406,15 @@ export default function SportiviManagePage() {
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none"
                         />
                       </div>
+                      <label className="flex items-center gap-2 text-sm cursor-pointer pt-1">
+                        <input
+                          type="checkbox"
+                          checked={formSendInvite}
+                          onChange={e => setFormSendInvite(e.target.checked)}
+                          className="rounded text-green-600 focus:ring-green-500"
+                        />
+                        Trimite invitatie pe email
+                      </label>
                     </div>
                   )}
                 </div>

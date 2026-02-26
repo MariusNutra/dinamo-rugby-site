@@ -29,6 +29,120 @@ interface ParentData {
   children: ChildData[]
 }
 
+interface PaymentRecord {
+  id: string
+  amount: number
+  type: string
+  status: string
+  description: string | null
+  receiptNumber: string | null
+  createdAt: string
+  child: { name: string } | null
+}
+
+function PaymentsSection({ parentId, childrenList }: { parentId: string; childrenList: ChildData[] }) {
+  const [payments, setPayments] = useState<PaymentRecord[]>([])
+  const [loadingPayments, setLoadingPayments] = useState(true)
+  const [modulePlatiActive, setModulePlatiActive] = useState(false)
+  const [payingChildId, setPayingChildId] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/modules/active')
+      .then(r => r.json())
+      .then(data => {
+        if (data.modulePlati) {
+          setModulePlatiActive(true)
+          fetch(`/api/parinti-secure/plati`)
+            .then(r => r.ok ? r.json() : [])
+            .then(data => {
+              setPayments(Array.isArray(data) ? data : [])
+              setLoadingPayments(false)
+            })
+            .catch(() => setLoadingPayments(false))
+        } else {
+          setLoadingPayments(false)
+        }
+      })
+      .catch(() => setLoadingPayments(false))
+  }, [])
+
+  const handlePayCotizatie = async (childId: string) => {
+    setPayingChildId(childId)
+    try {
+      const res = await fetch('/api/payments/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: 200,
+          type: 'cotizatie',
+          childId,
+          parentId,
+        }),
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch {
+      // fail silently
+    }
+    setPayingChildId(null)
+  }
+
+  if (!modulePlatiActive) return null
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border p-5">
+      <h2 className="font-heading font-bold text-lg mb-4">Plati</h2>
+      {childrenList.length > 0 && (
+        <div className="mb-4 space-y-2">
+          {childrenList.map(child => (
+            <div key={child.id} className="flex items-center justify-between border rounded-lg p-3">
+              <span className="font-medium text-sm">{child.name}</span>
+              <button
+                onClick={() => handlePayCotizatie(child.id)}
+                disabled={payingChildId === child.id}
+                className="text-xs bg-green-600 text-white px-4 py-1.5 rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
+              >
+                {payingChildId === child.id ? 'Se redirecteaza...' : 'Plateste cotizatia'}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      {loadingPayments ? (
+        <div className="text-center py-4">
+          <div className="animate-spin w-6 h-6 border-3 border-dinamo-red border-t-transparent rounded-full mx-auto"></div>
+        </div>
+      ) : payments.length === 0 ? (
+        <p className="text-gray-500 text-sm">Nicio plata inregistrata.</p>
+      ) : (
+        <div className="space-y-2">
+          {payments.map(p => (
+            <div key={p.id} className="flex items-center justify-between text-sm border-b border-gray-100 py-2">
+              <div>
+                <span className="capitalize font-medium">{p.type}</span>
+                {p.child && <span className="text-gray-500 ml-2">- {p.child.name}</span>}
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="font-bold">{p.amount.toLocaleString('ro-RO')} RON</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                  p.status === 'completed' ? 'bg-green-100 text-green-700' :
+                  p.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                  'bg-red-100 text-red-700'
+                }`}>
+                  {p.status === 'completed' ? 'Platit' : p.status === 'pending' ? 'In asteptare' : 'Esuat'}
+                </span>
+                <span className="text-xs text-gray-400">{new Date(p.createdAt).toLocaleDateString('ro-RO')}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const [parent, setParent] = useState<ParentData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -220,6 +334,9 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Payments Card */}
+      <PaymentsSection parentId={parent.id} childrenList={parent.children} />
 
       {/* Documents Card */}
       <div className="bg-white rounded-lg shadow-sm border p-5">

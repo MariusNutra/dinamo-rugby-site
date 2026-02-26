@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 
 function escapeHtml(str: string): string {
   return str
@@ -19,27 +20,21 @@ const transporter = nodemailer.createTransport({
   },
 })
 
-const contactAttempts = new Map<string, { count: number; lastAttempt: number }>()
-const MAX_CONTACT = 5
-const CONTACT_WINDOW = 60 * 60 * 1000 // 1 hour
-
-function getClientIp(req: NextRequest): string {
-  return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-}
-
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req)
-  const now = Date.now()
-  const record = contactAttempts.get(ip)
-  if (record) {
-    if (now - record.lastAttempt > CONTACT_WINDOW) {
-      contactAttempts.delete(ip)
-    } else if (record.count >= MAX_CONTACT) {
-      return NextResponse.json(
-        { error: 'Prea multe mesaje trimise. Reîncearcă mai târziu.' },
-        { status: 429 }
-      )
-    }
+
+  // Persistent rate limiting
+  const limit = await checkRateLimit(ip, {
+    action: 'contact_form',
+    maxAttempts: 5,
+    windowMs: 60 * 60 * 1000, // 1 hour
+  })
+
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: 'Prea multe mesaje trimise. Reîncearcă mai târziu.' },
+      { status: 429 }
+    )
   }
 
   const { name, email, message } = await req.json()
@@ -83,9 +78,6 @@ export async function POST(req: NextRequest) {
         <p style="color: #888; font-size: 12px;">Trimis prin formularul de contact de pe dinamorugby.ro</p>
       `,
     })
-
-    const current = contactAttempts.get(ip)
-    contactAttempts.set(ip, { count: (current?.count || 0) + 1, lastAttempt: now })
 
     return NextResponse.json({ success: true, message: 'Mesajul a fost trimis cu succes!' })
   } catch (error) {

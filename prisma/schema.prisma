@@ -143,6 +143,7 @@ model Parent {
   token       String?
   tokenExpiry DateTime?
   children    Child[]
+  payments    Payment[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
@@ -167,6 +168,7 @@ model Child {
   attendances      Attendance[]
   medicalRecords   MedicalRecord[]
   childPhotos      ChildPhoto[]
+  payments         Payment[]
 }
 
 model AccessRequest {
@@ -254,4 +256,86 @@ model ChildPhoto {
   event      String?
   uploadedBy String?
   createdAt  DateTime  @default(now())
+}
+
+model RateLimit {
+  id        Int      @id @default(autoincrement())
+  key       String
+  action    String
+  count     Int      @default(1)
+  windowStart DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@unique([key, action])
+  @@index([action, windowStart])
+}
+
+model SiteSettings {
+  id                    Int      @id @default(1)
+  moduleHomepage        Boolean  @default(true)
+  moduleEchipe          Boolean  @default(true)
+  moduleProgram         Boolean  @default(true)
+  moduleMeciuri         Boolean  @default(true)
+  moduleGalerie         Boolean  @default(true)
+  modulePovesti         Boolean  @default(true)
+  moduleContact         Boolean  @default(true)
+  moduleDespre          Boolean  @default(true)
+  modulePortalParinti   Boolean  @default(true)
+  moduleInscrieri       Boolean  @default(false)
+  moduleCalendar        Boolean  @default(false)
+  moduleNotificari      Boolean  @default(false)
+  moduleStatistici      Boolean  @default(false)
+  modulePlati           Boolean  @default(false)
+  moduleMagazin         Boolean  @default(false)
+  moduleVideoHighlights Boolean  @default(false)
+  moduleSponsori        Boolean  @default(false)
+  moduleFundraising     Boolean  @default(false)
+  extraConfig           String   @default("{}")
+  updatedAt             DateTime @updatedAt
+}
+
+model Campaign {
+  id             String     @id @default(cuid())
+  title          String
+  description    String
+  image          String?
+  goalAmount     Float
+  currentAmount  Float      @default(0)
+  deadline       DateTime?
+  active         Boolean    @default(true)
+  showDonors     Boolean    @default(true)
+  allowAnonymous Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  donations      Donation[]
+}
+
+model Donation {
+  id              String   @id @default(cuid())
+  campaignId      String
+  campaign        Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  donorName       String?
+  email           String?
+  amount          Float
+  anonymous       Boolean  @default(false)
+  paymentMethod   String   @default("manual")
+  stripeSessionId String?
+  status          String   @default("completed")
+  createdAt       DateTime @default(now())
+}
+
+model Payment {
+  id              String   @id @default(cuid())
+  parentId        String?
+  parent          Parent?  @relation(fields: [parentId], references: [id], onDelete: SetNull)
+  childId         String?
+  child           Child?   @relation(fields: [childId], references: [id], onDelete: SetNull)
+  amount          Float
+  type            String
+  status          String   @default("pending")
+  description     String?
+  stripeSessionId String?
+  receiptNumber   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }

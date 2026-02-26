@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import PhotoGrid from '@/components/PhotoGrid'
 import Link from 'next/link'
+import { sanitizeHtml } from '@/lib/sanitize'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,7 +50,7 @@ export default async function StoryPage({ params }: { params: { slug: string } }
           </div>
         )}
 
-        <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: story.content }} />
+        <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(story.content) }} />
 
         {story.photos.length > 0 && (
           <div className="mt-12">

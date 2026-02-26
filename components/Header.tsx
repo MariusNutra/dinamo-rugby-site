@@ -6,22 +6,30 @@ import { useState, useEffect } from 'react'
 
 const defaultGrupe = ['U10', 'U12', 'U14', 'U16', 'U18']
 
-const staticLinks = [
-  { href: '/', label: 'Acasă' },
-  { href: '/antrenori', label: 'Antrenori' },
-  { href: '/program', label: 'Program' },
-  { href: '/meciuri', label: 'Meciuri' },
-  { href: '/povesti', label: 'Povești' },
-  { href: '/galerie', label: 'Galerie' },
-  { href: '/rezultate', label: 'Rezultate' },
-  { href: '/despre', label: 'Despre noi' },
-  { href: '/contact', label: 'Contact' },
+const allStaticLinks = [
+  { href: '/', label: 'Acasa', moduleKey: 'moduleHomepage' },
+  { href: '/antrenori', label: 'Antrenori', moduleKey: 'moduleEchipe' },
+  { href: '/program', label: 'Program', moduleKey: 'moduleProgram' },
+  { href: '/meciuri', label: 'Meciuri', moduleKey: 'moduleMeciuri' },
+  { href: '/povesti', label: 'Povesti', moduleKey: 'modulePovesti' },
+  { href: '/galerie', label: 'Galerie', moduleKey: 'moduleGalerie' },
+  { href: '/rezultate', label: 'Rezultate', moduleKey: 'moduleMeciuri' },
+  { href: '/despre', label: 'Despre noi', moduleKey: 'moduleDespre' },
+  { href: '/contact', label: 'Contact', moduleKey: 'moduleContact' },
+  { href: '/fundraising', label: 'Donatii', moduleKey: 'moduleFundraising' },
+  { href: '/inscrieri', label: 'Inscrieri', moduleKey: 'moduleInscrieri' },
+  { href: '/calendar', label: 'Calendar', moduleKey: 'moduleCalendar' },
+  { href: '/statistici', label: 'Statistici', moduleKey: 'moduleStatistici' },
+  { href: '/magazin', label: 'Magazin', moduleKey: 'moduleMagazin' },
+  { href: '/video-highlights', label: 'Video', moduleKey: 'moduleVideoHighlights' },
+  { href: '/sponsori', label: 'Sponsori', moduleKey: 'moduleSponsori' },
 ]
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [grupe, setGrupe] = useState<string[]>(defaultGrupe)
+  const [moduleSettings, setModuleSettings] = useState<Record<string, boolean> | null>(null)
 
   useEffect(() => {
     fetch('/api/teams?active=1')
@@ -32,11 +40,28 @@ export default function Header() {
         }
       })
       .catch(() => {})
+
+    fetch('/api/modules/active')
+      .then(r => r.json())
+      .then(data => setModuleSettings(data))
+      .catch(() => {})
   }, [])
+
+  const staticLinks = allStaticLinks.filter(link => {
+    if (!moduleSettings) {
+      // Before settings load, show only default links
+      return ['/', '/antrenori', '/program', '/meciuri', '/povesti', '/galerie', '/rezultate', '/despre', '/contact'].includes(link.href)
+    }
+    return moduleSettings[link.moduleKey] !== false
+  })
 
   const navLinks = [
     staticLinks[0],
-    { href: grupe[0] ? `/echipe/${grupe[0]}` : '/echipe/U10', label: 'Echipe', dropdown: grupe.map(g => ({ href: `/echipe/${g}`, label: g })) },
+    ...(moduleSettings?.moduleEchipe !== false ? [{
+      href: grupe[0] ? `/echipe/${grupe[0]}` : '/echipe/U10',
+      label: 'Echipe',
+      dropdown: grupe.map(g => ({ href: `/echipe/${g}`, label: g })),
+    }] : []),
     ...staticLinks.slice(1),
   ]
 
@@ -52,7 +77,7 @@ export default function Header() {
 
         <nav className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => (
-            'dropdown' in link && link.dropdown ? (
+            link && 'dropdown' in link && link.dropdown ? (
               <div key={link.label} className="relative"
                 onMouseEnter={() => setDropdownOpen(true)}
                 onMouseLeave={() => setDropdownOpen(false)}>
@@ -70,17 +95,19 @@ export default function Header() {
                   </div>
                 )}
               </div>
-            ) : (
+            ) : link ? (
               <Link key={link.href} href={link.href}
                 className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-dinamo-red transition-colors rounded-md hover:bg-gray-50">
                 {link.label}
               </Link>
-            )
+            ) : null
           ))}
-          <Link href="/parinti"
-            className="ml-2 px-3 py-1.5 text-sm font-bold text-white bg-dinamo-red rounded-md hover:bg-red-700 transition-colors">
-            Portal Parinti
-          </Link>
+          {(!moduleSettings || moduleSettings.modulePortalParinti !== false) && (
+            <Link href="/parinti"
+              className="ml-2 px-3 py-1.5 text-sm font-bold text-white bg-dinamo-red rounded-md hover:bg-red-700 transition-colors">
+              Portal Parinti
+            </Link>
+          )}
         </nav>
 
         <button className="md:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
@@ -97,7 +124,7 @@ export default function Header() {
       {mobileOpen && (
         <div className="md:hidden bg-white border-t">
           {navLinks.map((link) => (
-            'dropdown' in link && link.dropdown ? (
+            link && 'dropdown' in link && link.dropdown ? (
               <div key={link.label}>
                 <div className="px-4 py-2 text-sm font-bold text-gray-500 uppercase">{link.label}</div>
                 {link.dropdown.map((item) => (
@@ -108,19 +135,21 @@ export default function Header() {
                   </Link>
                 ))}
               </div>
-            ) : (
+            ) : link ? (
               <Link key={link.href} href={link.href}
                 onClick={() => setMobileOpen(false)}
                 className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-dinamo-red hover:text-white border-b border-gray-100">
                 {link.label}
               </Link>
-            )
+            ) : null
           ))}
-          <Link href="/parinti"
-            onClick={() => setMobileOpen(false)}
-            className="block px-4 py-3 text-sm font-bold text-dinamo-red hover:bg-dinamo-red hover:text-white border-b border-gray-100">
-            Portal Parinti
-          </Link>
+          {(!moduleSettings || moduleSettings.modulePortalParinti !== false) && (
+            <Link href="/parinti"
+              onClick={() => setMobileOpen(false)}
+              className="block px-4 py-3 text-sm font-bold text-dinamo-red hover:bg-dinamo-red hover:text-white border-b border-gray-100">
+              Portal Parinti
+            </Link>
+          )}
         </div>
       )}
     </header>

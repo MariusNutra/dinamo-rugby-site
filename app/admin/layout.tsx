@@ -7,6 +7,7 @@ import Link from 'next/link'
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [auth, setAuth] = useState<boolean | null>(null)
   const [unreadCount, setUnreadCount] = useState<number | null>(null)
+  const [moduleSettings, setModuleSettings] = useState<Record<string, boolean> | null>(null)
   const router = useRouter()
   const pathname = usePathname()
 
@@ -57,6 +58,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       .catch(() => {})
   }, [auth, pathname])
 
+  useEffect(() => {
+    if (!auth) return
+    fetch('/api/modules/active')
+      .then(r => r.json())
+      .then(data => setModuleSettings(data))
+      .catch(() => {})
+  }, [auth])
+
   if (pathname === '/admin/login') return <>{children}</>
 
   if (auth === null) {
@@ -67,20 +76,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     )
   }
 
-  const navItems = [
-    { href: '/admin', label: 'Dashboard', icon: '🏠' },
-    { href: '/admin/povesti', label: 'Povești', icon: '📝' },
-    { href: '/admin/galerie', label: 'Galerie', icon: '📸' },
-    { href: '/admin/echipe', label: 'Echipe', icon: '🏉' },
-    { href: '/admin/program', label: 'Program', icon: '📅' },
-    { href: '/admin/meciuri', label: 'Meciuri', icon: '🏆' },
-    { href: '/admin/parinti', label: 'Parinti', icon: '👨‍👩‍👧' },
-    { href: '/admin/cereri-acces', label: 'Cereri', icon: '📩', badge: pendingRequests },
-    { href: '/admin/acorduri', label: 'Acorduri', icon: '📋' },
-    { href: '/admin/sportivi', label: 'Sportivi', icon: '🏃' },
-    { href: '/admin/evaluari', label: 'Evaluari', icon: '📊' },
-    { href: '/admin/prezente', label: 'Prezente', icon: '✅' },
+  const allNavItems = [
+    { href: '/admin', label: 'Dashboard', icon: '🏠', moduleKey: null },
+    { href: '/admin/povesti', label: 'Povesti', icon: '📝', moduleKey: 'modulePovesti' },
+    { href: '/admin/galerie', label: 'Galerie', icon: '📸', moduleKey: 'moduleGalerie' },
+    { href: '/admin/echipe', label: 'Echipe', icon: '🏉', moduleKey: 'moduleEchipe' },
+    { href: '/admin/program', label: 'Program', icon: '📅', moduleKey: 'moduleProgram' },
+    { href: '/admin/meciuri', label: 'Meciuri', icon: '🏆', moduleKey: 'moduleMeciuri' },
+    { href: '/admin/parinti', label: 'Parinti', icon: '👨‍👩‍👧', moduleKey: 'modulePortalParinti' },
+    { href: '/admin/cereri-acces', label: 'Cereri', icon: '📩', badge: pendingRequests, moduleKey: 'modulePortalParinti' },
+    { href: '/admin/acorduri', label: 'Acorduri', icon: '📋', moduleKey: 'modulePortalParinti' },
+    { href: '/admin/sportivi', label: 'Sportivi', icon: '🏃', moduleKey: null },
+    { href: '/admin/evaluari', label: 'Evaluari', icon: '📊', moduleKey: null },
+    { href: '/admin/prezente', label: 'Prezente', icon: '✅', moduleKey: null },
+    { href: '/admin/fundraising', label: 'Fundraising', icon: '💰', moduleKey: 'moduleFundraising' },
+    { href: '/admin/plati', label: 'Plati', icon: '💳', moduleKey: 'modulePlati' },
+    { href: '/admin/settings', label: 'Setari', icon: '⚙️', moduleKey: null },
   ]
+
+  const navItems = allNavItems.filter(item => {
+    if (!item.moduleKey) return true
+    if (!moduleSettings) return !['moduleFundraising', 'modulePlati'].includes(item.moduleKey)
+    return moduleSettings[item.moduleKey] !== false
+  })
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })

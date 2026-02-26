@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAuthenticated } from '@/lib/auth'
+import nodemailer from 'nodemailer'
+
+const transporter = nodemailer.createTransport({
+  host: 'localhost',
+  port: 25,
+  secure: false,
+  tls: { rejectUnauthorized: false },
+})
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
 export async function POST(req: NextRequest) {
   if (!await isAuthenticated()) {
@@ -9,7 +19,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const { nume, prenume, birthYear, teamId, parentId, newParent } = body
+    const { nume, prenume, birthYear, teamId, parentId, newParent, sendInvite } = body
 
     // Validate name
     if (!nume || typeof nume !== 'string' || nume.trim().length < 2) {
@@ -120,6 +130,45 @@ export async function POST(req: NextRequest) {
         return { parent, child }
       })
 
+      // Send welcome/invite email if requested
+      let emailSent = false
+      if (sendInvite && result.parent) {
+        try {
+          await transporter.sendMail({
+            from: '"Dinamo Rugby Juniori" <noreply@dinamorugby.ro>',
+            to: normalizedEmail,
+            subject: 'Bun venit in Portalul Parinti — Dinamo Rugby Juniori',
+            text: `Salut ${result.parent.name},\n\nContul tau a fost creat in Portalul Parintilor Dinamo Rugby Juniori.\n\nAcceseaza portalul la adresa:\n${SITE_URL}/parinti\n\nFoloseste adresa de email ${normalizedEmail} pentru a solicita un link de conectare.\n\n— Echipa Dinamo Rugby Juniori`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="text-align: center; padding: 20px 0;">
+                  <h2 style="color: #1e3a5f; margin: 0;">Dinamo Rugby Juniori</h2>
+                  <p style="color: #666; margin: 5px 0 0;">Portal Parinti</p>
+                </div>
+                <div style="background: #f9fafb; border-radius: 8px; padding: 30px; margin: 20px 0;">
+                  <p style="margin: 0 0 15px;">Salut <strong>${result.parent.name}</strong>,</p>
+                  <p style="margin: 0 0 15px;">Contul tau a fost creat in Portalul Parintilor Dinamo Rugby Juniori.</p>
+                  <p style="margin: 0 0 25px;">Acceseaza portalul pentru a semna acordurile foto si a gestiona datele copiilor tai:</p>
+                  <p style="text-align: center; margin: 0 0 25px;">
+                    <a href="${SITE_URL}/parinti" style="background: #DC2626; color: white; padding: 14px 35px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block;">
+                      Acceseaza Portalul
+                    </a>
+                  </p>
+                  <p style="color: #666; font-size: 13px; margin: 0;">Foloseste adresa <strong>${normalizedEmail}</strong> pentru a solicita un link de conectare.</p>
+                </div>
+                <p style="color: #999; font-size: 12px; text-align: center;">
+                  Acest email a fost trimis de echipa Dinamo Rugby Juniori.
+                </p>
+              </div>
+            `,
+          })
+          emailSent = true
+        } catch (emailError) {
+          console.error('Error sending welcome email:', emailError)
+          // Don't fail the request if email fails - parent was already created
+        }
+      }
+
       return NextResponse.json({
         success: true,
         child: {
@@ -130,6 +179,7 @@ export async function POST(req: NextRequest) {
           teamName: result.child.team?.grupa ?? null,
           parentName: result.parent.name,
         },
+        emailSent,
       }, { status: 201 })
     }
   } catch (error) {
