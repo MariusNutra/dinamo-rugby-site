@@ -87,7 +87,8 @@ export default function FundraisingPage() {
                 )}
                 <div className="p-6 md:p-8">
                   <h2 className="font-heading text-2xl font-bold text-dinamo-blue mb-2">{campaign.title}</h2>
-                  <p className="text-gray-600 mb-6 whitespace-pre-line">{campaign.description}</p>
+                  <div className="text-gray-600 mb-6 campaign-description [&_h3]:text-dinamo-blue [&_h3]:font-heading [&_h3]:font-bold [&_h3]:text-lg [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_li]:mb-1.5 [&_strong]:text-gray-800"
+                    dangerouslySetInnerHTML={{ __html: campaign.description }} />
 
                   <div className="mb-4">
                     <div className="flex justify-between text-sm mb-1.5">
