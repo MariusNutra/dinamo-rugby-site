@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getModuleSettings } from '@/lib/modules'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const settings = await getModuleSettings()
 
