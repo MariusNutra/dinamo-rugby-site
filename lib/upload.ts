@@ -5,7 +5,6 @@ import path from 'path'
 const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads')
 
 function sanitizeFilename(name: string): string {
-  // Remove extension, sanitize, then we'll add .jpg back
   const base = path.basename(name, path.extname(name))
   return base
     .normalize('NFD')
@@ -16,12 +15,6 @@ function sanitizeFilename(name: string): string {
     .toLowerCase()
     .slice(0, 80)                    // limit length
     || 'image'
-}
-
-function generateFilename(originalName: string): string {
-  const timestamp = Date.now()
-  const safeName = sanitizeFilename(originalName)
-  return `${timestamp}-${safeName}.jpg`
 }
 
 async function ensureDir(dir: string) {
@@ -38,13 +31,24 @@ export async function saveImage(
     : UPLOAD_DIR
   await ensureDir(targetDir)
 
-  const filename = generateFilename(originalName)
+  // Detect if image has alpha channel (transparency)
+  const metadata = await sharp(buffer).metadata()
+  const hasAlpha = metadata.hasAlpha === true
+
+  const timestamp = Date.now()
+  const safeName = sanitizeFilename(originalName)
+  const ext = hasAlpha ? 'png' : 'jpg'
+  const filename = `${timestamp}-${safeName}.${ext}`
   const filePath = path.join(targetDir, filename)
 
-  await sharp(buffer)
+  const pipeline = sharp(buffer)
     .resize(1920, 1920, { fit: 'inside', withoutEnlargement: true })
-    .jpeg({ quality: 85 })
-    .toFile(filePath)
+
+  if (hasAlpha) {
+    await pipeline.png({ quality: 85 }).toFile(filePath)
+  } else {
+    await pipeline.jpeg({ quality: 85 }).toFile(filePath)
+  }
 
   const relativeName = subfolder ? `${subfolder}/${filename}` : filename
   return { filename: relativeName, path: `/uploads/${relativeName}` }
