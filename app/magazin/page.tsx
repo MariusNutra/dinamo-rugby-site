@@ -84,12 +84,12 @@ export default function MagazinPage() {
                 className="bg-white rounded-xl shadow-sm border overflow-hidden hover:shadow-md transition-shadow"
               >
                 {/* Product image or placeholder */}
-                <div className="aspect-[4/3] bg-gray-50 flex items-center justify-center overflow-hidden">
+                <div className="aspect-square bg-[#f8f8f8] flex items-center justify-center overflow-hidden rounded-t-xl p-4">
                   {product.image ? (
                     <img
                       src={product.image}
                       alt={product.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain object-center"
                       loading="lazy"
                     />
                   ) : (
