@@ -16,7 +16,7 @@ const transporter = nodemailer.createTransport({
   port: 25,
   secure: false,
   tls: {
-    rejectUnauthorized: process.env.NODE_ENV === 'production',
+    rejectUnauthorized: false,
   },
 })
 

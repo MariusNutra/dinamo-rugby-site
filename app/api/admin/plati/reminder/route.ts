@@ -8,7 +8,7 @@ const transporter = nodemailer.createTransport({
   host: 'localhost',
   port: 25,
   secure: false,
-  tls: { rejectUnauthorized: process.env.NODE_ENV === 'production' },
+  tls: { rejectUnauthorized: false },
 })
 
 export async function POST(req: NextRequest) {

@@ -7,7 +7,7 @@ const transporter = nodemailer.createTransport({
   host: 'localhost',
   port: 25,
   secure: false,
-  tls: { rejectUnauthorized: process.env.NODE_ENV === 'production' },
+  tls: { rejectUnauthorized: false },
 })
 
 function generateReceiptNumber(): string {
