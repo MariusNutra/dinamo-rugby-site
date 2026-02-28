@@ -1,3 +1,5 @@
+import { prisma } from '@/lib/prisma'
+
 export const metadata = {
   title: 'Staff Tehnic — Dinamo Rugby Juniori',
   description: 'Staff-ul tehnic al secției de juniori rugby CS Dinamo București.',
@@ -45,57 +47,17 @@ function getIcon(text: string) {
   return <MedalIcon />
 }
 
-const coaches = [
-  {
-    name: 'Hildan Cristian',
-    role: 'Antrenor',
-    initials: 'HC',
-    photo: '/images/antrenori/hildan-cristian.webp',
-    achievements: [
-      'Fost internațional al echipei naționale de seniori a României',
-      'Participant la Cupa Mondială',
-      'Multiplu campion național de seniori ca jucător',
-      'Antrenor al echipelor naționale de juniori și secund la echipa națională de seniori',
-    ],
-  },
-  {
-    name: 'Curea Darie',
-    role: 'Antrenor',
-    initials: 'CD',
-    photo: null,
-    achievements: [
-      'Fost jucător internațional al echipelor naționale de seniori, tineret și juniori',
-      'Multiplu campion național de seniori și juniori',
-      'Antrenor al echipei de juniori CS Dinamo',
-      'Câștigător al campionatului de juniori la categoriile U16 și U20',
-    ],
-  },
-  {
-    name: 'Andrei Guranescu',
-    role: 'Antrenor',
-    initials: 'AG',
-    photo: '/images/antrenori/andrei-guranescu.webp',
-    achievements: [
-      'Fost jucător internațional de juniori și seniori',
-      'Multiplu campion național de seniori și juniori',
-      'Fost jucător în campionatele de seniori',
-    ],
-  },
-  {
-    name: 'Stefan Demici',
-    role: 'Antrenor / Manager',
-    initials: 'SD',
-    photo: '/images/antrenori/stefan-demici.webp',
-    achievements: [
-      'Fost internațional de seniori al României',
-      'Participant la Cupa Mondială',
-      'Multiplu campion național de seniori ca jucător',
-      'Antrenor și manager, câștigător al campionatului și Cupei României',
-    ],
-  },
-]
+function getInitials(name: string) {
+  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+}
 
-export default function AntrenoriPage() {
+export default async function AntrenoriPage() {
+  const coaches = await prisma.coach.findMany({
+    where: { visible: true },
+    orderBy: { order: 'asc' },
+    include: { team: { select: { grupa: true } } },
+  })
+
   return (
     <>
       {/* Hero */}
@@ -113,70 +75,89 @@ export default function AntrenoriPage() {
       {/* Coaches Grid */}
       <section className="py-16 md:py-20 bg-gray-50">
         <div className="mx-auto px-4" style={{ maxWidth: '1100px' }}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
-            {coaches.map((coach) => (
-              <article
-                key={coach.name}
-                className="coach-card group relative rounded-[18px] overflow-hidden text-white"
-                tabIndex={0}
-                style={{
-                  background: 'linear-gradient(135deg, #C8102E 0%, #A30D23 60%, #8F0B1E 100%)',
-                  padding: '28px',
-                  boxShadow: '0 12px 28px rgba(0,0,0,0.25)',
-                }}
-              >
-                <div className="flex flex-col items-center text-center">
-                  {/* Photo */}
-                  {coach.photo ? (
-                    <img
-                      src={coach.photo}
-                      alt={`Portret ${coach.name}`}
-                      loading="lazy"
-                      className="coach-photo w-[116px] h-[116px] rounded-full object-cover object-top border-[3px] border-white/90 mb-5"
-                      style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.3), inset 0 1px 3px rgba(0,0,0,0.15)' }}
-                    />
-                  ) : (
-                    <div
-                      className="coach-photo w-[116px] h-[116px] rounded-full border-[3px] border-white/90 mb-5 flex items-center justify-center"
-                      style={{
-                        background: 'linear-gradient(135deg, #A30D23 0%, #8F0B1E 100%)',
-                        boxShadow: '0 4px 16px rgba(0,0,0,0.3), inset 0 1px 3px rgba(0,0,0,0.15)',
-                      }}
-                      role="img"
-                      aria-label={`Placeholder pentru ${coach.name}`}
-                    >
-                      <span className="text-4xl font-heading font-extrabold text-white/70">
-                        {coach.initials}
-                      </span>
-                    </div>
-                  )}
+          {coaches.length === 0 ? (
+            <p className="text-center text-gray-400 py-12">Informatii in curs de actualizare.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
+              {coaches.map((coach) => {
+                const certLines = coach.certifications
+                  ? coach.certifications.split('\n').filter((l: string) => l.trim())
+                  : []
 
-                  {/* Name */}
-                  <h2 className="font-heading font-extrabold text-[22px] md:text-2xl text-white mb-2.5 leading-tight">
-                    {coach.name}
-                  </h2>
-
-                  {/* Role Badge */}
-                  <span
-                    className="inline-block px-4 py-1 bg-white text-sm font-bold rounded-full mb-5"
-                    style={{ color: '#C8102E', boxShadow: '0 2px 6px rgba(0,0,0,0.12)' }}
+                return (
+                  <article
+                    key={coach.id}
+                    className="coach-card group relative rounded-[18px] overflow-hidden text-white"
+                    tabIndex={0}
+                    style={{
+                      background: 'linear-gradient(135deg, #C8102E 0%, #A30D23 60%, #8F0B1E 100%)',
+                      padding: '28px',
+                      boxShadow: '0 12px 28px rgba(0,0,0,0.25)',
+                    }}
                   >
-                    {coach.role}
-                  </span>
+                    <div className="flex flex-col items-center text-center">
+                      {/* Photo */}
+                      {coach.photo ? (
+                        <img
+                          src={coach.photo}
+                          alt={`Portret ${coach.name}`}
+                          loading="lazy"
+                          className="coach-photo w-[116px] h-[116px] rounded-full object-cover object-top border-[3px] border-white/90 mb-5"
+                          style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.3), inset 0 1px 3px rgba(0,0,0,0.15)' }}
+                        />
+                      ) : (
+                        <div
+                          className="coach-photo w-[116px] h-[116px] rounded-full border-[3px] border-white/90 mb-5 flex items-center justify-center"
+                          style={{
+                            background: 'linear-gradient(135deg, #A30D23 0%, #8F0B1E 100%)',
+                            boxShadow: '0 4px 16px rgba(0,0,0,0.3), inset 0 1px 3px rgba(0,0,0,0.15)',
+                          }}
+                          role="img"
+                          aria-label={`Placeholder pentru ${coach.name}`}
+                        >
+                          <span className="text-4xl font-heading font-extrabold text-white/70">
+                            {getInitials(coach.name)}
+                          </span>
+                        </div>
+                      )}
 
-                  {/* Achievements */}
-                  <ul className="space-y-2.5 text-left w-full" role="list">
-                    {coach.achievements.map((achievement, i) => (
-                      <li key={i} className="flex items-center gap-3 text-[17px] leading-relaxed" style={{ color: '#FFECEC' }}>
-                        <span className="mt-0.5 self-start">{getIcon(achievement)}</span>
-                        <span>{achievement}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </article>
-            ))}
-          </div>
+                      {/* Name */}
+                      <h2 className="font-heading font-extrabold text-[22px] md:text-2xl text-white mb-2.5 leading-tight">
+                        {coach.name}
+                      </h2>
+
+                      {/* Team Badge */}
+                      <span
+                        className="inline-block px-4 py-1 bg-white text-sm font-bold rounded-full mb-5"
+                        style={{ color: '#C8102E', boxShadow: '0 2px 6px rgba(0,0,0,0.12)' }}
+                      >
+                        {coach.team?.grupa || 'Antrenor'}
+                      </span>
+
+                      {/* Description */}
+                      {coach.description && (
+                        <p className="text-[15px] leading-relaxed mb-4" style={{ color: '#FFECEC' }}>
+                          {coach.description}
+                        </p>
+                      )}
+
+                      {/* Certifications/Achievements */}
+                      {certLines.length > 0 && (
+                        <ul className="space-y-2.5 text-left w-full" role="list">
+                          {certLines.map((line: string, i: number) => (
+                            <li key={i} className="flex items-center gap-3 text-[17px] leading-relaxed" style={{ color: '#FFECEC' }}>
+                              <span className="mt-0.5 self-start">{getIcon(line)}</span>
+                              <span>{line}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+          )}
 
           {/* CTA */}
           <div

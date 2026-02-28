@@ -155,7 +155,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         icon: '⚽',
         items: [
           { href: '/admin/echipe', label: 'Echipe', icon: '🏉', moduleKey: 'moduleEchipe' },
+          { href: '/admin/antrenori', label: 'Antrenori', icon: '👨‍🏫', moduleKey: null },
           { href: '/admin/sportivi', label: 'Sportivi', icon: '🏃', moduleKey: null },
+          { href: '/admin/echipe-management', label: 'Echipe Board', icon: '🔀', moduleKey: null },
           { href: '/admin/meciuri', label: 'Meciuri', icon: '🏆', moduleKey: 'moduleMeciuri' },
           { href: '/admin/program', label: 'Program', icon: '📅', moduleKey: 'moduleProgram' },
           { href: '/admin/calendar', label: 'Calendar', icon: '📆', moduleKey: 'moduleCalendar' },
@@ -191,6 +193,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         icon: '⚙️',
         items: [
           { href: '/admin/settings/modules', label: 'Module', icon: '🧩', moduleKey: null },
+          { href: '/admin/settings/admins', label: 'Utilizatori', icon: '🔐', moduleKey: null },
           { href: '/admin/settings/notificari', label: 'Notificari', icon: '🔔', moduleKey: 'moduleNotificari' },
           { href: '/admin/sponsori', label: 'Sponsori', icon: '🤝', moduleKey: 'moduleSponsori' },
         ],

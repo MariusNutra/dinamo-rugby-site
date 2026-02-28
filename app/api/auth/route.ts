@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { createToken } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest) {
@@ -23,12 +24,23 @@ export async function POST(req: NextRequest) {
 
   const { username, password } = await req.json()
 
-  const validUsername = username === process.env.ADMIN_USERNAME
-  const passwordHash = process.env.ADMIN_PASSWORD_HASH || ''
-  const validPassword = passwordHash ? await bcrypt.compare(password || '', passwordHash) : false
+  // Find user in database
+  const user = await prisma.user.findUnique({
+    where: { username },
+  })
 
-  if (validUsername && validPassword) {
-    const token = createToken()
+  if (!user || !user.active) {
+    return NextResponse.json({ error: 'Credențiale invalide' }, { status: 401 })
+  }
+
+  const validPassword = await bcrypt.compare(password || '', user.password)
+
+  if (validPassword) {
+    const token = createToken({
+      userId: user.id,
+      username: user.username,
+      role: user.role,
+    })
     const response = NextResponse.json({ success: true })
     response.cookies.set('admin_token', token, {
       httpOnly: true,

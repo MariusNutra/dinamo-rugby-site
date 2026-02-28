@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
   const coaches = await prisma.coach.findMany({
     where: teamId ? { teamId: parseInt(teamId) } : {},
     orderBy: { order: 'asc' },
+    include: { team: { select: { grupa: true } } },
   })
   return NextResponse.json(coaches)
 }
@@ -31,9 +32,14 @@ export async function POST(req: NextRequest) {
       name: data.name,
       description: data.description || null,
       photo: data.photo || null,
+      phone: data.phone || null,
+      email: data.email || null,
+      certifications: data.certifications || null,
+      visible: data.visible !== undefined ? data.visible : true,
       order: (maxOrder?.order ?? -1) + 1,
       teamId: data.teamId,
     },
+    include: { team: { select: { grupa: true } } },
   })
   return NextResponse.json(coach)
 }

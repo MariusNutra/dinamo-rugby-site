@@ -12,11 +12,17 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (data.name !== undefined) updateData.name = data.name
   if (data.description !== undefined) updateData.description = data.description || null
   if (data.photo !== undefined) updateData.photo = data.photo || null
+  if (data.phone !== undefined) updateData.phone = data.phone || null
+  if (data.email !== undefined) updateData.email = data.email || null
+  if (data.certifications !== undefined) updateData.certifications = data.certifications || null
+  if (data.visible !== undefined) updateData.visible = data.visible
   if (data.order !== undefined) updateData.order = data.order
+  if (data.teamId !== undefined) updateData.teamId = data.teamId
 
   const coach = await prisma.coach.update({
     where: { id: params.id },
     data: updateData,
+    include: { team: { select: { grupa: true } } },
   })
   return NextResponse.json(coach)
 }
