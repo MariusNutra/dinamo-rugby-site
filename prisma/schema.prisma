@@ -166,6 +166,7 @@ model Parent {
   name              String
   email             String                    @unique
   phone             String?
+  password          String?
   token             String?
   tokenExpiry       DateTime?
   createdAt         DateTime                  @default(now())

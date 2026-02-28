@@ -1,23 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { validateApiKey, checkEndpointPermission } from '@/lib/api-auth'
+import { verifyAppToken } from '@/lib/app-auth'
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204 })
+}
 
 export async function GET(request: NextRequest) {
-  // Validate API key
-  const auth = await validateApiKey(request)
-  if (!auth.valid || !auth.apiKey) {
-    return NextResponse.json(
-      { error: { code: 'UNAUTHORIZED', message: auth.error || 'Unauthorized' } },
-      { status: 401 }
-    )
-  }
+  // Accept Bearer JWT from mobile app OR API key
+  const appUser = verifyAppToken(request)
 
-  // Check endpoint permission
-  if (!checkEndpointPermission(auth.apiKey, 'calendar')) {
-    return NextResponse.json(
-      { error: { code: 'FORBIDDEN', message: 'API key does not have permission for this endpoint.' } },
-      { status: 403 }
-    )
+  if (!appUser) {
+    // Fallback to API key auth
+    const auth = await validateApiKey(request)
+    if (!auth.valid || !auth.apiKey) {
+      return NextResponse.json(
+        { error: { code: 'UNAUTHORIZED', message: auth.error || 'Unauthorized' } },
+        { status: 401 }
+      )
+    }
+
+    if (!checkEndpointPermission(auth.apiKey, 'calendar')) {
+      return NextResponse.json(
+        { error: { code: 'FORBIDDEN', message: 'API key does not have permission for this endpoint.' } },
+        { status: 403 }
+      )
+    }
   }
 
   try {
