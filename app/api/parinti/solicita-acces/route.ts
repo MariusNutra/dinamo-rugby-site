@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import nodemailer from 'nodemailer'
 
 function escapeHtml(str: string): string {
@@ -17,11 +18,6 @@ const transporter = nodemailer.createTransport({
   secure: false,
   tls: { rejectUnauthorized: false },
 })
-
-// Rate limit: 3 requests per day per email
-const accessAttempts = new Map<string, { count: number; firstAttempt: number }>()
-const MAX_REQUESTS = 3
-const WINDOW_MS = 24 * 60 * 60 * 1000 // 24 hours
 
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>
@@ -88,19 +84,31 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Mesajul este prea lung (max. 2000 caractere).' }, { status: 400 })
   }
 
-  // --- Rate limiting by email ---
+  // --- Rate limiting ---
   const normalizedEmail = email.toLowerCase().trim()
-  const now = Date.now()
-  const record = accessAttempts.get(normalizedEmail)
-  if (record) {
-    if (now - record.firstAttempt > WINDOW_MS) {
-      accessAttempts.delete(normalizedEmail)
-    } else if (record.count >= MAX_REQUESTS) {
-      return NextResponse.json(
-        { error: 'Ai trimis deja cereri astazi. Reincearca maine.' },
-        { status: 429 }
-      )
-    }
+
+  const rlimit = await checkRateLimit(normalizedEmail, {
+    action: 'solicita_acces',
+    maxAttempts: 3,
+    windowMs: 24 * 60 * 60 * 1000,
+  })
+  if (!rlimit.allowed) {
+    return NextResponse.json(
+      { error: 'Ai trimis deja cereri astazi. Reincearca maine.' },
+      { status: 429 }
+    )
+  }
+
+  const ipLimit = await checkRateLimit(getClientIp(req), {
+    action: 'solicita_acces_ip',
+    maxAttempts: 10,
+    windowMs: 60 * 60 * 1000,
+  })
+  if (!ipLimit.allowed) {
+    return NextResponse.json(
+      { error: 'Prea multe cereri. Reincearca mai tarziu.' },
+      { status: 429 }
+    )
   }
 
   // --- Create DB record ---
@@ -175,13 +183,6 @@ export async function POST(req: NextRequest) {
       console.error('Access request notification email error:', emailError)
       // Don't fail the request — the DB record was created successfully
     }
-
-    // --- Update rate limit ---
-    const current = accessAttempts.get(normalizedEmail)
-    accessAttempts.set(normalizedEmail, {
-      count: (current?.count || 0) + 1,
-      firstAttempt: current?.firstAttempt || now,
-    })
 
     return NextResponse.json({
       success: true,

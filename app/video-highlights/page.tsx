@@ -3,6 +3,11 @@ import VideoHighlightsClient from './VideoHighlightsClient'
 
 export const dynamic = 'force-dynamic'
 
+export const metadata = {
+  title: 'Video Highlights | Dinamo Rugby Juniori',
+  description: 'Momente video din meciurile și antrenamentele echipelor de rugby juniori Dinamo București.',
+}
+
 export default async function VideoHighlightsPage() {
   const [videos, teams] = await Promise.all([
     prisma.video.findMany({

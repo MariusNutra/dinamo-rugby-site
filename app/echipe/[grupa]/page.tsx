@@ -7,8 +7,16 @@ import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
+export async function generateMetadata({ params }: { params: { grupa: string } }) {
+  const { grupa } = await params
+  return {
+    title: `Echipa ${grupa} | Dinamo Rugby Juniori`,
+    description: `Detalii despre echipa ${grupa} a secției de juniori rugby CS Dinamo București. Antrenori, program și sportivi.`,
+  }
+}
+
 export default async function TeamPage({ params }: { params: { grupa: string } }) {
-  const { grupa } = params
+  const { grupa } = await params
 
   const team = await prisma.team.findUnique({
     where: { grupa },

@@ -3,6 +3,11 @@ import FundraisingClient from './FundraisingClient'
 
 export const dynamic = 'force-dynamic'
 
+export const metadata = {
+  title: 'Fundraising | Dinamo Rugby Juniori',
+  description: 'Sprijină secția de juniori rugby a clubului CS Dinamo București. Campaniile noastre de strângere de fonduri.',
+}
+
 export default async function FundraisingPage() {
   const campaigns = await prisma.campaign.findMany({
     where: { active: true },

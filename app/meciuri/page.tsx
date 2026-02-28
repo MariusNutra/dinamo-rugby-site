@@ -3,6 +3,11 @@ import MeciuriClient from './MeciuriClient'
 
 export const dynamic = 'force-dynamic'
 
+export const metadata = {
+  title: 'Meciuri | Dinamo Rugby Juniori',
+  description: 'Programul meciurilor de rugby juniori ale clubului CS Dinamo București. Rezultate, clasamente și statistici.',
+}
+
 export default async function MeciuriPage() {
   const [matches, teams] = await Promise.all([
     prisma.match.findMany({

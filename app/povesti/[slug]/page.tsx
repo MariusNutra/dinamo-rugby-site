@@ -6,14 +6,24 @@ import { sanitizeHtml } from '@/lib/sanitize'
 
 export const dynamic = 'force-dynamic'
 
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+  const { slug } = await params
+  const story = await prisma.story.findUnique({ where: { slug }, select: { title: true, excerpt: true } })
+  return {
+    title: story ? `${story.title} | Dinamo Rugby Juniori` : 'Poveste | Dinamo Rugby Juniori',
+    description: story?.excerpt || 'Povești și noutăți din activitatea secției de juniori rugby Dinamo București.',
+  }
+}
+
 function getYouTubeId(url: string): string | null {
   const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?\s]+)/)
   return match ? match[1] : null
 }
 
 export default async function StoryPage({ params }: { params: { slug: string } }) {
+  const { slug } = await params
   const story = await prisma.story.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
     include: { photos: true },
   })
 

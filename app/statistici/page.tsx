@@ -3,6 +3,11 @@ import StatisticiClient from './StatisticiClient'
 
 export const dynamic = 'force-dynamic'
 
+export const metadata = {
+  title: 'Statistici | Dinamo Rugby Juniori',
+  description: 'Statistici despre performanțele echipelor de rugby juniori ale CS Dinamo București.',
+}
+
 async function getStats(teamId?: number) {
   const childFilter = teamId ? { teamId } : {}
 

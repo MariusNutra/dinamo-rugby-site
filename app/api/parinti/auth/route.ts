@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { randomBytes } from 'crypto'
 import { prisma } from '@/lib/prisma'
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import nodemailer from 'nodemailer'
 
 const transporter = nodemailer.createTransport({
@@ -10,28 +11,19 @@ const transporter = nodemailer.createTransport({
   tls: { rejectUnauthorized: false },
 })
 
-const magicLinkAttempts = new Map<string, { count: number; lastAttempt: number }>()
-const MAX_ATTEMPTS = 5
-const WINDOW_MS = 60 * 60 * 1000
-
-function getClientIp(req: NextRequest): string {
-  return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-}
-
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req)
-  const now = Date.now()
 
-  const record = magicLinkAttempts.get(ip)
-  if (record) {
-    if (now - record.lastAttempt > WINDOW_MS) {
-      magicLinkAttempts.delete(ip)
-    } else if (record.count >= MAX_ATTEMPTS) {
-      return NextResponse.json(
-        { error: 'Prea multe incercari. Reincearca mai tarziu.' },
-        { status: 429 }
-      )
-    }
+  const limit = await checkRateLimit(ip, {
+    action: 'parinti_magic_link',
+    maxAttempts: 5,
+    windowMs: 60 * 60 * 1000,
+  })
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: 'Prea multe incercari. Reincearca mai tarziu.' },
+      { status: 429 }
+    )
   }
 
   const { email } = await req.json()
@@ -95,9 +87,6 @@ export async function POST(req: NextRequest) {
         </div>
       `,
     })
-
-    const current = magicLinkAttempts.get(ip)
-    magicLinkAttempts.set(ip, { count: (current?.count || 0) + 1, lastAttempt: now })
 
     return NextResponse.json({ success: true, message: 'Link-ul a fost trimis pe email.' })
   } catch (error) {

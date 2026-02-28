@@ -4,6 +4,11 @@ import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
+export const metadata = {
+  title: 'Program Antrenamente | Dinamo Rugby Juniori',
+  description: 'Programul de antrenamente al secției de juniori rugby CS Dinamo București. Orare pentru toate grupele de vârstă.',
+}
+
 const dayOrder: Record<string, number> = {
   'Luni': 1, 'Marți': 2, 'Miercuri': 3, 'Joi': 4, 'Vineri': 5, 'Sâmbătă': 6, 'Duminică': 7,
 }

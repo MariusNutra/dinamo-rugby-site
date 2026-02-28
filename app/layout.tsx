@@ -43,6 +43,14 @@ export const metadata: Metadata = {
     title: "Rugby Juniori Dinamo București",
     description: "Secția de juniori rugby a clubului CS Dinamo București",
     type: "website",
+    url: "https://dinamorugby.ro",
+    siteName: "Dinamo Rugby Juniori",
+    locale: "ro_RO",
+  },
+  twitter: {
+    card: "summary",
+    title: "Rugby Juniori Dinamo București",
+    description: "Secția de juniori rugby a clubului CS Dinamo București",
   },
 };
 
@@ -54,6 +62,27 @@ export default function RootLayout({
   return (
     <html lang="ro">
       <body className={`${montserrat.variable} ${inter.variable} font-body antialiased`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SportsTeam",
+              name: "CS Dinamo București Rugby Juniori",
+              url: "https://dinamorugby.ro",
+              sport: "Rugby",
+              memberOf: {
+                "@type": "SportsOrganization",
+                name: "Federația Română de Rugby",
+              },
+              address: {
+                "@type": "PostalAddress",
+                addressLocality: "București",
+                addressCountry: "RO",
+              },
+            }),
+          }}
+        />
         <Header />
         <main className="min-h-screen">{children}</main>
         <Footer />
