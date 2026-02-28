@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
+import AppBanner from "@/components/AppBanner";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import RegisterSW from "@/components/RegisterSW";
 
@@ -87,6 +88,7 @@ export default function RootLayout({
         <main className="min-h-screen">{children}</main>
         <Footer />
         <CookieConsent />
+        <AppBanner />
         <GoogleAnalytics />
         <RegisterSW />
       </body>
