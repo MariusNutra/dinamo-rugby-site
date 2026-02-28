@@ -166,6 +166,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           { href: '/admin/prezente/qr', label: 'QR Prezenta', icon: '📱', moduleKey: null },
           { href: '/admin/evaluari', label: 'Evaluari', icon: '📊', moduleKey: null },
           { href: '/admin/statistici', label: 'Statistici', icon: '📈', moduleKey: 'moduleStatistici' },
+          { href: '/admin/fitness', label: 'Fitness', icon: '❤️', moduleKey: null },
+          { href: '/admin/video-analysis', label: 'Video Analiză', icon: '🎥', moduleKey: null },
+          { href: '/admin/tactical', label: 'Tablă Tactică', icon: '📐', moduleKey: null },
+          { href: '/admin/ai-coach', label: 'AI Coach', icon: '🤖', moduleKey: null },
+          { href: '/admin/scouting', label: 'Scouting', icon: '🔍', moduleKey: null },
+          { href: '/admin/gamification', label: 'Gamification', icon: '🏅', moduleKey: null },
+          { href: '/admin/federatie', label: 'Federatie', icon: '🏛️', moduleKey: null },
         ],
       },
       {
@@ -204,6 +211,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           { href: '/admin/settings/roles', label: 'Roluri', icon: '🔑', moduleKey: null },
           { href: '/admin/settings/notificari', label: 'Notificari', icon: '🔔', moduleKey: 'moduleNotificari' },
           { href: '/admin/sponsori', label: 'Sponsori', icon: '🤝', moduleKey: 'moduleSponsori' },
+          { href: '/admin/settings/branding', label: 'Branding', icon: '🎨', moduleKey: null },
+          { href: '/admin/settings/api-keys', label: 'API Keys', icon: '🔗', moduleKey: null },
         ],
       },
     ]

@@ -78,6 +78,7 @@ model Team {
   documents          Document[]
   conversations      Conversation[]
   attendanceSessions AttendanceSession[]
+  tacticalBoards     TacticalBoard[]
 }
 
 model Coach {
@@ -150,13 +151,14 @@ model SiteText {
 }
 
 model Video {
-  id          Int      @id @default(autoincrement())
+  id          Int              @id @default(autoincrement())
   title       String
   youtubeUrl  String
   description String?
   grupa       String?
-  featured    Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  featured    Boolean          @default(false)
+  annotations VideoAnnotation[]
+  createdAt   DateTime         @default(now())
 }
 
 model Parent {
@@ -201,6 +203,10 @@ model Child {
   payments         Payment[]
   transfers        TransferLog[]
   requests         Request[]
+  badges           AthleteBadge[]
+  points           Points[]
+  fitnessDevices   FitnessDevice[]
+  fitnessData      FitnessData[]
 }
 
 model AccessRequest {
@@ -325,6 +331,20 @@ model SiteSettings {
   moduleSponsori        Boolean  @default(false)
   moduleFundraising     Boolean  @default(false)
   extraConfig           String   @default("{}")
+  // Branding (3.10)
+  logo                  String?
+  primaryColor          String   @default("#dc2626")
+  secondaryColor        String   @default("#1e3a5f")
+  accentColor           String   @default("#f59e0b")
+  fontFamily            String   @default("Montserrat")
+  heroTitle             String?
+  heroSubtitle          String?
+  clubName              String   @default("CS Dinamo București Rugby")
+  clubAddress           String?
+  clubPhone             String?
+  clubEmail             String?
+  favicon               String?
+  ogImage               String?
   updatedAt             DateTime @updatedAt
 }
 
@@ -646,4 +666,150 @@ model Role {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   users       User[]
+}
+
+// Phase 3 Models
+
+// API Keys (3.1)
+model ApiKey {
+  id                 String   @id @default(cuid())
+  name               String
+  key                String   @unique
+  permissions        String   @default("[]") // JSON array of allowed endpoints
+  rateLimitPerMinute Int      @default(60)
+  lastUsedAt         DateTime?
+  createdBy          String?
+  active             Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([key])
+}
+
+// Video Annotations (3.5)
+model VideoAnnotation {
+  id        String   @id @default(cuid())
+  videoId   Int
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  timestamp Float    // seconds into video
+  text      String
+  author    String?
+  createdAt DateTime @default(now())
+
+  @@index([videoId])
+}
+
+// Tactical Board (3.5)
+model TacticalBoard {
+  id        String   @id @default(cuid())
+  name      String
+  formation String   @default("{}") // JSON with player positions
+  notes     String?
+  teamId    Int?
+  team      Team?    @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Gamification (3.6)
+model Badge {
+  id          String         @id @default(cuid())
+  name        String
+  icon        String         @default("🏅")
+  description String?
+  criteria    String         @default("{}") // JSON criteria rules
+  category    String         @default("general") // attendance, performance, special
+  active      Boolean        @default(true)
+  athletes    AthleteBadge[]
+  createdAt   DateTime       @default(now())
+}
+
+model AthleteBadge {
+  id       String   @id @default(cuid())
+  childId  String
+  child    Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  badgeId  String
+  badge    Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  earnedAt DateTime @default(now())
+
+  @@unique([childId, badgeId])
+  @@index([childId])
+}
+
+model Points {
+  id        String   @id @default(cuid())
+  childId   String
+  child     Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  amount    Int
+  reason    String
+  createdAt DateTime @default(now())
+
+  @@index([childId])
+}
+
+// Fitness Tracking (3.7)
+model FitnessDevice {
+  id           String   @id @default(cuid())
+  childId      String
+  child        Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  provider     String   // garmin, polar, manual
+  accessToken  String?
+  refreshToken String?
+  connected    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([childId])
+}
+
+model FitnessData {
+  id           String   @id @default(cuid())
+  childId      String
+  child        Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  date         DateTime
+  heartRateAvg Int?
+  heartRateMax Int?
+  distance     Float?   // meters
+  sprintCount  Int?
+  calories     Int?
+  sleepHours   Float?
+  source       String   @default("manual")
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  @@index([childId, date])
+}
+
+// Scouting & Recruitment (3.9)
+model ScoutingReport {
+  id         String     @id @default(cuid())
+  scoutId    String?
+  eventName  String
+  eventDate  DateTime
+  location   String?
+  notes      String?
+  prospects  Prospect[]
+  createdBy  String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Prospect {
+  id               String          @id @default(cuid())
+  name             String
+  birthYear        Int?
+  position         String?
+  currentClub      String?
+  notes            String?
+  rating           Int             @default(0) // 1-5 stars
+  status           String          @default("identified") // identified, contacted, trial, enrolled, rejected
+  phone            String?
+  email            String?
+  scoutingReportId String?
+  scoutingReport   ScoutingReport? @relation(fields: [scoutingReportId], references: [id], onDelete: SetNull)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([status])
 }
