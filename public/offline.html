@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - Dinamo Rugby Juniori</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f5f5f5;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background-color: #1e3a5f;
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .accent-bar {
+      height: 4px;
+      background-color: #c62828;
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .offline-icon {
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+      opacity: 0.6;
+    }
+
+    .message {
+      font-size: 1.2rem;
+      color: #555;
+      max-width: 400px;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    .retry-btn {
+      background-color: #c62828;
+      color: white;
+      border: none;
+      padding: 0.875rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .retry-btn:hover {
+      background-color: #a51d1d;
+    }
+
+    .retry-btn:active {
+      transform: scale(0.97);
+    }
+
+    footer {
+      background-color: #1e3a5f;
+      color: rgba(255, 255, 255, 0.6);
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Dinamo Rugby Juniori</h1>
+  </header>
+  <div class="accent-bar"></div>
+  <div class="content">
+    <div class="offline-icon">&#x1F4F6;</div>
+    <p class="message">
+      Ești offline. Verifică conexiunea la internet și încearcă din nou.
+    </p>
+    <button class="retry-btn" onclick="window.location.reload()">Încearcă din nou</button>
+  </div>
+  <footer>
+    CS Dinamo București &mdash; Rugby Juniori
+  </footer>
+</body>
+</html>

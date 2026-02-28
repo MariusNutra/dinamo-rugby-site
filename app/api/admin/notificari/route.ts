@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { isAuthenticated } from '@/lib/auth'
 import { validateCsrf } from '@/lib/csrf'
 import nodemailer from 'nodemailer'
+import { sendPushToAll, sendPushToTeam } from '@/lib/web-push'
 
 const transporter = nodemailer.createTransport({
   host: 'localhost',
@@ -109,6 +110,19 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Send push notifications in parallel
+  let pushSent = 0
+  try {
+    const pushPayload = { title, body, url: '/parinti/dashboard' }
+    if (recipientGroup === 'all') {
+      pushSent = await sendPushToAll(pushPayload)
+    } else if (recipientGroup === 'team' && teamId) {
+      pushSent = await sendPushToTeam(Number(teamId), pushPayload)
+    }
+  } catch (err) {
+    console.error('Push notification error:', err)
+  }
+
   const notification = await prisma.notification.create({
     data: {
       title,
@@ -121,5 +135,5 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  return NextResponse.json({ success: true, sent, notification })
+  return NextResponse.json({ success: true, sent, pushSent, notification })
 }

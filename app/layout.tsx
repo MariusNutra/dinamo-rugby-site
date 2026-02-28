@@ -1,9 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Montserrat, Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
+import RegisterSW from "@/components/RegisterSW";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -16,9 +18,18 @@ const inter = Inter({
   variable: "--font-body",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#c62828",
+};
+
 export const metadata: Metadata = {
   title: "Rugby Juniori Dinamo București",
   description: "Secția de juniori rugby a clubului CS Dinamo București. Grupe de vârstă U10, U12, U14, U16, U18.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+  },
   icons: {
     icon: [
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
@@ -47,6 +58,8 @@ export default function RootLayout({
         <main className="min-h-screen">{children}</main>
         <Footer />
         <CookieConsent />
+        <GoogleAnalytics />
+        <RegisterSW />
       </body>
     </html>
   );

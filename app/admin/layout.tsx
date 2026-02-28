@@ -183,8 +183,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         icon: '💰',
         items: [
           { href: '/admin/plati', label: 'Plati / Cotizatii', icon: '💳', moduleKey: 'modulePlati' },
+          { href: '/admin/abonamente', label: 'Abonamente', icon: '🔄', moduleKey: 'modulePlati' },
           { href: '/admin/fundraising', label: 'Fundraising', icon: '💰', moduleKey: 'moduleFundraising' },
           { href: '/admin/magazin', label: 'Magazin', icon: '🛒', moduleKey: 'moduleMagazin' },
+          { href: '/admin/comenzi', label: 'Comenzi', icon: '📦', moduleKey: 'moduleMagazin' },
         ],
       },
       {
@@ -192,6 +194,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         label: 'SETARI',
         icon: '⚙️',
         items: [
+          { href: '/admin/documente', label: 'Documente', icon: '📁', moduleKey: null },
           { href: '/admin/settings/modules', label: 'Module', icon: '🧩', moduleKey: null },
           { href: '/admin/settings/admins', label: 'Utilizatori', icon: '🔐', moduleKey: null },
           { href: '/admin/settings/notificari', label: 'Notificari', icon: '🔔', moduleKey: 'moduleNotificari' },

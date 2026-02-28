@@ -40,11 +40,180 @@ interface PaymentRecord {
   child: { name: string } | null
 }
 
+interface DocItem {
+  id: string
+  title: string
+  category: string
+  filePath: string
+  fileSize: number
+  mimeType: string
+  createdAt: string
+  team: { grupa: string } | null
+}
+
+const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ''
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+  const rawData = window.atob(base64)
+  const outputArray = new Uint8Array(rawData.length)
+  for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i)
+  return outputArray
+}
+
+function PushNotificationToggle() {
+  const [supported, setSupported] = useState(false)
+  const [subscribed, setSubscribed] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator && 'PushManager' in window && VAPID_PUBLIC_KEY) {
+      setSupported(true)
+      navigator.serviceWorker.ready.then(reg => {
+        reg.pushManager.getSubscription().then(sub => {
+          setSubscribed(!!sub)
+          setLoading(false)
+        })
+      }).catch(() => setLoading(false))
+    } else {
+      setLoading(false)
+    }
+  }, [])
+
+  const handleToggle = async () => {
+    setLoading(true)
+    try {
+      const reg = await navigator.serviceWorker.ready
+
+      if (subscribed) {
+        const sub = await reg.pushManager.getSubscription()
+        if (sub) {
+          await fetch('/api/push/unsubscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ endpoint: sub.endpoint }),
+          })
+          await sub.unsubscribe()
+        }
+        setSubscribed(false)
+      } else {
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+        })
+        const subJson = sub.toJSON()
+        await fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            endpoint: subJson.endpoint,
+            keys: subJson.keys,
+          }),
+        })
+        setSubscribed(true)
+      }
+    } catch {
+      // Permission denied or error
+    }
+    setLoading(false)
+  }
+
+  if (!supported) return null
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border p-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-heading font-bold text-lg">Notificări push</h2>
+          <p className="text-gray-500 text-sm mt-0.5">Primește notificări instant pe telefon</p>
+        </div>
+        <button
+          onClick={handleToggle}
+          disabled={loading}
+          className={`relative w-12 h-7 rounded-full transition-colors ${
+            subscribed ? 'bg-green-500' : 'bg-gray-300'
+          } ${loading ? 'opacity-50' : ''}`}
+        >
+          <span className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+            subscribed ? 'translate-x-5' : ''
+          }`} />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function DocumentsSection() {
+  const [documents, setDocuments] = useState<DocItem[]>([])
+  const [loadingDocs, setLoadingDocs] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/parinti/documents')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { setDocuments(Array.isArray(data) ? data : []); setLoadingDocs(false) })
+      .catch(() => setLoadingDocs(false))
+  }, [])
+
+  const fileIcon = (mime: string) => {
+    if (mime.includes('pdf')) return '📄'
+    if (mime.includes('word') || mime.includes('document')) return '📝'
+    if (mime.includes('excel') || mime.includes('sheet')) return '📊'
+    if (mime.includes('image')) return '🖼️'
+    return '📁'
+  }
+
+  const formatSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B'
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border p-5">
+      <h2 className="font-heading font-bold text-lg mb-4">Documente</h2>
+      {loadingDocs ? (
+        <div className="text-center py-4">
+          <div className="animate-spin w-6 h-6 border-3 border-dinamo-red border-t-transparent rounded-full mx-auto" />
+        </div>
+      ) : documents.length === 0 ? (
+        <p className="text-gray-500 text-sm">Niciun document disponibil momentan.</p>
+      ) : (
+        <div className="space-y-2">
+          {documents.map(doc => (
+            <a
+              key={doc.id}
+              href={doc.filePath}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 p-3 rounded-lg border hover:bg-gray-50 transition-colors"
+            >
+              <span className="text-xl">{fileIcon(doc.mimeType)}</span>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm text-gray-900 truncate">{doc.title}</p>
+                <p className="text-xs text-gray-400">
+                  {formatSize(doc.fileSize)} &middot; {new Date(doc.createdAt).toLocaleDateString('ro-RO')}
+                  {doc.team && <span className="ml-1">· {doc.team.grupa}</span>}
+                </p>
+              </div>
+              <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function PaymentsSection({ parentId, childrenList }: { parentId: string; childrenList: ChildData[] }) {
   const [payments, setPayments] = useState<PaymentRecord[]>([])
   const [loadingPayments, setLoadingPayments] = useState(true)
   const [modulePlatiActive, setModulePlatiActive] = useState(false)
   const [payingChildId, setPayingChildId] = useState<string | null>(null)
+  const [subscribingChildId, setSubscribingChildId] = useState<string | null>(null)
+  const [openingPortal, setOpeningPortal] = useState(false)
 
   useEffect(() => {
     fetch('/api/modules/active')
@@ -89,6 +258,38 @@ function PaymentsSection({ parentId, childrenList }: { parentId: string; childre
     setPayingChildId(null)
   }
 
+  const handleSubscribe = async (childId: string) => {
+    setSubscribingChildId(childId)
+    try {
+      const res = await fetch('/api/subscriptions/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ childId }),
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch {
+      // fail silently
+    }
+    setSubscribingChildId(null)
+  }
+
+  const handleOpenPortal = async () => {
+    setOpeningPortal(true)
+    try {
+      const res = await fetch('/api/subscriptions/portal', { method: 'POST' })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch {
+      // fail silently
+    }
+    setOpeningPortal(false)
+  }
+
   if (!modulePlatiActive) return null
 
   return (
@@ -97,17 +298,35 @@ function PaymentsSection({ parentId, childrenList }: { parentId: string; childre
       {childrenList.length > 0 && (
         <div className="mb-4 space-y-2">
           {childrenList.map(child => (
-            <div key={child.id} className="flex items-center justify-between border rounded-lg p-3">
-              <span className="font-medium text-sm">{child.name}</span>
-              <button
-                onClick={() => handlePayCotizatie(child.id)}
-                disabled={payingChildId === child.id}
-                className="text-xs bg-green-600 text-white px-4 py-1.5 rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
-              >
-                {payingChildId === child.id ? 'Se redirecteaza...' : 'Plateste cotizatia'}
-              </button>
+            <div key={child.id} className="border rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-sm">{child.name}</span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handlePayCotizatie(child.id)}
+                    disabled={payingChildId === child.id}
+                    className="text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
+                  >
+                    {payingChildId === child.id ? 'Se redirecteaza...' : 'Plata unica'}
+                  </button>
+                  <button
+                    onClick={() => handleSubscribe(child.id)}
+                    disabled={subscribingChildId === child.id}
+                    className="text-xs bg-dinamo-blue text-white px-3 py-1.5 rounded-lg hover:bg-blue-800 transition-colors font-medium disabled:opacity-50"
+                  >
+                    {subscribingChildId === child.id ? 'Se redirecteaza...' : 'Abonament lunar'}
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
+          <button
+            onClick={handleOpenPortal}
+            disabled={openingPortal}
+            className="mt-2 text-xs text-dinamo-blue hover:underline font-medium disabled:opacity-50"
+          >
+            {openingPortal ? 'Se deschide...' : 'Gestioneaza abonamente →'}
+          </button>
         </div>
       )}
       {loadingPayments ? (
@@ -335,14 +554,14 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Push Notifications Card */}
+      <PushNotificationToggle />
+
       {/* Payments Card */}
       <PaymentsSection parentId={parent.id} childrenList={parent.children} />
 
       {/* Documents Card */}
-      <div className="bg-white rounded-lg shadow-sm border p-5">
-        <h2 className="font-heading font-bold text-lg mb-4">Documente</h2>
-        <p className="text-gray-500 text-sm">Documentele vor fi disponibile in curand.</p>
-      </div>
+      <DocumentsSection />
     </div>
   )
 }

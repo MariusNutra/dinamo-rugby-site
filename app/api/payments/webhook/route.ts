@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       amount_total?: number | null
     }
 
-    const { paymentId, type, campaignId, donorName } = session.metadata
+    const { paymentId, type, campaignId, donorName, orderId } = session.metadata
     const receiptNumber = generateReceiptNumber()
 
     // Update payment record
@@ -87,9 +87,85 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Send confirmation email
+    // If shop order, update order status and decrement stock
+    if (type === 'shop' && orderId) {
+      const order = await prisma.order.findUnique({
+        where: { id: orderId },
+        include: { items: true },
+      })
+
+      if (order) {
+        await prisma.order.update({
+          where: { id: orderId },
+          data: { status: 'platita' },
+        })
+
+        // Decrement stock for each ordered item
+        for (const item of order.items) {
+          await prisma.product.update({
+            where: { id: item.productId },
+            data: { stock: { decrement: item.quantity } },
+          })
+        }
+
+        // Send order confirmation email
+        if (session.customer_email) {
+          const amount = ((session.amount_total || 0) / 100).toLocaleString('ro-RO')
+          const itemsList = order.items.map(item => `${item.name} x${item.quantity} - ${(item.price * item.quantity).toLocaleString('ro-RO')} RON`).join('\n')
+          const itemsHtml = order.items.map(item =>
+            `<tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${item.name}</td><td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td><td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">${(item.price * item.quantity).toLocaleString('ro-RO')} RON</td></tr>`
+          ).join('')
+
+          try {
+            await transporter.sendMail({
+              from: '"CS Dinamo București Rugby" <contact@dinamorugby.ro>',
+              to: session.customer_email,
+              subject: 'Confirmare comanda - CS Dinamo București Rugby',
+              text: `Comanda dumneavoastra a fost plasata cu succes.\n\nProduse:\n${itemsList}\n\nTotal: ${amount} RON\n\nVa multumim!`,
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                  <div style="background-color: #1e3a5f; color: white; padding: 20px; text-align: center;">
+                    <h1 style="margin: 0; font-size: 20px;">CS Dinamo București Rugby</h1>
+                  </div>
+                  <div style="padding: 30px; background: #f9f9f9;">
+                    <h2 style="color: #1e3a5f; margin-top: 0;">Confirmare comanda</h2>
+                    <p>Comanda dumneavoastra a fost plasata cu succes.</p>
+                    <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                      <thead>
+                        <tr style="border-bottom: 2px solid #1e3a5f;">
+                          <th style="padding: 8px 0; text-align: left; color: #666;">Produs</th>
+                          <th style="padding: 8px 0; text-align: center; color: #666;">Cant.</th>
+                          <th style="padding: 8px 0; text-align: right; color: #666;">Pret</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${itemsHtml}
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colspan="2" style="padding: 12px 0; font-weight: bold; font-size: 16px;">Total</td>
+                          <td style="padding: 12px 0; text-align: right; font-weight: bold; font-size: 16px; color: #c62828;">${amount} RON</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                    <p style="color: #666; font-size: 14px;">Va vom contacta pentru detalii despre livrare.</p>
+                  </div>
+                  <div style="padding: 15px; text-align: center; color: #999; font-size: 12px;">
+                    CS Dinamo București Rugby - Sectia Juniori
+                  </div>
+                </div>
+              `,
+            })
+          } catch (emailErr) {
+            console.error('Failed to send shop order confirmation email:', emailErr)
+          }
+        }
+      }
+    }
+
+    // Send confirmation email for payments (non-shop)
     const email = session.customer_email
-    if (email) {
+    if (email && type !== 'shop') {
       const amount = ((session.amount_total || 0) / 100).toLocaleString('ro-RO')
       const typeLabel = type === 'donatie' ? 'Donatie' : type === 'cotizatie' ? 'Cotizatie lunara' : 'Taxa inscriere'
 

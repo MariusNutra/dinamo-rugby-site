@@ -70,6 +70,7 @@ model Team {
   calendarEvents  CalendarEvent[]
   transfersFrom   TransferLog[]   @relation("TransferFrom")
   transfersTo     TransferLog[]   @relation("TransferTo")
+  documents       Document[]
 }
 
 model Coach {
@@ -154,10 +155,11 @@ model Parent {
   phone       String?
   token       String?
   tokenExpiry DateTime?
-  children    Child[]
-  payments    Payment[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  children          Child[]
+  payments          Payment[]
+  pushSubscriptions PushSubscription[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 }
 
 model Child {
@@ -407,9 +409,10 @@ model Product {
   image       String?
   stock       Int      @default(0)
   category    String?
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  active      Boolean     @default(true)
+  orderItems  OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }
 
 model Sponsor {
@@ -439,4 +442,60 @@ model TransferLog {
 
   @@index([childId])
   @@index([createdAt])
+}
+
+// Push Notification Subscriptions
+model PushSubscription {
+  id        String   @id @default(cuid())
+  parentId  String
+  parent    Parent   @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([parentId])
+}
+
+// Documents for parents
+model Document {
+  id          String   @id @default(cuid())
+  title       String
+  category    String   @default("general")
+  filePath    String
+  fileSize    Int      @default(0)
+  mimeType    String   @default("application/pdf")
+  targetGroup String   @default("all")
+  teamId      Int?
+  team        Team?    @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  uploadedBy  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Shop Orders
+model Order {
+  id              String      @id @default(cuid())
+  customerName    String
+  email           String
+  phone           String?
+  total           Float
+  status          String      @default("noua")
+  stripeSessionId String?
+  shippingAddress String?
+  notes           String?
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  price     Float
+  quantity  Int     @default(1)
 }
