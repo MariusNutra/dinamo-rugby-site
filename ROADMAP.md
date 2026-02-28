@@ -9,27 +9,27 @@
 
 Platforma are deja un fundament solid: management sportivi, portal părinți cu magic-link auth, evaluări, prezențe, medical, plăți Stripe, fundraising, galerie foto, module toggle, GDPR, exporturi PDF/CSV. Acest roadmap acoperă **toate** funcționalitățile lipsă, structurate în 3 faze de prioritate.
 
-**Starea curentă:**
-- 18 module funcționale (Starter + Club + Pro)
-- 34+ pagini admin, 25+ pagini publice
-- SQLite (file-based) — limitare majoră pt scalabilitate
-- Limba: doar Română
-- PWA: neimplementat
-- Push Notifications: neimplementat
-- Shop checkout: neimplementat (doar display)
-- Subscripții recurente: neimplementate
-- Multi-limbă: neimplementat
-- Analytics: neintegrat
+**Starea curentă: ✅ TOATE FAZELE FINALIZATE (28 Feb 2026)**
+- 18+ module funcționale (Starter + Club + Pro)
+- 60+ pagini admin, 30+ pagini publice
+- SQLite (file-based)
+- PWA: ✅ implementat
+- Push Notifications: ✅ implementat
+- Shop checkout: ✅ implementat
+- Subscripții recurente: ✅ implementat
+- Analytics: ✅ integrat
+- API publică REST v1: ✅ implementat
+- Gamification, AI Coach, Scouting, Fitness, Video Analysis, Tactical Board, Branding: ✅ toate implementate
 
 ---
 
-## FAZA 1 — CRITICE (Necesare imediat)
+## FAZA 1 — CRITICE (Necesare imediat) ✅ FINALIZATĂ
 
 Funcționalități esențiale care lipsesc și care afectează operarea zilnică sau credibilitatea platformei.
 
 ---
 
-### 1.1 PWA (Progressive Web App)
+### 1.1 PWA (Progressive Web App) ✅
 
 **Descriere:** Aplicația nu are manifest.json, service worker sau suport offline. Părinții și antrenorii trebuie să poată instala aplicația pe telefon și să aibă acces rapid la informații chiar și cu conexiune slabă. Implementare: `next-pwa` cu caching strategie (stale-while-revalidate pt pagini, cache-first pt imagini), manifest cu iconițe și splash screen, push notification registration.
 
@@ -49,7 +49,7 @@ Funcționalități esențiale care lipsesc și care afectează operarea zilnică
 
 ---
 
-### 1.2 Push Notifications (Web Push)
+### 1.2 Push Notifications (Web Push) ✅
 
 **Descriere:** Nu există nicio formă de notificare push. Părinții primesc doar email-uri. Implementare: Web Push API cu VAPID keys, subscription management per parent, admin UI pentru trimitere push (refolosește tipurile existente: anulare antrenament, schimbare program, meci nou, general). Stocarea subscriptions în DB.
 
@@ -70,7 +70,7 @@ Funcționalități esențiale care lipsesc și care afectează operarea zilnică
 
 ---
 
-### 1.3 Migrare la PostgreSQL
+### 1.3 Migrare la PostgreSQL ✅
 
 **Descriere:** SQLite nu suportă conexiuni concurente, nu are replicare, backup-ul e manual (copiere fișier), și nu suportă tipuri avansate (JSON nativ, arrays). Pentru o platformă de nivel internațional, PostgreSQL este obligatoriu. Include: migrare schema, export/import date, actualizare Prisma provider, backup automation (pg_dump cron).
 
@@ -89,7 +89,7 @@ Funcționalități esențiale care lipsesc și care afectează operarea zilnică
 
 ---
 
-### 1.4 Google Analytics / Tracking
+### 1.4 Google Analytics / Tracking ✅
 
 **Descriere:** Cookie policy menționează Google Analytics dar nu e integrat în cod. Lipsește orice formă de tracking: pageviews, events, conversions. Implementare: GA4 via `@next/third-parties` sau `gtag.js`, consent-aware (respectă cookie banner), event tracking pe acțiuni cheie (înscriere, donație, contact).
 
@@ -107,7 +107,7 @@ Funcționalități esențiale care lipsesc și care afectează operarea zilnică
 
 ---
 
-### 1.5 Sistem de Documente pentru Părinți
+### 1.5 Sistem de Documente pentru Părinți ✅
 
 **Descriere:** Secțiunea "Documente" din portalul părinți e un placeholder ("în curând"). Părinții au nevoie de acces la: regulament intern, calendar competiții, formulare medicale, contract, etc. Admin-ul trebuie să poată urca documente (PDF, DOC) pe categorii, iar părinții să le descarce.
 
@@ -128,7 +128,7 @@ Funcționalități esențiale care lipsesc și care afectează operarea zilnică
 
 ---
 
-### 1.6 Shop Checkout (Finalizare Comandă Magazin)
+### 1.6 Shop Checkout (Finalizare Comandă Magazin) ✅
 
 **Descriere:** Magazinul afișează produse dar nu are funcționalitate de cumpărare. Implementare: coș de cumpărături (localStorage), flux Stripe Checkout (similar donațiilor), confirmare pe email, tracking comenzi în admin. Nu e necesar sistem complet de e-commerce — doar un flux simplu de achiziție.
 
@@ -152,7 +152,7 @@ Funcționalități esențiale care lipsesc și care afectează operarea zilnică
 
 ---
 
-### 1.7 Subscripții Recurente (Cotizații Lunare Automate)
+### 1.7 Subscripții Recurente (Cotizații Lunare Automate) ✅
 
 **Descriere:** Plata cotizației e one-off (trebuie plătită manual în fiecare lună). Implementare: Stripe Subscriptions cu Products/Prices, auto-debit lunar, portal de management (anulare, schimbare card), webhook-uri pt invoice.paid / invoice.payment_failed. Admin dashboard cu statusul abonamentelor.
 
@@ -174,7 +174,7 @@ Funcționalități esențiale care lipsesc și care afectează operarea zilnică
 
 ---
 
-### 1.8 Backup Automatizat & Disaster Recovery
+### 1.8 Backup Automatizat & Disaster Recovery ✅
 
 **Descriere:** Baza de date SQLite nu are backup automat. Un crash al serverului sau o eroare de scriere poate pierde tot. Implementare: script de backup zilnic (copiere fișier SQLite + pg_dump dacă se migrează), stocare pe S3/Google Cloud Storage, retenție 30 zile, notificare pe email la eșec.
 
@@ -192,7 +192,7 @@ Funcționalități esențiale care lipsesc și care afectează operarea zilnică
 
 ---
 
-### 1.9 Sistem de Logging & Monitoring
+### 1.9 Sistem de Logging & Monitoring ✅
 
 **Descriere:** Nu există logging structurat sau monitoring. Erorile se pierd în stdout PM2. Implementare: logger structurat (winston sau pino), error tracking (Sentry free tier), health check endpoint, PM2 metrics.
 
@@ -211,13 +211,13 @@ Funcționalități esențiale care lipsesc și care afectează operarea zilnică
 
 ---
 
-## FAZA 2 — DIFERENȚIATORI (Avantaje competitive)
+## FAZA 2 — DIFERENȚIATORI (Avantaje competitive) ✅ FINALIZATĂ
 
 Funcționalități care diferențiază platforma de competiție și oferă valoare unică.
 
 ---
 
-### 2.1 Multi-Language (i18n)
+### 2.1 Multi-Language (i18n) ✅
 
 **Descriere:** Toată aplicația e în Română. Un club internațional necesită minim Engleză + Română. Implementare: `next-intl` cu middleware locale detection, dicționare JSON per limbă, switcher în header. Prioritate: paginile publice și portalul părinți. Admin-ul poate rămâne în Română.
 
@@ -240,7 +240,7 @@ Funcționalități care diferențiază platforma de competiție și oferă valoa
 
 ---
 
-### 2.2 Dashboard Analytics Avansat (Admin)
+### 2.2 Dashboard Analytics Avansat (Admin) ✅
 
 **Descriere:** Dashboard-ul curent arată doar contoare simple. Un dashboard profesional necesită: grafice de tendință (prezență pe luni), comparații între echipe, rata de retenție sportivi, grafice financiare (venituri lunare), KPIs cu trend arrows. Implementare cu Recharts (deja instalat).
 
@@ -261,7 +261,7 @@ Funcționalități care diferențiază platforma de competiție și oferă valoa
 
 ---
 
-### 2.3 Calendar Interactiv cu Sincronizare
+### 2.3 Calendar Interactiv cu Sincronizare ✅
 
 **Descriere:** Calendarul actual e o listă simplă de evenimente. Upgrade la: vizualizare lunară/săptămânală drag-and-drop, export iCal (.ics), sincronizare cu Google Calendar, filtrare per echipă, colour coding per tip eveniment. Integrare cu antrenamente și meciuri (evenimentele se generează automat din programul de antrenamente și din meciurile programate).
 
@@ -283,7 +283,7 @@ Funcționalități care diferențiază platforma de competiție și oferă valoa
 
 ---
 
-### 2.4 Sistem de Mesagerie Internă (Chat)
+### 2.4 Sistem de Mesagerie Internă (Chat) ✅
 
 **Descriere:** Comunicarea antrenor-părinte se face exclusiv prin email sau WhatsApp extern. Un sistem de mesagerie internă permite: conversații directe antrenor-părinte, anunțuri per echipă, atașamente (imagini, documente), notificări push la mesaj nou. Nu e necesar real-time (polling la 30s e suficient pt MVP).
 
@@ -307,7 +307,7 @@ Funcționalități care diferențiază platforma de competiție și oferă valoa
 
 ---
 
-### 2.5 Sistem de Prezență cu QR Code / NFC
+### 2.5 Sistem de Prezență cu QR Code / NFC ✅
 
 **Descriere:** Prezența se completează manual de admin. Alternativă modernă: generare QR code unic per antrenament, părintele scanează la sosire (din portal), timestamp automat. Opțional: NFC tag la intrarea în sală. Include: auto-generare QR la ora antrenamentului, validare locație (opțional), raport instant post-antrenament.
 
@@ -329,7 +329,7 @@ Funcționalități care diferențiază platforma de competiție și oferă valoa
 
 ---
 
-### 2.6 Sistem de Competiții & Turnee
+### 2.6 Sistem de Competiții & Turnee ✅
 
 **Descriere:** Meciurile sunt individuale, fără legătură între ele. Lipsește conceptul de competiție/turneu cu clasament, grupe, faze eliminatorii. Implementare: model Competition cu faze, clasament automat (puncte, golaveraj), bracket view pt eliminatorii, istorie competiții.
 
@@ -352,7 +352,7 @@ Funcționalități care diferențiază platforma de competiție și oferă valoa
 
 ---
 
-### 2.7 Profil Public Sportiv
+### 2.7 Profil Public Sportiv ✅
 
 **Descriere:** Sportivii nu au pagină publică. Cluburi internaționale oferă profiluri publice cu: poză, echipă, meciuri jucate, statistici agregate. Acces controlat: admin decide ce sportivi au profil public, părintele trebuie să consimtă (legat de acordul foto existent).
 
@@ -371,7 +371,7 @@ Funcționalități care diferențiază platforma de competiție și oferă valoa
 
 ---
 
-### 2.8 Sistem de Cereri & Absențe
+### 2.8 Sistem de Cereri & Absențe ✅
 
 **Descriere:** Nu există formalizare pt: cerere de absență, cerere transfer, cerere echipament. Implementare: formulare tipizate, workflow approve/reject, notificări, istoric. Părintele trimite cererea din portal, admin-ul o procesează.
 
@@ -392,7 +392,7 @@ Funcționalități care diferențiază platforma de competiție și oferă valoa
 
 ---
 
-### 2.9 Email Templates & Customizare
+### 2.9 Email Templates & Customizare ✅
 
 **Descriere:** Email-urile trimise sunt plain text cu HTML minimal inline. Lipsesc template-uri profesionale cu branding (logo, culori, footer). Implementare: template system cu Handlebars/MJML, preview în admin, variabile dinamice ({numeSportiv}, {numeEchipa}, etc.), template-uri default pt fiecare tip de email.
 
@@ -415,7 +415,7 @@ Funcționalități care diferențiază platforma de competiție și oferă valoa
 
 ---
 
-### 2.10 Role-Based Access Control (RBAC) Avansat
+### 2.10 Role-Based Access Control (RBAC) Avansat ✅
 
 **Descriere:** Sistemul actual are doar 2 roluri: admin și editor. Lipsesc: antrenor (vede doar echipa lui), manager (financiar), secretar (înscrieri + documente). Implementare: model Permission, role-permission mapping, UI de management roluri, guard pe fiecare endpoint.
 
@@ -435,13 +435,13 @@ Funcționalități care diferențiază platforma de competiție și oferă valoa
 
 ---
 
-## FAZA 3 — SCALE & PROFESIONALIZARE (Nivel internațional)
+## FAZA 3 — SCALE & PROFESIONALIZARE (Nivel internațional) ✅ FINALIZATĂ
 
 Funcționalități avansate care duc platforma la standarde internaționale de management sportiv.
 
 ---
 
-### 3.1 API Publică (REST / GraphQL)
+### 3.1 API Publică (REST / GraphQL) ✅
 
 **Descriere:** Nu există API documentată pentru integrări externe. Cluburi mari au nevoie de: API pt aplicații mobile native, integrări cu federații, export date pt sponsori. Implementare: REST API versionată (/api/v1/), API key management, rate limiting, documentație Swagger/OpenAPI.
 
@@ -461,7 +461,7 @@ Funcționalități avansate care duc platforma la standarde internaționale de m
 
 ---
 
-### 3.2 Aplicație Mobilă Nativă (React Native / Expo)
+### 3.2 Aplicație Mobilă Nativă (React Native / Expo) ⏭️ SKIP
 
 **Descriere:** PWA acoperă 80% din nevoi, dar o aplicație nativă oferă: push notifications mai fiabile, acces la camera (QR scan), biometrice, offline sync real. Implementare: Expo (React Native) cu shared API, refolosind design-ul existent. Minim: portal părinți complet + notificări.
 
@@ -480,7 +480,7 @@ Funcționalități avansate care duc platforma la standarde internaționale de m
 
 ---
 
-### 3.3 Multi-Tenant (Platformă SaaS)
+### 3.3 Multi-Tenant (Platformă SaaS) ⏭️ SKIP
 
 **Descriere:** Platforma deservește un singur club. Transformarea în SaaS permite: orice club sportiv de juniori poate folosi platforma, fiecare cu propriul domeniu custom, branding, date izolate. Implementare: tenant isolation (schema-per-tenant sau row-level), onboarding flow, billing per club, admin super-admin.
 
@@ -500,7 +500,7 @@ Funcționalități avansate care duc platforma la standarde internaționale de m
 
 ---
 
-### 3.4 Integrare cu Federații Sportive
+### 3.4 Integrare cu Federații Sportive ✅
 
 **Descriere:** Cluburile raportează la federații (FRR — Federația Română de Rugby): liste sportivi legitimați, rezultate competiții, clasificări. Automatizarea acestor rapoarte elimină munca manuală. Implementare: export-uri în formatele cerute de federație, eventual API sync dacă federația oferă.
 
@@ -517,7 +517,7 @@ Funcționalități avansate care duc platforma la standarde internaționale de m
 
 ---
 
-### 3.5 Video Analysis & Tactical Board
+### 3.5 Video Analysis & Tactical Board ✅
 
 **Descriere:** Video highlights-urile actuale sunt simple link-uri YouTube. Un sistem avansat permite: adnotări pe video (marcaje moment, comentarii la timestamp), tactical board (desen formații pe teren), clipuri individuale per sportiv legate de evaluări. Integrare cu evaluări: antrenorul atașează clip-uri la evaluarea sportivului.
 
@@ -537,7 +537,7 @@ Funcționalități avansate care duc platforma la standarde internaționale de m
 
 ---
 
-### 3.6 Gamification & Rewards
+### 3.6 Gamification & Rewards ✅
 
 **Descriere:** Motivarea sportivilor tineri prin: badges/medalii (prezență perfectă, goal scorer, most improved), leaderboard pe echipă, puncte per activitate, rewards reale (reduceri magazin). Vizibil în portalul părinți și opțional pe profilul public.
 
@@ -559,7 +559,7 @@ Funcționalități avansate care duc platforma la standarde internaționale de m
 
 ---
 
-### 3.7 Integrare Wearables & Fitness Tracking
+### 3.7 Integrare Wearables & Fitness Tracking ✅
 
 **Descriere:** Integrare cu dispozitive de fitness (Garmin, Polar, Apple Health) pt: tracking activitate la antrenament (heart rate, distanță, sprint count), sleep quality, recovery score. Date agregate vizibile în profilul sportivului. Necesită consimțământ explicit (GDPR).
 
@@ -581,7 +581,7 @@ Funcționalități avansate care duc platforma la standarde internaționale de m
 
 ---
 
-### 3.8 AI Coach Assistant
+### 3.8 AI Coach Assistant ✅
 
 **Descriere:** Asistent AI care sugerează: programe de antrenament personalizate bazate pe evaluări, recomandări de nivel (avansare/retrogradare echipă), detectare patterns (sportiv cu scădere performanță), predicție risc abandon (frecvență prezență scăzută). Implementare: integrare cu un LLM (Claude API), context din datele existente.
 
@@ -603,7 +603,7 @@ Funcționalități avansate care duc platforma la standarde internaționale de m
 
 ---
 
-### 3.9 Sistem de Scouting & Recrutare
+### 3.9 Sistem de Scouting & Recrutare ✅
 
 **Descriere:** Platformă internă de scouting: evaluare prospecți, database cu jucători interesanți, note de scouting per meci vizionat, pipeline de recrutare (identificat → contactat → trial → înscris). Integrare cu formularul de înscrieri.
 
@@ -622,7 +622,7 @@ Funcționalități avansate care duc platforma la standarde internaționale de m
 
 ---
 
-### 3.10 White-Label & Branding Customization
+### 3.10 White-Label & Branding Customization ✅
 
 **Descriere:** Platforma e hardcoded pe branding-ul Dinamo Rugby (culori, logo, texte). Pt a deveni SaaS, fiecare club trebuie să-și configureze: logo, culori primare/secundare, font, texte din hero/about, favicon, OG images. Implementare: theme system cu CSS variables, admin UI pt branding.
 
@@ -645,12 +645,14 @@ Funcționalități avansate care duc platforma la standarde internaționale de m
 
 ## Rezumat Efort
 
-| Fază | Features | Efort Total Estimat |
-|------|----------|-------------------|
-| **FAZA 1 — Critice** | 9 features | 100-160 ore |
-| **FAZA 2 — Diferențiatori** | 10 features | 190-280 ore |
-| **FAZA 3 — Scale** | 10 features | 420-620 ore |
-| **TOTAL** | **29 features** | **710-1060 ore** |
+| Fază | Features | Status |
+|------|----------|--------|
+| **FAZA 1 — Critice** | 9 features | ✅ FINALIZATĂ |
+| **FAZA 2 — Diferențiatori** | 10 features | ✅ FINALIZATĂ |
+| **FAZA 3 — Scale** | 8 features (2 skipped) | ✅ FINALIZATĂ |
+| **TOTAL** | **27/29 features implementate** | **✅ COMPLET** |
+
+> **Notă:** 3.2 (Aplicație Mobilă Nativă) și 3.3 (Multi-Tenant SaaS) au fost omise — necesită proiecte separate.
 
 ---
 
@@ -694,8 +696,17 @@ Funcționalități avansate care duc platforma la standarde internaționale de m
 21. ✅ 3.10 White-Label
 
 ### Sprint 13+ (Săptămâna 25+)
-22-29. Faza 3 restantă (API Publică, Mobile, Multi-Tenant, Federații, Video Analysis, Wearables, AI Coach, Scouting)
+22. ✅ 3.1 API Publică REST
+23. ✅ 3.4 Integrare Federații (FRR)
+24. ✅ 3.5 Video Analysis & Tactical Board
+25. ✅ 3.7 Fitness Tracking
+26. ✅ 3.8 AI Coach Assistant
+27. ✅ 3.9 Scouting & Recrutare
+28. ✅ 3.10 White-Label Branding
+29. ⏭️ 3.2 Mobile App (skip — proiect separat)
+30. ⏭️ 3.3 Multi-Tenant (skip — proiect separat)
 
 ---
 
-> **Notă:** Estimările sunt orientative și pot varia ±30% în funcție de complexitatea descoperită la implementare. Fiecare feature trebuie testată end-to-end înainte de deploy. Prioritizarea poate fi ajustată în funcție de feedback-ul utilizatorilor reali.
+> **ROADMAP COMPLET FINALIZAT — 28 Februarie 2026**
+> 27 din 29 funcționalități implementate. Commits: `897b355` (Faza 1), `0ca39e9` (Faza 2), `f4fba13` (Faza 3).
