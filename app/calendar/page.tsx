@@ -176,12 +176,24 @@ export default function CalendarPage() {
                 Programul meciurilor, antrenamentelor si evenimentelor speciale
               </p>
             </div>
-            <Link
-              href="/"
-              className="inline-flex items-center px-4 py-2 bg-dinamo-red text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm"
-            >
-              Inapoi acasa
-            </Link>
+            <div className="flex gap-2">
+              <a
+                href={`/api/calendar/export${selectedTeam !== null ? `?teamId=${selectedTeam}` : ''}`}
+                download
+                className="inline-flex items-center px-4 py-2 bg-dinamo-blue text-white rounded-lg hover:bg-blue-800 transition-colors font-medium text-sm"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Export iCal
+              </a>
+              <Link
+                href="/"
+                className="inline-flex items-center px-4 py-2 bg-dinamo-red text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm"
+              >
+                Inapoi acasa
+              </Link>
+            </div>
           </div>
         </div>
       </div>

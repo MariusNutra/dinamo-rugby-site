@@ -18,9 +18,10 @@ const PhysicalChart = dynamic(() => import('@/components/sportiv/PhysicalChart')
 interface ChildInfo {
   id: string; name: string; birthYear: number; teamId: number | null
   team?: { grupa: string } | null; photoConsent: boolean
+  publicProfile?: boolean; publicBio?: string | null
 }
 
-const TABS = ['Profil Fizic', 'Evaluari', 'Prezente', 'Medical', 'Galerie']
+const TABS = ['Profil Fizic', 'Evaluari', 'Prezente', 'Medical', 'Galerie', 'Profil Public']
 
 export default function AdminSportivPage() {
   const { childId } = useParams<{ childId: string }>()
@@ -55,17 +56,28 @@ export default function AdminSportivPage() {
 
   // Fetch child info
   useEffect(() => {
-    fetch('/api/admin/parinti').then(r => r.json()).then(data => {
-      if (!Array.isArray(data)) return
-      for (const p of data) {
-        const c = p.children?.find((c: { id: string }) => c.id === childId)
-        if (c) {
-          setChild({ ...c, team: c.teamName ? { grupa: c.teamName } : null })
-          break
-        }
-      }
-      setLoading(false)
-    })
+    // Fetch public profile data
+    fetch(`/api/admin/sportivi/${childId}/public-profile`)
+      .then(r => r.ok ? r.json() : null)
+      .catch(() => null)
+      .then(profileData => {
+        fetch('/api/admin/parinti').then(r => r.json()).then(data => {
+          if (!Array.isArray(data)) return
+          for (const p of data) {
+            const c = p.children?.find((c: { id: string }) => c.id === childId)
+            if (c) {
+              setChild({
+                ...c,
+                team: c.teamName ? { grupa: c.teamName } : null,
+                publicProfile: profileData?.publicProfile ?? false,
+                publicBio: profileData?.publicBio ?? null,
+              })
+              break
+            }
+          }
+          setLoading(false)
+        })
+      })
   }, [childId])
 
   const fetchProfiles = useCallback(() => {
@@ -422,6 +434,87 @@ export default function AdminSportivPage() {
             </div>
           )}
           <PhotoGallery photos={photos} onDelete={handleDeletePhoto} />
+        </div>
+      )}
+
+      {/* Tab: Profil Public */}
+      {tab === 5 && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg border p-6">
+            <h3 className="font-medium text-sm mb-4">Profil public sportiv</h3>
+            <p className="text-xs text-gray-500 mb-4">
+              Activează profilul public pentru ca acest sportiv să apară pe pagina publică /sportivi.
+              Necesită acord foto semnat.
+            </p>
+
+            {!child.photoConsent && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800 mb-4">
+                Acest copil nu are acord foto semnat. Profilul public nu poate fi activat.
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={child.publicProfile || false}
+                  disabled={!child.photoConsent}
+                  onClick={async () => {
+                    const newVal = !child.publicProfile
+                    const res = await fetch(`/api/admin/sportivi/${childId}/public-profile`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ publicProfile: newVal }),
+                    })
+                    if (res.ok) {
+                      setChild(prev => prev ? { ...prev, publicProfile: newVal } : prev)
+                    }
+                  }}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${
+                    child.publicProfile ? 'bg-green-500' : 'bg-gray-300'
+                  } ${!child.photoConsent ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
+                    child.publicProfile ? 'translate-x-5' : ''
+                  }`} />
+                </button>
+                <span className="text-sm font-medium">Profil public vizibil</span>
+              </label>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Bio public</label>
+                <textarea
+                  rows={3}
+                  placeholder="Scurtă descriere publică a sportivului..."
+                  defaultValue={child.publicBio || ''}
+                  onBlur={async (e) => {
+                    await fetch(`/api/admin/sportivi/${childId}/public-profile`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ publicBio: e.target.value || null }),
+                    })
+                    setChild(prev => prev ? { ...prev, publicBio: e.target.value || null } : prev)
+                  }}
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-dinamo-red"
+                />
+              </div>
+
+              {child.publicProfile && (
+                <a
+                  href={`/sportivi/${childId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm text-dinamo-blue hover:underline"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  Vezi profilul public
+                </a>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

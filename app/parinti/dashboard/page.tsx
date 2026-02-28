@@ -462,6 +462,28 @@ export default function DashboardPage() {
         )}
       </div>
 
+      {/* Requests Card */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Link href="/parinti/cereri" className="block bg-white rounded-lg shadow-sm border p-5 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-heading font-bold text-lg">Cererile mele</h2>
+              <p className="text-gray-500 text-sm mt-0.5">Absente, transferuri si alte cereri</p>
+            </div>
+            <span className="text-2xl">📋</span>
+          </div>
+        </Link>
+        <Link href="/parinti/mesaje" className="block bg-white rounded-lg shadow-sm border p-5 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-heading font-bold text-lg">Mesaje</h2>
+              <p className="text-gray-500 text-sm mt-0.5">Comunicare cu antrenorii si administrația</p>
+            </div>
+            <span className="text-2xl">💬</span>
+          </div>
+        </Link>
+      </div>
+
       {/* Photo Consent Card */}
       <div className="bg-white rounded-lg shadow-sm border p-5">
         <h2 className="font-heading font-bold text-lg mb-4">Acorduri foto</h2>

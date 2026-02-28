@@ -30,8 +30,9 @@ export async function POST(req: NextRequest) {
       awayTeam: data.awayTeam,
       homeScore: data.homeScore != null && data.homeScore !== '' ? parseInt(data.homeScore) : null,
       awayScore: data.awayScore != null && data.awayScore !== '' ? parseInt(data.awayScore) : null,
-      isDinamo: isDinamoTeam(data.homeTeam) || isDinamoTeam(data.awayTeam),
+      isDinamo: data.isDinamo !== undefined ? data.isDinamo : (isDinamoTeam(data.homeTeam) || isDinamoTeam(data.awayTeam)),
       notes: data.notes || null,
+      competitionId: data.competitionId || null,
     },
   })
   return NextResponse.json(match)

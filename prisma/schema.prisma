@@ -15,6 +15,11 @@ model User {
   email     String?
   role      String   @default("editor")
   active    Boolean  @default(true)
+  roleId    Int?
+  roleRef   Role?    @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  teamIds   String?  // JSON array of team IDs this user can manage
+  conversations ConversationParticipant[]
+  sentMessages  Message[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -68,9 +73,11 @@ model Team {
   attendances     Attendance[]
   registrations   Registration[]
   calendarEvents  CalendarEvent[]
-  transfersFrom   TransferLog[]   @relation("TransferFrom")
-  transfersTo     TransferLog[]   @relation("TransferTo")
-  documents       Document[]
+  transfersFrom      TransferLog[]      @relation("TransferFrom")
+  transfersTo        TransferLog[]      @relation("TransferTo")
+  documents          Document[]
+  conversations      Conversation[]
+  attendanceSessions AttendanceSession[]
 }
 
 model Coach {
@@ -90,20 +97,24 @@ model Coach {
 }
 
 model Match {
-  id        String   @id @default(cuid())
-  category  String   // U10, U12, U14
-  matchType String   @default("turneu") // "turneu" or "meci"
-  round     String?  // "Etapa 1", "Festival Mini Rugby" etc.
-  date      DateTime
-  location  String?
-  homeTeam  String
-  awayTeam  String
-  homeScore Int?     // null = not played yet
-  awayScore Int?
-  isDinamo  Boolean  @default(true)
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String       @id @default(cuid())
+  category      String       // U10, U12, U14
+  matchType     String       @default("turneu") // "turneu" or "meci"
+  round         String?      // "Etapa 1", "Festival Mini Rugby" etc.
+  date          DateTime
+  location      String?
+  homeTeam      String
+  awayTeam      String
+  homeScore     Int?         // null = not played yet
+  awayScore     Int?
+  isDinamo      Boolean      @default(true)
+  notes         String?
+  competitionId String?
+  competition   Competition? @relation(fields: [competitionId], references: [id], onDelete: SetNull)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([competitionId])
 }
 
 model TrainingSession {
@@ -158,6 +169,9 @@ model Parent {
   children          Child[]
   payments          Payment[]
   pushSubscriptions PushSubscription[]
+  conversations     ConversationParticipant[]
+  sentMessages      Message[]
+  requests          Request[]
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 }
@@ -175,6 +189,8 @@ model Child {
   photoConsentDate DateTime?
   signatureData    String?
   medicalCert      Boolean   @default(false)
+  publicProfile    Boolean   @default(false)
+  publicBio        String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   physicalProfiles PhysicalProfile[]
@@ -184,6 +200,7 @@ model Child {
   childPhotos      ChildPhoto[]
   payments         Payment[]
   transfers        TransferLog[]
+  requests         Request[]
 }
 
 model AccessRequest {
@@ -234,16 +251,18 @@ model Evaluation {
 }
 
 model Attendance {
-  id        String   @id @default(cuid())
-  childId   String
-  child     Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
-  date      DateTime
-  type      String   @default("antrenament")
-  present   Boolean  @default(true)
-  notes     String?
-  teamId    Int?
-  team      Team?    @relation(fields: [teamId], references: [id], onDelete: SetNull)
-  createdAt DateTime @default(now())
+  id          String    @id @default(cuid())
+  childId     String
+  child       Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
+  date        DateTime
+  type        String    @default("antrenament")
+  present     Boolean   @default(true)
+  notes       String?
+  teamId      Int?
+  team        Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  checkinTime DateTime?
+  sessionId   String?
+  createdAt   DateTime  @default(now())
 }
 
 model MedicalRecord {
@@ -498,4 +517,133 @@ model OrderItem {
   name      String
   price     Float
   quantity  Int     @default(1)
+}
+
+// Phase 2 Models
+
+// Competitions & Tournaments (2.6)
+model Competition {
+  id          String            @id @default(cuid())
+  name        String
+  type        String            @default("turneu") // liga, turneu, cupa
+  season      String?
+  category    String?           // U10, U12, U14, etc.
+  startDate   DateTime?
+  endDate     DateTime?
+  description String?
+  active      Boolean           @default(true)
+  teams       CompetitionTeam[]
+  matches     Match[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model CompetitionTeam {
+  id            String      @id @default(cuid())
+  competitionId String
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  teamName      String
+  points        Int         @default(0)
+  played        Int         @default(0)
+  won           Int         @default(0)
+  drawn         Int         @default(0)
+  lost          Int         @default(0)
+  goalsFor      Int         @default(0)
+  goalsAgainst  Int         @default(0)
+
+  @@index([competitionId])
+}
+
+// Internal Messaging (2.4)
+model Conversation {
+  id           String                    @id @default(cuid())
+  type         String                    @default("direct") // direct, group
+  subject      String?
+  teamId       Int?
+  team         Team?                     @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  participants ConversationParticipant[]
+  messages     Message[]
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+}
+
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  parentId       String?
+  parent         Parent?      @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  userId         Int?
+  user           User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastReadAt     DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@unique([conversationId, parentId])
+  @@unique([conversationId, userId])
+  @@index([parentId])
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderParentId String?
+  senderParent   Parent?      @relation(fields: [senderParentId], references: [id], onDelete: SetNull)
+  senderUserId   Int?
+  senderUser     User?        @relation(fields: [senderUserId], references: [id], onDelete: SetNull)
+  content        String
+  attachmentUrl  String?
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+// QR Attendance Sessions (2.5)
+model AttendanceSession {
+  id        String   @id @default(cuid())
+  teamId    Int
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  date      DateTime @default(now())
+  qrToken   String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([teamId])
+  @@index([qrToken])
+}
+
+// Requests & Absences (2.8)
+model Request {
+  id          String    @id @default(cuid())
+  parentId    String
+  parent      Parent    @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  childId     String?
+  child       Child?    @relation(fields: [childId], references: [id], onDelete: SetNull)
+  type        String    @default("absenta") // absenta, transfer, echipament, alta
+  title       String
+  description String?
+  status      String    @default("pending") // pending, approved, rejected
+  response    String?
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([parentId])
+  @@index([status])
+}
+
+// Roles & Permissions (2.10)
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  label       String
+  permissions String   @default("{}") // JSON string of permissions
+  isSystem    Boolean  @default(false) // true for built-in roles (admin, editor)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
 }
