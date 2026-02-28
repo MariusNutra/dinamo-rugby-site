@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAuthenticated } from '@/lib/auth'
+import { isAdmin } from '@/lib/auth'
 import nodemailer from 'nodemailer'
 
 const transporter = nodemailer.createTransport({
@@ -16,7 +16,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!await isAuthenticated()) {
+  if (!await isAdmin()) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
 

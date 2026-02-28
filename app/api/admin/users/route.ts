@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
+import { audit } from '@/lib/audit'
 
 export async function GET() {
   const authUser = await getAuthUser()
@@ -38,8 +39,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Username, parolă și nume sunt obligatorii' }, { status: 400 })
   }
 
-  if (password.length < 6) {
-    return NextResponse.json({ error: 'Parola trebuie să aibă minim 6 caractere' }, { status: 400 })
+  if (!password || password.length < 8) {
+    return NextResponse.json({ error: 'Parola trebuie sa aiba minim 8 caractere.' }, { status: 400 })
+  }
+  if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+    return NextResponse.json({ error: 'Parola trebuie sa contina cel putin o litera mare si o cifra.' }, { status: 400 })
   }
 
   // Check unique username
@@ -70,5 +74,6 @@ export async function POST(req: NextRequest) {
     },
   })
 
+  await audit({ action: 'create', entity: 'user', entityId: String(user.id), details: user.username })
   return NextResponse.json(user)
 }

@@ -41,3 +41,12 @@ prisma/dev.db
 
 # uploads
 /uploads
+
+# old builds
+/.next-old/
+
+# data files
+/data/
+
+# uploaded images
+/public/images/antrenori/

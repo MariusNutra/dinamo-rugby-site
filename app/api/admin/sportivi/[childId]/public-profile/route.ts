@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAuthenticated } from '@/lib/auth'
+import { isAdmin } from '@/lib/auth'
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ childId: string }> }
 ) {
-  if (!(await isAuthenticated())) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
 
@@ -30,7 +30,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ childId: string }> }
 ) {
-  if (!(await isAuthenticated())) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
 

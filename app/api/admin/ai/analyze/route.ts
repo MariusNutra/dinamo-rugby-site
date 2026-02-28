@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isAuthenticated } from '@/lib/auth'
+import { isAdmin } from '@/lib/auth'
 import { analyzeAthlete } from '@/lib/ai/analysis'
 import { getTeamSuggestions, getAthleteRecommendations } from '@/lib/ai/coach-assistant'
 
 export async function POST(req: NextRequest) {
-  if (!(await isAuthenticated())) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
 

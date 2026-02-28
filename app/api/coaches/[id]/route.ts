@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAuthenticated } from '@/lib/auth'
+import { isAdmin } from '@/lib/auth'
+import { audit } from '@/lib/audit'
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!await isAuthenticated()) {
+  if (!await isAdmin()) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
   const data = await req.json()
@@ -24,13 +25,15 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     data: updateData,
     include: { team: { select: { grupa: true } } },
   })
+  await audit({ action: 'update', entity: 'coach', entityId: coach.id, details: coach.name })
   return NextResponse.json(coach)
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!await isAuthenticated()) {
+  if (!await isAdmin()) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
   await prisma.coach.delete({ where: { id: params.id } })
+  await audit({ action: 'delete', entity: 'coach', entityId: params.id })
   return NextResponse.json({ success: true })
 }

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { isAuthenticated } from '@/lib/auth'
+import { isAdmin } from '@/lib/auth'
 import { getOverviewAlerts } from '@/lib/ai/coach-assistant'
 
 export async function GET() {
-  if (!(await isAuthenticated())) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
 

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAuthenticated } from '@/lib/auth'
+import { isAdmin } from '@/lib/auth'
 import { saveImage } from '@/lib/upload'
 
 export async function GET(req: NextRequest, { params }: { params: { childId: string } }) {
-  if (!(await isAuthenticated())) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
 
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest, { params }: { params: { childId: str
 }
 
 export async function POST(req: NextRequest, { params }: { params: { childId: string } }) {
-  if (!(await isAuthenticated())) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
 

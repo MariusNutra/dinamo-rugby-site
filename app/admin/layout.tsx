@@ -213,6 +213,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           { href: '/admin/sponsori', label: 'Sponsori', icon: '🤝', moduleKey: 'moduleSponsori' },
           { href: '/admin/settings/branding', label: 'Branding', icon: '🎨', moduleKey: null },
           { href: '/admin/settings/api-keys', label: 'API Keys', icon: '🔗', moduleKey: null },
+          { href: '/admin/audit', label: 'Jurnal', icon: '📜', moduleKey: null },
         ],
       },
     ]

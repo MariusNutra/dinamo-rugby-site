@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAuthenticated } from '@/lib/auth'
+import { isAdmin } from '@/lib/auth'
+import { audit } from '@/lib/audit'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!await isAuthenticated()) {
+  if (!await isAdmin()) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
   const data = await req.json()
@@ -41,5 +42,6 @@ export async function POST(req: NextRequest) {
     },
     include: { team: { select: { grupa: true } } },
   })
+  await audit({ action: 'create', entity: 'coach', entityId: coach.id, details: coach.name })
   return NextResponse.json(coach)
 }

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAuthenticated } from '@/lib/auth'
+import { isAdmin } from '@/lib/auth'
+import { audit } from '@/lib/audit'
 
 export async function GET(req: NextRequest) {
-  if (!(await isAuthenticated())) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
 
@@ -31,7 +32,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await isAuthenticated())) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
 
@@ -67,5 +68,6 @@ export async function POST(req: NextRequest) {
     },
   })
 
+  await audit({ action: 'create', entity: 'evaluation', entityId: evaluation.id })
   return NextResponse.json(evaluation, { status: 201 })
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
+import { audit } from '@/lib/audit'
 
 export async function PATCH(
   req: NextRequest,
@@ -60,6 +61,7 @@ export async function PATCH(
     },
   })
 
+  await audit({ action: 'update', entity: 'user', entityId: String(userId) })
   return NextResponse.json(user)
 }
 
@@ -82,5 +84,6 @@ export async function DELETE(
 
   await prisma.user.delete({ where: { id: userId } })
 
+  await audit({ action: 'delete', entity: 'user', entityId: String(userId) })
   return NextResponse.json({ success: true })
 }

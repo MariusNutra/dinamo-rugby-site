@@ -33,6 +33,11 @@ export async function isAuthenticated(): Promise<boolean> {
   return verifyToken(token) !== null
 }
 
+export async function isAdmin(): Promise<boolean> {
+  const user = await getAuthUser()
+  return user !== null && (user.role === 'admin' || user.role === 'superadmin')
+}
+
 export async function getAuthUser(): Promise<TokenPayload | null> {
   const cookieStore = await cookies()
   const token = cookieStore.get('admin_token')?.value

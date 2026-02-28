@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAuthenticated } from '@/lib/auth'
+import { isAdmin } from '@/lib/auth'
 
 export async function PUT(req: NextRequest) {
-  if (!await isAuthenticated()) {
+  if (!await isAdmin()) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
   const { ids } = await req.json() as { ids: string[] }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isAuthenticated } from '@/lib/auth'
+import { isAdmin } from '@/lib/auth'
 import { validateCsrf, setCsrfCookie } from '@/lib/csrf'
 import { prisma } from '@/lib/prisma'
 
@@ -43,7 +43,7 @@ function isValidHexColor(value: string): boolean {
 }
 
 export async function GET() {
-  if (!(await isAuthenticated())) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
 
@@ -59,7 +59,7 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  if (!(await isAuthenticated())) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
 

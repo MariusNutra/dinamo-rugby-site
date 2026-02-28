@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isAuthenticated, getAuthUser } from '@/lib/auth'
+import { isAdmin, getAuthUser } from '@/lib/auth'
 import { validateCsrf } from '@/lib/csrf'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(req: NextRequest) {
-  if (!(await isAuthenticated())) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
 
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await isAuthenticated())) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
   const csrfError = validateCsrf(req)

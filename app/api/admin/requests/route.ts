@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAuthenticated, getAuthUser } from '@/lib/auth'
+import { isAdmin, getAuthUser } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
-  if (!await isAuthenticated()) {
+  if (!await isAdmin()) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
 
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  if (!await isAuthenticated()) {
+  if (!await isAdmin()) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
 

@@ -8,20 +8,20 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
-  password  String
-  name      String
-  email     String?
-  role      String   @default("editor")
-  active    Boolean  @default(true)
-  roleId    Int?
-  roleRef   Role?    @relation(fields: [roleId], references: [id], onDelete: SetNull)
-  teamIds   String?  // JSON array of team IDs this user can manage
+  id            Int                       @id @default(autoincrement())
+  username      String                    @unique
+  password      String
+  name          String
+  email         String?
+  role          String                    @default("editor")
+  active        Boolean                   @default(true)
+  roleId        Int?
+  teamIds       String?
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
   conversations ConversationParticipant[]
   sentMessages  Message[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  roleRef       Role?                     @relation(fields: [roleId], references: [id])
 }
 
 model Story {
@@ -49,42 +49,42 @@ model Photo {
   grupa     String?
   albumName String?
   storyId   Int?
-  story     Story?   @relation(fields: [storyId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now())
+  story     Story?   @relation(fields: [storyId], references: [id])
 }
 
 model Team {
-  id          Int      @id @default(autoincrement())
-  grupa       String   @unique
-  coachName   String   // deprecated — use Coach model
-  coachPhoto  String?  // deprecated — use Coach model
-  coachBio    String?  // deprecated — use Coach model
-  schedule    String?
-  description String?
-  active      Boolean  @default(true)
-  color       String   @default("green")
-  sortOrder   Int      @default(0)
-  ageRange    String?
-  birthYear   String?
-  updatedAt       DateTime        @updatedAt
-  coaches         Coach[]
-  children        Child[]
-  accessRequests  AccessRequest[]
-  attendances     Attendance[]
-  registrations   Registration[]
-  calendarEvents  CalendarEvent[]
-  transfersFrom      TransferLog[]      @relation("TransferFrom")
-  transfersTo        TransferLog[]      @relation("TransferTo")
-  documents          Document[]
-  conversations      Conversation[]
+  id                 Int                 @id @default(autoincrement())
+  grupa              String              @unique
+  coachName          String
+  coachPhoto         String?
+  coachBio           String?
+  schedule           String?
+  description        String?
+  active             Boolean             @default(true)
+  color              String              @default("green")
+  sortOrder          Int                 @default(0)
+  ageRange           String?
+  birthYear          String?
+  updatedAt          DateTime            @updatedAt
+  accessRequests     AccessRequest[]
+  attendances        Attendance[]
   attendanceSessions AttendanceSession[]
+  calendarEvents     CalendarEvent[]
+  children           Child[]
+  coaches            Coach[]
+  conversations      Conversation[]
+  documents          Document[]
+  registrations      Registration[]
   tacticalBoards     TacticalBoard[]
+  transfersTo        TransferLog[]       @relation("TransferTo")
+  transfersFrom      TransferLog[]       @relation("TransferFrom")
 }
 
 model Coach {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
   photo          String?
   phone          String?
   email          String?
@@ -92,28 +92,28 @@ model Coach {
   visible        Boolean  @default(true)
   order          Int      @default(0)
   teamId         Int
-  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  team           Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
 }
 
 model Match {
   id            String       @id @default(cuid())
-  category      String       // U10, U12, U14
-  matchType     String       @default("turneu") // "turneu" or "meci"
-  round         String?      // "Etapa 1", "Festival Mini Rugby" etc.
+  category      String
+  matchType     String       @default("turneu")
+  round         String?
   date          DateTime
   location      String?
   homeTeam      String
   awayTeam      String
-  homeScore     Int?         // null = not played yet
+  homeScore     Int?
   awayScore     Int?
   isDinamo      Boolean      @default(true)
   notes         String?
   competitionId String?
-  competition   Competition? @relation(fields: [competitionId], references: [id], onDelete: SetNull)
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+  competition   Competition? @relation(fields: [competitionId], references: [id])
 
   @@index([competitionId])
 }
@@ -151,62 +151,62 @@ model SiteText {
 }
 
 model Video {
-  id          Int              @id @default(autoincrement())
+  id          Int               @id @default(autoincrement())
   title       String
   youtubeUrl  String
   description String?
   grupa       String?
-  featured    Boolean          @default(false)
+  featured    Boolean           @default(false)
+  createdAt   DateTime          @default(now())
   annotations VideoAnnotation[]
-  createdAt   DateTime         @default(now())
 }
 
 model Parent {
-  id          String    @id @default(cuid())
-  name        String
-  email       String    @unique
-  phone       String?
-  token       String?
-  tokenExpiry DateTime?
+  id                String                    @id @default(cuid())
+  name              String
+  email             String                    @unique
+  phone             String?
+  token             String?
+  tokenExpiry       DateTime?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
   children          Child[]
-  payments          Payment[]
-  pushSubscriptions PushSubscription[]
   conversations     ConversationParticipant[]
   sentMessages      Message[]
+  payments          Payment[]
+  pushSubscriptions PushSubscription[]
   requests          Request[]
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
 }
 
 model Child {
-  id               String    @id @default(cuid())
+  id               String            @id @default(cuid())
   name             String
   birthYear        Int
   parentId         String
-  parent           Parent    @relation(fields: [parentId], references: [id], onDelete: Cascade)
   teamId           Int?
-  team             Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
-  photoConsent     Boolean   @default(false)
-  photoConsentWA   Boolean   @default(false)
+  photoConsent     Boolean           @default(false)
+  photoConsentWA   Boolean           @default(false)
   photoConsentDate DateTime?
   signatureData    String?
-  medicalCert      Boolean   @default(false)
-  publicProfile    Boolean   @default(false)
+  medicalCert      Boolean           @default(false)
+  publicProfile    Boolean           @default(false)
   publicBio        String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  physicalProfiles PhysicalProfile[]
-  evaluations      Evaluation[]
-  attendances      Attendance[]
-  medicalRecords   MedicalRecord[]
-  childPhotos      ChildPhoto[]
-  payments         Payment[]
-  transfers        TransferLog[]
-  requests         Request[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
   badges           AthleteBadge[]
-  points           Points[]
-  fitnessDevices   FitnessDevice[]
+  attendances      Attendance[]
+  team             Team?             @relation(fields: [teamId], references: [id])
+  parent           Parent            @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  childPhotos      ChildPhoto[]
+  evaluations      Evaluation[]
   fitnessData      FitnessData[]
+  fitnessDevices   FitnessDevice[]
+  medicalRecords   MedicalRecord[]
+  payments         Payment[]
+  physicalProfiles PhysicalProfile[]
+  points           Points[]
+  requests         Request[]
+  transfers        TransferLog[]
 }
 
 model AccessRequest {
@@ -217,18 +217,17 @@ model AccessRequest {
   childName      String
   childBirthYear Int
   teamId         Int?
-  team           Team?     @relation(fields: [teamId], references: [id])
   message        String?
   status         String    @default("pending")
   reviewedAt     DateTime?
   reviewedBy     String?
   createdAt      DateTime  @default(now())
+  team           Team?     @relation(fields: [teamId], references: [id])
 }
 
 model PhysicalProfile {
   id        String   @id @default(cuid())
   childId   String
-  child     Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
   date      DateTime @default(now())
   height    Float?
   weight    Float?
@@ -237,12 +236,12 @@ model PhysicalProfile {
   createdBy String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  child     Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
 }
 
 model Evaluation {
   id        String   @id @default(cuid())
   childId   String
-  child     Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
   date      DateTime @default(now())
   period    String
   physical  Int
@@ -254,27 +253,27 @@ model Evaluation {
   createdBy String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  child     Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
 }
 
 model Attendance {
   id          String    @id @default(cuid())
   childId     String
-  child       Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
   date        DateTime
   type        String    @default("antrenament")
   present     Boolean   @default(true)
   notes       String?
   teamId      Int?
-  team        Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
   checkinTime DateTime?
   sessionId   String?
-  createdAt   DateTime  @default(now())
+  team        Team?     @relation(fields: [teamId], references: [id])
+  child       Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
 }
 
 model MedicalRecord {
   id          String    @id @default(cuid())
   childId     String
-  child       Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
   date        DateTime  @default(now())
   type        String
   description String
@@ -284,34 +283,35 @@ model MedicalRecord {
   createdBy   String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  child       Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
 }
 
 model ChildPhoto {
   id         String    @id @default(cuid())
   childId    String
-  child      Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
   url        String
   caption    String?
   date       DateTime?
   event      String?
   uploadedBy String?
   createdAt  DateTime  @default(now())
+  child      Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
 }
 
 model RateLimit {
-  id        Int      @id @default(autoincrement())
-  key       String
-  action    String
-  count     Int      @default(1)
+  id          Int      @id @default(autoincrement())
+  key         String
+  action      String
+  count       Int      @default(1)
   windowStart DateTime @default(now())
-  createdAt DateTime @default(now())
+  createdAt   DateTime @default(now())
 
   @@unique([key, action])
   @@index([action, windowStart])
 }
 
 model SiteSettings {
-  id                    Int      @id @default(1)
+  id                    Int      @id @default(autoincrement())
   moduleHomepage        Boolean  @default(true)
   moduleEchipe          Boolean  @default(true)
   moduleProgram         Boolean  @default(true)
@@ -331,7 +331,6 @@ model SiteSettings {
   moduleSponsori        Boolean  @default(false)
   moduleFundraising     Boolean  @default(false)
   extraConfig           String   @default("{}")
-  // Branding (3.10)
   logo                  String?
   primaryColor          String   @default("#dc2626")
   secondaryColor        String   @default("#1e3a5f")
@@ -367,7 +366,6 @@ model Campaign {
 model Donation {
   id              String   @id @default(cuid())
   campaignId      String
-  campaign        Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   donorName       String?
   email           String?
   amount          Float
@@ -376,14 +374,13 @@ model Donation {
   stripeSessionId String?
   status          String   @default("completed")
   createdAt       DateTime @default(now())
+  campaign        Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 }
 
 model Payment {
   id              String   @id @default(cuid())
   parentId        String?
-  parent          Parent?  @relation(fields: [parentId], references: [id], onDelete: SetNull)
   childId         String?
-  child           Child?   @relation(fields: [childId], references: [id], onDelete: SetNull)
   amount          Float
   type            String
   status          String   @default("pending")
@@ -392,25 +389,27 @@ model Payment {
   receiptNumber   String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  child           Child?   @relation(fields: [childId], references: [id])
+  parent          Parent?  @relation(fields: [parentId], references: [id])
 }
 
 model Registration {
-  id             String   @id @default(cuid())
-  childFirstName String
-  childLastName  String
-  birthDate      DateTime
-  teamId         Int?
-  team           Team?    @relation(fields: [teamId], references: [id], onDelete: SetNull)
-  parentName     String
-  phone          String
-  email          String
-  experience     String?
-  gdprConsent    Boolean  @default(true)
+  id              String   @id @default(cuid())
+  childFirstName  String
+  childLastName   String
+  birthDate       DateTime
+  teamId          Int?
+  parentName      String
+  phone           String
+  email           String
+  experience      String?
+  gdprConsent     Boolean  @default(true)
   status          String   @default("noua")
   notes           String?
-  rejectionReason String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  rejectionReason String?
+  team            Team?    @relation(fields: [teamId], references: [id])
 }
 
 model CalendarEvent {
@@ -423,9 +422,9 @@ model CalendarEvent {
   location    String?
   description String?
   teamId      Int?
-  team        Team?    @relation(fields: [teamId], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  team        Team?    @relation(fields: [teamId], references: [id])
 }
 
 model Notification {
@@ -441,17 +440,17 @@ model Notification {
 }
 
 model Product {
-  id          String   @id @default(cuid())
+  id          String      @id @default(cuid())
   name        String
   description String?
   price       Float
   image       String?
-  stock       Int      @default(0)
+  stock       Int         @default(0)
   category    String?
   active      Boolean     @default(true)
-  orderItems  OrderItem[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
 }
 
 model Sponsor {
@@ -470,33 +469,31 @@ model Sponsor {
 model TransferLog {
   id         String   @id @default(cuid())
   childId    String
-  child      Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
   fromTeamId Int
-  fromTeam   Team     @relation("TransferFrom", fields: [fromTeamId], references: [id])
   toTeamId   Int
-  toTeam     Team     @relation("TransferTo", fields: [toTeamId], references: [id])
   reason     String?
   movedBy    String   @default("admin")
   createdAt  DateTime @default(now())
+  toTeam     Team     @relation("TransferTo", fields: [toTeamId], references: [id])
+  fromTeam   Team     @relation("TransferFrom", fields: [fromTeamId], references: [id])
+  child      Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
 
   @@index([childId])
   @@index([createdAt])
 }
 
-// Push Notification Subscriptions
 model PushSubscription {
   id        String   @id @default(cuid())
   parentId  String
-  parent    Parent   @relation(fields: [parentId], references: [id], onDelete: Cascade)
   endpoint  String   @unique
   p256dh    String
   auth      String
   createdAt DateTime @default(now())
+  parent    Parent   @relation(fields: [parentId], references: [id], onDelete: Cascade)
 
   @@index([parentId])
 }
 
-// Documents for parents
 model Document {
   id          String   @id @default(cuid())
   title       String
@@ -506,13 +503,12 @@ model Document {
   mimeType    String   @default("application/pdf")
   targetGroup String   @default("all")
   teamId      Int?
-  team        Team?    @relation(fields: [teamId], references: [id], onDelete: SetNull)
   uploadedBy  String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  team        Team?    @relation(fields: [teamId], references: [id])
 }
 
-// Shop Orders
 model Order {
   id              String      @id @default(cuid())
   customerName    String
@@ -523,45 +519,41 @@ model Order {
   stripeSessionId String?
   shippingAddress String?
   notes           String?
-  items           OrderItem[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
+  items           OrderItem[]
 }
 
 model OrderItem {
   id        String  @id @default(cuid())
   orderId   String
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId String
-  product   Product @relation(fields: [productId], references: [id])
   name      String
   price     Float
   quantity  Int     @default(1)
+  product   Product @relation(fields: [productId], references: [id])
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
-// Phase 2 Models
-
-// Competitions & Tournaments (2.6)
 model Competition {
   id          String            @id @default(cuid())
   name        String
-  type        String            @default("turneu") // liga, turneu, cupa
+  type        String            @default("turneu")
   season      String?
-  category    String?           // U10, U12, U14, etc.
+  category    String?
   startDate   DateTime?
   endDate     DateTime?
   description String?
   active      Boolean           @default(true)
-  teams       CompetitionTeam[]
-  matches     Match[]
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
+  teams       CompetitionTeam[]
+  matches     Match[]
 }
 
 model CompetitionTeam {
   id            String      @id @default(cuid())
   competitionId String
-  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
   teamName      String
   points        Int         @default(0)
   played        Int         @default(0)
@@ -570,33 +562,33 @@ model CompetitionTeam {
   lost          Int         @default(0)
   goalsFor      Int         @default(0)
   goalsAgainst  Int         @default(0)
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
 
   @@index([competitionId])
 }
 
-// Internal Messaging (2.4)
 model Conversation {
   id           String                    @id @default(cuid())
-  type         String                    @default("direct") // direct, group
+  type         String                    @default("direct")
   subject      String?
   teamId       Int?
-  team         Team?                     @relation(fields: [teamId], references: [id], onDelete: SetNull)
-  participants ConversationParticipant[]
-  messages     Message[]
   createdAt    DateTime                  @default(now())
   updatedAt    DateTime                  @updatedAt
+  team         Team?                     @relation(fields: [teamId], references: [id])
+  participants ConversationParticipant[]
+  messages     Message[]
 }
 
 model ConversationParticipant {
   id             String       @id @default(cuid())
   conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   parentId       String?
-  parent         Parent?      @relation(fields: [parentId], references: [id], onDelete: Cascade)
   userId         Int?
-  user           User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
   lastReadAt     DateTime?
   createdAt      DateTime     @default(now())
+  user           User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent         Parent?      @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, parentId])
   @@unique([conversationId, userId])
@@ -607,43 +599,39 @@ model ConversationParticipant {
 model Message {
   id             String       @id @default(cuid())
   conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   senderParentId String?
-  senderParent   Parent?      @relation(fields: [senderParentId], references: [id], onDelete: SetNull)
   senderUserId   Int?
-  senderUser     User?        @relation(fields: [senderUserId], references: [id], onDelete: SetNull)
   content        String
   attachmentUrl  String?
   createdAt      DateTime     @default(now())
+  senderUser     User?        @relation(fields: [senderUserId], references: [id])
+  senderParent   Parent?      @relation(fields: [senderParentId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@index([conversationId, createdAt])
 }
 
-// QR Attendance Sessions (2.5)
 model AttendanceSession {
   id        String   @id @default(cuid())
   teamId    Int
-  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
   date      DateTime @default(now())
   qrToken   String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   @@index([teamId])
   @@index([qrToken])
 }
 
-// Requests & Absences (2.8)
 model Request {
   id          String    @id @default(cuid())
   parentId    String
-  parent      Parent    @relation(fields: [parentId], references: [id], onDelete: Cascade)
   childId     String?
-  child       Child?    @relation(fields: [childId], references: [id], onDelete: SetNull)
-  type        String    @default("absenta") // absenta, transfer, echipament, alta
+  type        String    @default("absenta")
   title       String
   description String?
-  status      String    @default("pending") // pending, approved, rejected
+  status      String    @default("pending")
   response    String?
   reviewedBy  String?
   reviewedAt  DateTime?
@@ -651,87 +639,82 @@ model Request {
   endDate     DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  child       Child?    @relation(fields: [childId], references: [id])
+  parent      Parent    @relation(fields: [parentId], references: [id], onDelete: Cascade)
 
   @@index([parentId])
   @@index([status])
 }
 
-// Roles & Permissions (2.10)
 model Role {
   id          Int      @id @default(autoincrement())
   name        String   @unique
   label       String
-  permissions String   @default("{}") // JSON string of permissions
-  isSystem    Boolean  @default(false) // true for built-in roles (admin, editor)
+  permissions String   @default("{}")
+  isSystem    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   users       User[]
 }
 
-// Phase 3 Models
-
-// API Keys (3.1)
 model ApiKey {
-  id                 String   @id @default(cuid())
+  id                 String    @id @default(cuid())
   name               String
-  key                String   @unique
-  permissions        String   @default("[]") // JSON array of allowed endpoints
-  rateLimitPerMinute Int      @default(60)
+  key                String    @unique
+  permissions        String    @default("[]")
+  rateLimitPerMinute Int       @default(60)
   lastUsedAt         DateTime?
   createdBy          String?
-  active             Boolean  @default(true)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  active             Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   @@index([key])
 }
 
-// Video Annotations (3.5)
 model VideoAnnotation {
   id        String   @id @default(cuid())
   videoId   Int
-  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
-  timestamp Float    // seconds into video
+  timestamp Float
   text      String
   author    String?
   createdAt DateTime @default(now())
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
   @@index([videoId])
 }
 
-// Tactical Board (3.5)
 model TacticalBoard {
   id        String   @id @default(cuid())
   name      String
-  formation String   @default("{}") // JSON with player positions
+  formation String   @default("{}")
   notes     String?
   teamId    Int?
-  team      Team?    @relation(fields: [teamId], references: [id], onDelete: SetNull)
   createdBy String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  team      Team?    @relation(fields: [teamId], references: [id])
 }
 
-// Gamification (3.6)
 model Badge {
   id          String         @id @default(cuid())
   name        String
   icon        String         @default("🏅")
   description String?
-  criteria    String         @default("{}") // JSON criteria rules
-  category    String         @default("general") // attendance, performance, special
+  criteria    String         @default("{}")
+  category    String         @default("general")
   active      Boolean        @default(true)
-  athletes    AthleteBadge[]
   createdAt   DateTime       @default(now())
+  athletes    AthleteBadge[]
 }
 
 model AthleteBadge {
   id       String   @id @default(cuid())
   childId  String
-  child    Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
   badgeId  String
-  badge    Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
   earnedAt DateTime @default(now())
+  badge    Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  child    Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
 
   @@unique([childId, badgeId])
   @@index([childId])
@@ -740,25 +723,24 @@ model AthleteBadge {
 model Points {
   id        String   @id @default(cuid())
   childId   String
-  child     Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
   amount    Int
   reason    String
   createdAt DateTime @default(now())
+  child     Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
 
   @@index([childId])
 }
 
-// Fitness Tracking (3.7)
 model FitnessDevice {
   id           String   @id @default(cuid())
   childId      String
-  child        Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
-  provider     String   // garmin, polar, manual
+  provider     String
   accessToken  String?
   refreshToken String?
   connected    Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  child        Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
 
   @@index([childId])
 }
@@ -766,33 +748,32 @@ model FitnessDevice {
 model FitnessData {
   id           String   @id @default(cuid())
   childId      String
-  child        Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
   date         DateTime
   heartRateAvg Int?
   heartRateMax Int?
-  distance     Float?   // meters
+  distance     Float?
   sprintCount  Int?
   calories     Int?
   sleepHours   Float?
   source       String   @default("manual")
   notes        String?
   createdAt    DateTime @default(now())
+  child        Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
 
   @@index([childId, date])
 }
 
-// Scouting & Recruitment (3.9)
 model ScoutingReport {
-  id         String     @id @default(cuid())
-  scoutId    String?
-  eventName  String
-  eventDate  DateTime
-  location   String?
-  notes      String?
-  prospects  Prospect[]
-  createdBy  String?
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  id        String     @id @default(cuid())
+  scoutId   String?
+  eventName String
+  eventDate DateTime
+  location  String?
+  notes     String?
+  createdBy String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  prospects Prospect[]
 }
 
 model Prospect {
@@ -802,14 +783,30 @@ model Prospect {
   position         String?
   currentClub      String?
   notes            String?
-  rating           Int             @default(0) // 1-5 stars
-  status           String          @default("identified") // identified, contacted, trial, enrolled, rejected
+  rating           Int             @default(0)
+  status           String          @default("identified")
   phone            String?
   email            String?
   scoutingReportId String?
-  scoutingReport   ScoutingReport? @relation(fields: [scoutingReportId], references: [id], onDelete: SetNull)
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
+  scoutingReport   ScoutingReport? @relation(fields: [scoutingReportId], references: [id])
 
   @@index([status])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    Int?
+  username  String?
+  action    String
+  entity    String
+  entityId  String?
+  details   String?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([createdAt])
 }

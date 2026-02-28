@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isAuthenticated } from '@/lib/auth'
+import { isAdmin } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import {
   exportAthletesCSV,
@@ -9,7 +9,7 @@ import {
 } from '@/lib/federation-formats'
 
 export async function GET(req: NextRequest) {
-  if (!(await isAuthenticated())) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
 

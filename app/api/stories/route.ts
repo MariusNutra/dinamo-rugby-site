@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAuthenticated } from '@/lib/auth'
+import { audit } from '@/lib/audit'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -47,5 +48,6 @@ export async function POST(req: NextRequest) {
     },
   })
 
+  await audit({ action: 'create', entity: 'story', entityId: String(story.id), details: story.title })
   return NextResponse.json(story)
 }
