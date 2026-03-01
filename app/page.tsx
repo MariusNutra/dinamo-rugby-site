@@ -7,6 +7,7 @@ import LatestResults from '@/components/LatestResults'
 import VideoCard from '@/components/VideoCard'
 import Image from 'next/image'
 import Link from 'next/link'
+import DownloadSection from '@/components/DownloadSection'
 
 export const dynamic = 'force-dynamic'
 
@@ -184,6 +185,9 @@ export default async function HomePage() {
           </Link>
         </div>
       </section>
+
+      {/* Download App Section */}
+      <DownloadSection />
 
       {/* CTA */}
       <section className="bg-dinamo-red text-white py-16">
