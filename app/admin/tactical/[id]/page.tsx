@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { getCsrfToken } from '@/lib/csrf-client'
 
@@ -52,9 +52,11 @@ function getDefaultFormation(): Formation {
 
 export default function TacticalBoardEditorPage() {
   const params = useParams()
+  const router = useRouter()
   const boardId = params.id as string
 
   const [name, setName] = useState('')
+  const [deleting, setDeleting] = useState(false)
   const [formation, setFormation] = useState<Formation>(getDefaultFormation())
   const [notes, setNotes] = useState('')
   const [teamId, setTeamId] = useState<string>('')
@@ -230,6 +232,26 @@ export default function TacticalBoardEditorPage() {
     setFormation(getDefaultFormation())
   }
 
+  const handleDelete = async () => {
+    if (!confirm('Esti sigur ca vrei sa stergi aceasta tabla tactica? Actiunea este ireversibila.')) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/admin/tactical/${boardId}`, {
+        method: 'DELETE',
+        headers: { 'x-csrf-token': getCsrfToken() },
+      })
+      if (res.ok) {
+        router.push('/admin/tactical')
+      } else {
+        showToast('Eroare la stergere', 'err')
+        setDeleting(false)
+      }
+    } catch {
+      showToast('Eroare de retea', 'err')
+      setDeleting(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-[40vh] flex items-center justify-center">
@@ -260,6 +282,14 @@ export default function TacticalBoardEditorPage() {
           </h1>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="px-4 py-2 bg-white text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors text-sm disabled:opacity-50"
+            title="Sterge tabla tactica"
+          >
+            {deleting ? 'Se sterge...' : 'Sterge'}
+          </button>
           <button
             onClick={handleResetFormation}
             className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
