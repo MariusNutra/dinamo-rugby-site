@@ -21,41 +21,72 @@ export async function GET(req: NextRequest) {
     const token = authHeader.slice(7)
     try {
       const decoded = jwt.verify(token, getJwtSecret()) as {
-        parentId: string
+        parentId?: string
+        coachId?: string
         email: string
         role: string
       }
 
-      const parent = await prisma.parent.findUnique({
-        where: { id: decoded.parentId },
-        include: {
-          children: {
-            include: { team: true },
+      // Parent token
+      if (decoded.parentId) {
+        const parent = await prisma.parent.findUnique({
+          where: { id: decoded.parentId },
+          include: {
+            children: {
+              include: { team: true },
+            },
           },
-        },
-      })
+        })
 
-      if (!parent) {
-        return NextResponse.json({ authenticated: false })
+        if (!parent) {
+          return NextResponse.json({ authenticated: false })
+        }
+
+        return NextResponse.json({
+          authenticated: true,
+          user: {
+            id: parent.id,
+            name: parent.name,
+            email: parent.email,
+            phone: parent.phone,
+            role: 'parent',
+            children: parent.children.map((c) => ({
+              id: c.id,
+              name: c.name,
+              birthYear: c.birthYear,
+              teamId: c.teamId ? String(c.teamId) : '',
+              teamName: c.team?.grupa || '',
+            })),
+          },
+        })
       }
 
-      return NextResponse.json({
-        authenticated: true,
-        user: {
-          id: parent.id,
-          name: parent.name,
-          email: parent.email,
-          phone: parent.phone,
-          role: 'parent',
-          children: parent.children.map((c) => ({
-            id: c.id,
-            name: c.name,
-            birthYear: c.birthYear,
-            teamId: c.teamId ? String(c.teamId) : '',
-            teamName: c.team?.grupa || '',
-          })),
-        },
-      })
+      // Coach token
+      if (decoded.coachId) {
+        const coach = await prisma.coach.findUnique({
+          where: { id: decoded.coachId },
+          include: { team: true },
+        })
+
+        if (!coach) {
+          return NextResponse.json({ authenticated: false })
+        }
+
+        return NextResponse.json({
+          authenticated: true,
+          user: {
+            id: coach.id,
+            name: coach.name,
+            email: coach.email,
+            phone: coach.phone,
+            role: 'coach',
+            teamId: String(coach.teamId),
+            teamName: coach.team?.grupa || '',
+          },
+        })
+      }
+
+      return NextResponse.json({ authenticated: false })
     } catch {
       return NextResponse.json({ authenticated: false })
     }

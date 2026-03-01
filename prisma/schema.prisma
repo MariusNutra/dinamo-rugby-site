@@ -87,7 +87,8 @@ model Coach {
   description    String?
   photo          String?
   phone          String?
-  email          String?
+  email          String?  @unique
+  password       String?
   certifications String?
   visible        Boolean  @default(true)
   order          Int      @default(0)

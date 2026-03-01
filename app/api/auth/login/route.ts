@@ -30,7 +30,18 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const { email, password } = await req.json()
+  let email: string, password: string, requestedRole: string | undefined
+  try {
+    const body = await req.json()
+    email = body.email
+    password = body.password
+    requestedRole = body.role
+  } catch {
+    return NextResponse.json(
+      { error: 'Date invalide.' },
+      { status: 400 }
+    )
+  }
 
   if (!email || !password) {
     return NextResponse.json(
@@ -41,6 +52,7 @@ export async function POST(req: NextRequest) {
 
   const normalizedEmail = email.toLowerCase().trim()
 
+  // Try Parent first
   const parent = await prisma.parent.findUnique({
     where: { email: normalizedEmail },
     include: {
@@ -50,41 +62,71 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  if (!parent || !parent.password) {
-    return NextResponse.json(
-      { error: 'Email sau parolă incorectă.' },
-      { status: 401 }
-    )
+  if (parent?.password) {
+    const validPassword = await bcrypt.compare(password, parent.password)
+    if (validPassword) {
+      // If requested role is 'athlete' and parent has children, return athlete role
+      const isAthlete = requestedRole === 'athlete' && parent.children.length > 0
+      const role = isAthlete ? 'athlete' : 'parent'
+
+      const token = jwt.sign(
+        { parentId: parent.id, email: parent.email, role },
+        getJwtSecret(),
+        { expiresIn: '30d' }
+      )
+
+      return NextResponse.json({
+        token,
+        user: {
+          id: parent.id,
+          name: isAthlete ? parent.children[0].name : parent.name,
+          email: parent.email,
+          phone: parent.phone,
+          role: role as 'parent' | 'athlete',
+          children: parent.children.map((c) => ({
+            id: c.id,
+            name: c.name,
+            birthYear: c.birthYear,
+            teamId: c.teamId ? String(c.teamId) : '',
+            teamName: c.team?.grupa || '',
+          })),
+        },
+      })
+    }
   }
 
-  const validPassword = await bcrypt.compare(password, parent.password)
-  if (!validPassword) {
-    return NextResponse.json(
-      { error: 'Email sau parolă incorectă.' },
-      { status: 401 }
-    )
+  // Try Coach
+  const coach = await prisma.coach.findFirst({
+    where: { email: normalizedEmail },
+    include: { team: true },
+  })
+
+  if (coach?.password) {
+    const validPassword = await bcrypt.compare(password, coach.password)
+    if (validPassword) {
+      const token = jwt.sign(
+        { coachId: coach.id, email: coach.email, role: 'coach' },
+        getJwtSecret(),
+        { expiresIn: '30d' }
+      )
+
+      return NextResponse.json({
+        token,
+        user: {
+          id: coach.id,
+          name: coach.name,
+          email: coach.email,
+          phone: coach.phone,
+          role: 'coach' as const,
+          teamId: String(coach.teamId),
+          teamName: coach.team?.grupa || '',
+        },
+      })
+    }
   }
 
-  const token = jwt.sign(
-    { parentId: parent.id, email: parent.email, role: 'parent' },
-    getJwtSecret(),
-    { expiresIn: '30d' }
+  return NextResponse.json(
+    { error: 'Email sau parolă incorectă.' },
+    { status: 401 }
   )
-
-  const user = {
-    id: parent.id,
-    name: parent.name,
-    email: parent.email,
-    phone: parent.phone,
-    role: 'parent' as const,
-    children: parent.children.map((c) => ({
-      id: c.id,
-      name: c.name,
-      birthYear: c.birthYear,
-      teamId: c.teamId ? String(c.teamId) : '',
-      teamName: c.team?.grupa || '',
-    })),
-  }
-
-  return NextResponse.json({ token, user })
 }

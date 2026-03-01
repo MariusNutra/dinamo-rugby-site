@@ -6,7 +6,7 @@
  */
 
 const CLUB_NAME = 'CS Dinamo București Rugby'
-const LOGO_URL = 'https://dinamorugby.ro/images/dinamo-rugby-logo.png'
+const LOGO_URL = 'https://dinamorugby.ro/images/dinamo-rugby-bulldog.png'
 const SITE_URL = 'https://dinamorugby.ro'
 
 // Brand colors

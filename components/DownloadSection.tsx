@@ -48,7 +48,7 @@ export default function DownloadSection() {
         <div className="text-center mb-10">
           <div className="w-20 h-20 mx-auto mb-4">
             <Image
-              src="/images/dinamo-rugby-logo.png"
+              src="/images/dinamo-rugby-bulldog.png"
               alt="Dinamo Rugby"
               width={80}
               height={80}
@@ -63,7 +63,7 @@ export default function DownloadSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
           {/* Mobile install */}
           <div className="bg-white rounded-xl p-6 text-center shadow-lg">
             <div className="w-12 h-12 mx-auto mb-3 bg-red-50 rounded-full flex items-center justify-center">
@@ -144,27 +144,6 @@ export default function DownloadSection() {
                 Deschide în Browser
               </a>
             )}
-          </div>
-
-          {/* Windows .exe download */}
-          <div className="bg-white rounded-xl p-6 text-center shadow-lg">
-            <div className="w-12 h-12 mx-auto mb-3 bg-red-50 rounded-full flex items-center justify-center">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke="#D50032" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="#D50032" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </div>
-            <h3 className="font-heading font-bold text-lg text-gray-900 mb-1">
-              Descarcă pentru Windows
-            </h3>
-            <p className="text-sm text-gray-500 mb-4">DinamoRugby-Setup.exe</p>
-            <a
-              href="/downloads/DinamoRugby-Setup.exe"
-              className="block w-full bg-dinamo-red text-white font-bold py-3 px-6 rounded-lg hover:bg-red-700 transition-colors text-center"
-              download
-            >
-              Descarcă .exe
-            </a>
           </div>
         </div>
       </div>
