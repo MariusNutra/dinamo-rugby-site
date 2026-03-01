@@ -23,21 +23,21 @@ interface Formation {
 
 // Standard rugby union positions (15-a-side) with default formation layout
 const RUGBY_POSITIONS: Record<string, { label: string; defaultAttack: PlayerPos; defaultDefense: PlayerPos }> = {
-  '1':  { label: 'Loosehead Prop',     defaultAttack: { x: 230, y: 170 }, defaultDefense: { x: 470, y: 170 } },
-  '2':  { label: 'Hooker',             defaultAttack: { x: 230, y: 200 }, defaultDefense: { x: 470, y: 200 } },
-  '3':  { label: 'Tighthead Prop',     defaultAttack: { x: 230, y: 230 }, defaultDefense: { x: 470, y: 230 } },
-  '4':  { label: 'Lock',               defaultAttack: { x: 210, y: 165 }, defaultDefense: { x: 490, y: 165 } },
-  '5':  { label: 'Lock',               defaultAttack: { x: 210, y: 235 }, defaultDefense: { x: 490, y: 235 } },
-  '6':  { label: 'Blindside Flanker',  defaultAttack: { x: 250, y: 140 }, defaultDefense: { x: 450, y: 140 } },
-  '7':  { label: 'Openside Flanker',   defaultAttack: { x: 250, y: 260 }, defaultDefense: { x: 450, y: 260 } },
-  '8':  { label: 'Number Eight',       defaultAttack: { x: 200, y: 200 }, defaultDefense: { x: 500, y: 200 } },
-  '9':  { label: 'Scrum-half',         defaultAttack: { x: 280, y: 200 }, defaultDefense: { x: 420, y: 200 } },
-  '10': { label: 'Fly-half',           defaultAttack: { x: 320, y: 200 }, defaultDefense: { x: 380, y: 200 } },
-  '11': { label: 'Left Wing',          defaultAttack: { x: 400, y: 40  }, defaultDefense: { x: 300, y: 40  } },
-  '12': { label: 'Inside Centre',      defaultAttack: { x: 370, y: 160 }, defaultDefense: { x: 330, y: 160 } },
-  '13': { label: 'Outside Centre',     defaultAttack: { x: 400, y: 240 }, defaultDefense: { x: 300, y: 240 } },
-  '14': { label: 'Right Wing',         defaultAttack: { x: 400, y: 360 }, defaultDefense: { x: 300, y: 360 } },
-  '15': { label: 'Fullback',           defaultAttack: { x: 480, y: 200 }, defaultDefense: { x: 220, y: 200 } },
+  '1':  { label: 'Pilier stânga',              defaultAttack: { x: 230, y: 170 }, defaultDefense: { x: 470, y: 170 } },
+  '2':  { label: 'Trocar (Taloneur)',          defaultAttack: { x: 230, y: 200 }, defaultDefense: { x: 470, y: 200 } },
+  '3':  { label: 'Pilier dreapta',             defaultAttack: { x: 230, y: 230 }, defaultDefense: { x: 470, y: 230 } },
+  '4':  { label: 'Linia a II-a stânga',        defaultAttack: { x: 210, y: 165 }, defaultDefense: { x: 490, y: 165 } },
+  '5':  { label: 'Linia a II-a dreapta',       defaultAttack: { x: 210, y: 235 }, defaultDefense: { x: 490, y: 235 } },
+  '6':  { label: 'Aripă de grămadă stânga',    defaultAttack: { x: 250, y: 140 }, defaultDefense: { x: 450, y: 140 } },
+  '7':  { label: 'Aripă de grămadă dreapta',   defaultAttack: { x: 250, y: 260 }, defaultDefense: { x: 450, y: 260 } },
+  '8':  { label: 'Închizător',                  defaultAttack: { x: 200, y: 200 }, defaultDefense: { x: 500, y: 200 } },
+  '9':  { label: 'Mijlocaș la grămadă',        defaultAttack: { x: 280, y: 200 }, defaultDefense: { x: 420, y: 200 } },
+  '10': { label: 'Deschizător',                defaultAttack: { x: 320, y: 200 }, defaultDefense: { x: 380, y: 200 } },
+  '11': { label: 'Aripă stânga',               defaultAttack: { x: 400, y: 40  }, defaultDefense: { x: 300, y: 40  } },
+  '12': { label: 'Centru interior',             defaultAttack: { x: 370, y: 160 }, defaultDefense: { x: 330, y: 160 } },
+  '13': { label: 'Centru exterior',             defaultAttack: { x: 400, y: 240 }, defaultDefense: { x: 300, y: 240 } },
+  '14': { label: 'Aripă dreapta',              defaultAttack: { x: 400, y: 360 }, defaultDefense: { x: 300, y: 360 } },
+  '15': { label: 'Fundaș',                     defaultAttack: { x: 480, y: 200 }, defaultDefense: { x: 220, y: 200 } },
 }
 
 function getDefaultFormation(): Formation {
@@ -454,7 +454,7 @@ export default function TacticalBoardEditorPage() {
       {/* Player position legend */}
       <div className="bg-white rounded-xl shadow-md p-6 mb-6">
         <h3 className="font-heading font-bold text-sm text-dinamo-blue mb-3">
-          Legenda pozitii ({activeLayer === 'attack' ? 'Atac' : 'Aparare'})
+          Legendă poziții ({activeLayer === 'attack' ? 'Atac' : 'Apărare'})
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
           {Object.entries(RUGBY_POSITIONS).map(([num, pos]) => {
@@ -486,11 +486,11 @@ export default function TacticalBoardEditorPage() {
         <div className="flex items-center gap-4 mt-3 text-xs text-gray-400">
           <span className="flex items-center gap-1">
             <span className="w-3 h-3 rounded-full bg-gray-400 inline-block"></span>
-            #1-8: Inainte (Forwards)
+            #1-8: Înaintarea (Pachet)
           </span>
           <span className="flex items-center gap-1">
             <span className="w-3 h-3 rounded-full bg-gray-300 inline-block"></span>
-            #9-15: Trei-sferturi (Backs)
+            #9-15: Linia de trei-sferturi
           </span>
         </div>
       </div>
