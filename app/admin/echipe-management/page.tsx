@@ -2,50 +2,11 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { getColorConfig } from '@/lib/team-colors'
-
-interface Team {
-  id: number
-  grupa: string
-  color: string
-  sortOrder: number
-  active: boolean
-}
-
-interface ChildRow {
-  id: string
-  name: string
-  birthYear: number
-  teamId: number | null
-  teamName: string | null
-  parentName: string
-  parentEmail?: string
-}
-
-interface TransferInfo {
-  id: string
-  childId: string
-  fromTeamGrupa: string
-  toTeamGrupa: string
-  reason: string | null
-  movedBy: string
-  createdAt: string
-  childName: string
-  childBirthYear: number
-}
-
-interface Toast {
-  id: number
-  message: string
-  type?: 'success' | 'error' | 'info'
-}
-
-interface PendingTransfer {
-  childId: string
-  childName: string
-  fromTeamName: string
-  toTeamId: number | null
-  toTeamName: string
-}
+import type { Team, ChildRow, TransferInfo, Toast, PendingTransfer } from './_types'
+import { formatDate } from './_utils'
+import TransferHistory from './_components/TransferHistory'
+import TransferConfirmModal from './_components/TransferConfirmModal'
+import ToastStack from './_components/ToastStack'
 
 export default function EchipeManagementPage() {
   const [teams, setTeams] = useState<Team[]>([])
@@ -389,23 +350,6 @@ export default function EchipeManagementPage() {
 
   const unassigned = getTeamChildren(null)
 
-  const formatDate = (dateStr: string) => {
-    const d = new Date(dateStr)
-    return d.toLocaleDateString('ro-RO', { day: '2-digit', month: '2-digit', year: 'numeric' })
-  }
-
-  const formatDateRelative = (dateStr: string) => {
-    const d = new Date(dateStr)
-    const now = new Date()
-    const diffMs = now.getTime() - d.getTime()
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-    if (diffDays === 0) return 'azi'
-    if (diffDays === 1) return 'ieri'
-    if (diffDays < 7) return `acum ${diffDays} zile`
-    if (diffDays < 30) return `acum ${Math.floor(diffDays / 7)} sapt.`
-    return formatDate(dateStr)
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -688,156 +632,24 @@ export default function EchipeManagementPage() {
 
       {/* HISTORY TAB */}
       {activeTab === 'history' && (
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          {loadingHistory ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="animate-spin w-8 h-8 border-4 border-dinamo-red border-t-transparent rounded-full" />
-            </div>
-          ) : transfers.length === 0 ? (
-            <div className="text-center py-20">
-              <svg className="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
-              </svg>
-              <p className="text-gray-400 text-sm">Niciun transfer inregistrat</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="text-left px-5 py-3 font-semibold text-gray-600">Data</th>
-                    <th className="text-left px-5 py-3 font-semibold text-gray-600">Sportiv</th>
-                    <th className="text-left px-5 py-3 font-semibold text-gray-600">De la</th>
-                    <th className="text-center px-2 py-3 font-semibold text-gray-600"></th>
-                    <th className="text-left px-5 py-3 font-semibold text-gray-600">La</th>
-                    <th className="text-left px-5 py-3 font-semibold text-gray-600">Motiv</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transfers.map((t, idx) => (
-                    <tr key={t.id} className={`border-b border-gray-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} hover:bg-gray-50`}>
-                      <td className="px-5 py-3 whitespace-nowrap">
-                        <span className="text-gray-900">{formatDate(t.createdAt)}</span>
-                        <span className="text-gray-400 text-xs ml-1">({formatDateRelative(t.createdAt)})</span>
-                      </td>
-                      <td className="px-5 py-3">
-                        <span className="font-medium text-gray-900">{t.childName}</span>
-                      </td>
-                      <td className="px-5 py-3">
-                        <span className="inline-block px-2.5 py-1 bg-red-50 text-red-700 text-xs font-medium rounded-full">
-                          {t.fromTeamGrupa}
-                        </span>
-                      </td>
-                      <td className="px-2 py-3 text-center">
-                        <svg className="w-4 h-4 text-gray-400 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                      </td>
-                      <td className="px-5 py-3">
-                        <span className="inline-block px-2.5 py-1 bg-green-50 text-green-700 text-xs font-medium rounded-full">
-                          {t.toTeamGrupa}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3 text-gray-500 max-w-[200px] truncate">
-                        {t.reason || <span className="text-gray-300">—</span>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+        <TransferHistory loadingHistory={loadingHistory} transfers={transfers} />
       )}
 
       {/* Confirmation Modal */}
       {pendingTransfer && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => !transferring && setPendingTransfer(null)}>
-          <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-[slideUp_0.2s_ease-out]"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="px-6 pt-6 pb-4">
-              <h3 className="font-heading font-bold text-lg text-gray-900 mb-1">Confirma transferul</h3>
-              <p className="text-sm text-gray-500">
-                Muti <strong>{pendingTransfer.childName}</strong> de la <strong>{pendingTransfer.fromTeamName}</strong> la <strong>{pendingTransfer.toTeamName}</strong>?
-              </p>
-            </div>
-
-            <div className="px-6 pb-4">
-              {/* Visual transfer indicator */}
-              <div className="flex items-center justify-center gap-3 py-4 mb-4 bg-gray-50 rounded-xl">
-                <span className="px-3 py-1.5 bg-red-100 text-red-700 font-bold text-sm rounded-lg">
-                  {pendingTransfer.fromTeamName}
-                </span>
-                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-                <span className="px-3 py-1.5 bg-green-100 text-green-700 font-bold text-sm rounded-lg">
-                  {pendingTransfer.toTeamName}
-                </span>
-              </div>
-
-              {/* Reason textarea */}
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Motiv (optional)
-              </label>
-              <textarea
-                value={transferReason}
-                onChange={e => setTransferReason(e.target.value)}
-                placeholder="ex: Promovare la grupa superioara, restructurare..."
-                rows={2}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-dinamo-red outline-none resize-none"
-              />
-              <p className="text-xs text-gray-400 mt-1">
-                Prezentele viitoare vor fi actualizate automat. Parintele va fi notificat prin email.
-              </p>
-            </div>
-
-            <div className="px-6 pb-6 flex gap-3">
-              <button
-                onClick={() => { setPendingTransfer(null); setTransferReason('') }}
-                disabled={transferring}
-                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
-              >
-                Anuleaza
-              </button>
-              <button
-                onClick={executeTransfer}
-                disabled={transferring}
-                className="flex-1 px-4 py-2.5 bg-dinamo-red text-white rounded-lg text-sm font-bold hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {transferring ? (
-                  <>
-                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
-                    Se transfera...
-                  </>
-                ) : (
-                  'Confirma transferul'
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
+        <TransferConfirmModal
+          pendingTransfer={pendingTransfer}
+          transferReason={transferReason}
+          transferring={transferring}
+          onReasonChange={setTransferReason}
+          onBackdropClose={() => !transferring && setPendingTransfer(null)}
+          onCancel={() => { setPendingTransfer(null); setTransferReason('') }}
+          onConfirm={executeTransfer}
+        />
       )}
 
       {/* Toast notifications */}
-      <div className="fixed bottom-20 lg:bottom-6 right-6 z-50 flex flex-col gap-2">
-        {toasts.map(toast => (
-          <div
-            key={toast.id}
-            className={`px-4 py-3 rounded-lg shadow-xl text-sm font-medium animate-[slideUp_0.3s_ease-out] max-w-sm ${
-              toast.type === 'error'
-                ? 'bg-red-600 text-white'
-                : toast.type === 'info'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-900 text-white'
-            }`}
-          >
-            {toast.message}
-          </div>
-        ))}
-      </div>
+      <ToastStack toasts={toasts} />
 
       {/* Inline animation keyframes */}
       <style>{`

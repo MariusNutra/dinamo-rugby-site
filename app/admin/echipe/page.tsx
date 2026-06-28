@@ -1,49 +1,13 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import ImageUpload from '@/components/ImageUpload'
-import { teamColorOptions } from '@/lib/team-colors'
 import { exportListaEchipa } from '@/lib/pdf-export'
-
-interface Team {
-  id: number
-  grupa: string
-  coachName: string
-  coachPhoto: string | null
-  coachBio: string | null
-  schedule: string | null
-  description: string | null
-  active: boolean
-  color: string
-  sortOrder: number
-  ageRange: string | null
-  birthYear: string | null
-}
-
-interface Coach {
-  id: string
-  name: string
-  description: string | null
-  photo: string | null
-  order: number
-  teamId: number
-}
-
-interface TrainingSession {
-  id: number
-  grupa: string
-  day: string
-  startTime: string
-  endTime: string
-  location: string
-  coachName: string | null
-}
-
-const days = ['Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă', 'Duminică']
-
-const emptySessionForm = { day: 'Luni', startTime: '16:00', endTime: '18:00', location: '', coachName: '' }
-const emptyCoachForm = { name: '', description: '', photo: '' }
-const emptyNewTeamForm = { grupa: '', ageRange: '', birthYear: '', description: '', color: 'green', sortOrder: 0 }
+import { Team, Coach, TrainingSession } from './_types'
+import { emptySessionForm, emptyCoachForm, emptyNewTeamForm, dayOrder } from './_constants'
+import { ColorPicker } from './_components/ColorPicker'
+import { NewTeamForm } from './_components/NewTeamForm'
+import { CoachesSection } from './_components/CoachesSection'
+import { TrainingSessions } from './_components/TrainingSessions'
 
 export default function AdminTeams() {
   const [activeTab, setActiveTab] = useState('')
@@ -366,31 +330,7 @@ export default function AdminTeams() {
     loadSessions()
   }
 
-  // Sort sessions by day order
-  const dayOrder: Record<string, number> = {
-    'Luni': 1, 'Marți': 2, 'Miercuri': 3, 'Joi': 4, 'Vineri': 5, 'Sâmbătă': 6, 'Duminică': 7,
-  }
   const sortedSessions = [...sessions].sort((a, b) => (dayOrder[a.day] || 99) - (dayOrder[b.day] || 99))
-
-  // ── Color picker component ──
-
-  const ColorPicker = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
-    <div className="flex flex-wrap gap-2">
-      {teamColorOptions.map(c => (
-        <button key={c.key} type="button" onClick={() => onChange(c.key)}
-          className={`w-10 h-10 rounded-lg bg-gradient-to-br ${c.gradient} transition-all ${
-            value === c.key ? 'ring-2 ring-offset-2 ring-gray-900 scale-110' : 'hover:scale-105'
-          }`}
-          title={c.label}>
-          {value === c.key && (
-            <svg className="w-5 h-5 mx-auto text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-            </svg>
-          )}
-        </button>
-      ))}
-    </div>
-  )
 
   return (
     <div>
@@ -404,74 +344,15 @@ export default function AdminTeams() {
 
       {/* ══════ New team form ══════ */}
       {showNewTeamForm && (
-        <div className="bg-white rounded-xl shadow-md p-6 mb-8 border-l-4 border-dinamo-red">
-          <h2 className="font-heading font-bold text-lg mb-4">Echipă nouă</h2>
-          <form onSubmit={createTeam} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nume grupă *</label>
-                <input type="text" required value={newTeamForm.grupa} placeholder="ex: U8, U20"
-                  onChange={e => setNewTeamForm({ ...newTeamForm, grupa: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-dinamo-red outline-none" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Vârstă range</label>
-                <input type="text" value={newTeamForm.ageRange} placeholder="ex: 6-8 ani"
-                  onChange={e => setNewTeamForm({ ...newTeamForm, ageRange: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-dinamo-red outline-none" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Anul nașterii</label>
-                <input type="text" value={newTeamForm.birthYear} placeholder="ex: 2017-2018"
-                  onChange={e => setNewTeamForm({ ...newTeamForm, birthYear: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-dinamo-red outline-none" />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Descriere</label>
-              <textarea rows={2} value={newTeamForm.description}
-                onChange={e => setNewTeamForm({ ...newTeamForm, description: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-dinamo-red outline-none" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Culoare card</label>
-                <ColorPicker value={newTeamForm.color} onChange={color => setNewTeamForm({ ...newTeamForm, color })} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Ordine afișare</label>
-                <input type="number" value={newTeamForm.sortOrder}
-                  onChange={e => setNewTeamForm({ ...newTeamForm, sortOrder: parseInt(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-dinamo-red outline-none" />
-                <p className="text-xs text-gray-500 mt-1">Număr mic = apare primul pe site</p>
-              </div>
-            </div>
-            {/* Preview */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Preview card</label>
-              <div className="inline-block w-40 rounded-xl overflow-hidden shadow-lg">
-                <div className={`bg-gradient-to-br ${teamColorOptions.find(c => c.key === newTeamForm.color)?.gradient || 'from-gray-500 to-gray-700'} p-6 text-white text-center`}>
-                  <div className="text-3xl font-heading font-extrabold mb-1">{newTeamForm.grupa || '?'}</div>
-                  <div className="text-white/80 text-xs">{newTeamForm.ageRange || '—'}</div>
-                </div>
-                <div className="bg-white p-3 text-center">
-                  <p className="text-xs text-gray-600">Descoperă echipa</p>
-                </div>
-              </div>
-            </div>
-            {newTeamError && <p className="text-red-600 text-sm">{newTeamError}</p>}
-            <div className="flex gap-2">
-              <button type="submit" disabled={savingNewTeam}
-                className="bg-dinamo-red text-white px-6 py-2 rounded-lg font-bold hover:bg-dinamo-dark transition-colors disabled:opacity-50">
-                {savingNewTeam ? 'Se creează...' : 'Creează echipa'}
-              </button>
-              <button type="button" onClick={() => { setShowNewTeamForm(false); setNewTeamError('') }}
-                className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-bold hover:bg-gray-300 transition-colors">
-                Anulează
-              </button>
-            </div>
-          </form>
-        </div>
+        <NewTeamForm
+          newTeamForm={newTeamForm}
+          setNewTeamForm={setNewTeamForm}
+          createTeam={createTeam}
+          savingNewTeam={savingNewTeam}
+          newTeamError={newTeamError}
+          setShowNewTeamForm={setShowNewTeamForm}
+          setNewTeamError={setNewTeamError}
+        />
       )}
 
       {/* Tabs */}
@@ -564,112 +445,22 @@ export default function AdminTeams() {
           )}
 
           {/* ══════ Coaches section ══════ */}
-          <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading font-bold text-lg">Antrenori — {activeTab}</h2>
-              {!showAddCoach && editingCoachId === null && (
-                <button onClick={startAddCoach}
-                  className="bg-dinamo-red text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-dinamo-dark transition-colors">
-                  + Adaugă antrenor
-                </button>
-              )}
-            </div>
-
-            {/* Add / Edit coach form */}
-            {(showAddCoach || editingCoachId !== null) && (
-              <div className="bg-gray-50 rounded-lg p-4 mb-4 border-l-4 border-dinamo-red">
-                <h3 className="font-medium text-sm text-gray-700 mb-3">
-                  {editingCoachId ? 'Editează antrenor' : 'Antrenor nou'}
-                </h3>
-                <form onSubmit={saveCoach} className="space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Nume antrenor *</label>
-                      <input type="text" required value={coachForm.name}
-                        onChange={e => setCoachForm({ ...coachForm, name: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-dinamo-red outline-none" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Poză antrenor</label>
-                      {coachForm.photo ? (
-                        <div className="flex items-center gap-2">
-                          <img src={coachForm.photo} alt="" className="w-10 h-10 rounded-full object-cover" />
-                          <button type="button" onClick={() => setCoachForm({ ...coachForm, photo: '' })}
-                            className="text-red-500 text-xs">Elimină</button>
-                        </div>
-                      ) : (
-                        <ImageUpload onUpload={handleCoachPhotoUpload} multiple={false} label="Încarcă poză" />
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Descriere</label>
-                    <textarea rows={3} value={coachForm.description}
-                      onChange={e => setCoachForm({ ...coachForm, description: e.target.value })}
-                      placeholder="Experiență, certificări, filosofie..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-dinamo-red outline-none" />
-                  </div>
-                  <div className="flex gap-2">
-                    <button type="submit" disabled={savingCoach}
-                      className="bg-dinamo-red text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-dinamo-dark transition-colors disabled:opacity-50">
-                      {savingCoach ? 'Se salvează...' : editingCoachId ? 'Salvează' : '+ Adaugă'}
-                    </button>
-                    <button type="button" onClick={cancelCoachForm}
-                      className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-300 transition-colors">
-                      Anulează
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
-
-            {/* Coaches list */}
-            {coaches.length > 0 ? (
-              <div className="space-y-2">
-                {coaches.map((c, idx) => (
-                  <div key={c.id} className={`flex items-center justify-between rounded-lg p-3 ${
-                    editingCoachId === c.id ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'
-                  }`}>
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      {c.photo ? (
-                        <img src={c.photo} alt={c.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-lg shrink-0">?</div>
-                      )}
-                      <div className="min-w-0">
-                        <p className="font-medium text-gray-900 text-sm">{c.name}</p>
-                        {c.description && (
-                          <p className="text-xs text-gray-500 truncate max-w-[300px]">
-                            {c.description.length > 100 ? c.description.substring(0, 100) + '...' : c.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button onClick={() => moveCoach(c.id, 'up')} disabled={idx === 0}
-                        className="text-gray-400 hover:text-gray-700 px-1 py-1 rounded text-xs disabled:opacity-30"
-                        title="Mută sus">▲</button>
-                      <button onClick={() => moveCoach(c.id, 'down')} disabled={idx === coaches.length - 1}
-                        className="text-gray-400 hover:text-gray-700 px-1 py-1 rounded text-xs disabled:opacity-30"
-                        title="Mută jos">▼</button>
-                      <button onClick={() => startEditCoach(c)}
-                        className="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded text-xs font-medium">
-                        Editează
-                      </button>
-                      <button onClick={() => deleteCoach(c.id)}
-                        className="text-red-500 hover:bg-red-50 px-2 py-1 rounded text-xs font-medium">
-                        Șterge
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-400 text-center py-4 text-sm">
-                Nu sunt antrenori adăugați pentru {activeTab}.
-              </p>
-            )}
-          </div>
+          <CoachesSection
+            activeTab={activeTab}
+            coaches={coaches}
+            showAddCoach={showAddCoach}
+            editingCoachId={editingCoachId}
+            coachForm={coachForm}
+            setCoachForm={setCoachForm}
+            savingCoach={savingCoach}
+            startAddCoach={startAddCoach}
+            saveCoach={saveCoach}
+            cancelCoachForm={cancelCoachForm}
+            handleCoachPhotoUpload={handleCoachPhotoUpload}
+            startEditCoach={startEditCoach}
+            deleteCoach={deleteCoach}
+            moveCoach={moveCoach}
+          />
 
           {/* ══════ Team info (color, order, age, schedule, description) ══════ */}
           <div className="bg-white rounded-xl shadow-md p-6 mb-8">
@@ -724,108 +515,22 @@ export default function AdminTeams() {
           </div>
 
           {/* ══════ Training sessions ══════ */}
-          <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading font-bold text-lg">Sesiuni antrenament — {activeTab}</h2>
-              {!showAddSession && !editingSessionId && (
-                <button onClick={startAddSession}
-                  className="bg-dinamo-red text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-dinamo-dark transition-colors">
-                  + Adaugă sesiune
-                </button>
-              )}
-            </div>
-
-            {/* Add / Edit session form */}
-            {(showAddSession || editingSessionId !== null) && (
-              <div className="bg-gray-50 rounded-lg p-4 mb-4 border-l-4 border-dinamo-red">
-                <h3 className="font-medium text-sm text-gray-700 mb-3">
-                  {editingSessionId ? 'Editează sesiune' : 'Sesiune nouă'}
-                </h3>
-                <form onSubmit={saveSession} className="space-y-3">
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Ziua</label>
-                      <select value={sessionForm.day}
-                        onChange={e => setSessionForm({ ...sessionForm, day: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-dinamo-red outline-none">
-                        {days.map(d => <option key={d} value={d}>{d}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Ora start</label>
-                      <input type="time" required value={sessionForm.startTime}
-                        onChange={e => setSessionForm({ ...sessionForm, startTime: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-dinamo-red outline-none" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Ora end</label>
-                      <input type="time" required value={sessionForm.endTime}
-                        onChange={e => setSessionForm({ ...sessionForm, endTime: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-dinamo-red outline-none" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Locația</label>
-                      <input type="text" required placeholder="Stadionul Dinamo" value={sessionForm.location}
-                        onChange={e => setSessionForm({ ...sessionForm, location: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-dinamo-red outline-none" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Antrenor</label>
-                      <input type="text" placeholder="(opțional)" value={sessionForm.coachName}
-                        onChange={e => setSessionForm({ ...sessionForm, coachName: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-dinamo-red outline-none" />
-                    </div>
-                  </div>
-                  {sessionError && (
-                    <p className="text-red-600 text-sm">{sessionError}</p>
-                  )}
-                  <div className="flex gap-2">
-                    <button type="submit" disabled={savingSession}
-                      className="bg-dinamo-red text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-dinamo-dark transition-colors disabled:opacity-50">
-                      {savingSession ? 'Se salvează...' : editingSessionId ? 'Salvează' : '+ Adaugă'}
-                    </button>
-                    <button type="button" onClick={cancelSessionForm}
-                      className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-300 transition-colors">
-                      Anulează
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
-
-            {/* Sessions list */}
-            {sortedSessions.length > 0 ? (
-              <div className="space-y-2">
-                {sortedSessions.map(s => (
-                  <div key={s.id} className={`flex items-center justify-between rounded-lg p-3 ${
-                    editingSessionId === s.id ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'
-                  }`}>
-                    <div className="flex items-center gap-4 flex-wrap text-sm">
-                      <span className="font-medium text-gray-900 min-w-[80px]">{s.day}</span>
-                      <span className="text-gray-700">{s.startTime} - {s.endTime}</span>
-                      <span className="text-gray-500">@ {s.location}</span>
-                      {s.coachName && <span className="text-gray-400">({s.coachName})</span>}
-                    </div>
-                    <div className="flex gap-1 shrink-0">
-                      <button onClick={() => startEditSession(s)}
-                        className="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded text-xs font-medium">
-                        Editează
-                      </button>
-                      <button onClick={() => deleteSession(s.id)}
-                        className="text-red-500 hover:bg-red-50 px-2 py-1 rounded text-xs font-medium">
-                        Șterge
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-400 text-center py-4 text-sm">
-                Nu sunt sesiuni de antrenament pentru {activeTab}.
-                {teamForm.schedule && ' Se afișează câmpul text ca fallback pe site.'}
-              </p>
-            )}
-          </div>
+          <TrainingSessions
+            activeTab={activeTab}
+            sortedSessions={sortedSessions}
+            showAddSession={showAddSession}
+            editingSessionId={editingSessionId}
+            sessionForm={sessionForm}
+            setSessionForm={setSessionForm}
+            sessionError={sessionError}
+            savingSession={savingSession}
+            scheduleText={teamForm.schedule}
+            startAddSession={startAddSession}
+            saveSession={saveSession}
+            cancelSessionForm={cancelSessionForm}
+            startEditSession={startEditSession}
+            deleteSession={deleteSession}
+          />
 
           {/* Link to matches management */}
           <div className="bg-white rounded-xl shadow-md p-6">

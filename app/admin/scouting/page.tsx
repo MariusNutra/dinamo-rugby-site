@@ -3,81 +3,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getCsrfToken } from '@/lib/csrf-client'
 import Link from 'next/link'
-
-interface ScoutingReport {
-  id: string
-  eventName: string
-  eventDate: string
-  location: string | null
-  notes: string | null
-  createdBy: string | null
-  createdAt: string
-  _count?: { prospects: number }
-}
-
-interface Prospect {
-  id: string
-  name: string
-  birthYear: number | null
-  position: string | null
-  currentClub: string | null
-  notes: string | null
-  rating: number
-  status: string
-  phone: string | null
-  email: string | null
-  scoutingReportId: string | null
-  scoutingReport?: {
-    id: string
-    eventName: string
-    eventDate: string
-  } | null
-  createdAt: string
-}
-
-const STATUS_COLUMNS = [
-  { key: 'identified', label: 'Identificat', color: 'gray' },
-  { key: 'contacted', label: 'Contactat', color: 'blue' },
-  { key: 'trial', label: 'Trial', color: 'amber' },
-  { key: 'enrolled', label: 'Inscris', color: 'green' },
-  { key: 'rejected', label: 'Respins', color: 'red' },
-] as const
-
-const STATUS_BORDER_COLORS: Record<string, string> = {
-  identified: 'border-l-gray-400',
-  contacted: 'border-l-blue-500',
-  trial: 'border-l-amber-500',
-  enrolled: 'border-l-green-500',
-  rejected: 'border-l-red-500',
-}
-
-const STATUS_BG_COLORS: Record<string, string> = {
-  identified: 'bg-gray-100 text-gray-700',
-  contacted: 'bg-blue-100 text-blue-700',
-  trial: 'bg-amber-100 text-amber-700',
-  enrolled: 'bg-green-100 text-green-700',
-  rejected: 'bg-red-100 text-red-700',
-}
-
-function StarRating({ rating, onChange, readonly = false }: { rating: number; onChange?: (r: number) => void; readonly?: boolean }) {
-  return (
-    <div className="flex gap-0.5">
-      {[1, 2, 3, 4, 5].map(star => (
-        <button
-          key={star}
-          type="button"
-          disabled={readonly}
-          onClick={() => onChange?.(star === rating ? 0 : star)}
-          className={`text-lg leading-none ${readonly ? 'cursor-default' : 'cursor-pointer hover:scale-110 transition-transform'} ${
-            star <= rating ? 'text-yellow-400' : 'text-gray-300'
-          }`}
-        >
-          ★
-        </button>
-      ))}
-    </div>
-  )
-}
+import type { Prospect, ScoutingReport } from './_types'
+import { STATUS_COLUMNS, STATUS_BORDER_COLORS, STATUS_BG_COLORS } from './_constants'
+import { StarRating } from './_components/StarRating'
+import { ProspectDetailModal } from './_components/ProspectDetailModal'
+import { AddProspectModal } from './_components/AddProspectModal'
+import { AddReportModal } from './_components/AddReportModal'
 
 export default function AdminScoutingPage() {
   const [tab, setTab] = useState<'pipeline' | 'rapoarte'>('pipeline')
@@ -462,374 +393,35 @@ export default function AdminScoutingPage() {
 
       {/* Prospect Detail Modal */}
       {selectedProspect && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedProspect(null)}>
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading font-bold text-lg text-dinamo-blue">Detalii Prospect</h2>
-              <button onClick={() => setSelectedProspect(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
-            </div>
-
-            <div className="space-y-4">
-              {/* Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nume</label>
-                <input
-                  type="text"
-                  value={editingProspect.name || ''}
-                  onChange={e => setEditingProspect(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                />
-              </div>
-
-              {/* Birth Year & Position */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">An nastere</label>
-                  <input
-                    type="number"
-                    value={editingProspect.birthYear || ''}
-                    onChange={e => setEditingProspect(prev => ({ ...prev, birthYear: e.target.value ? Number(e.target.value) : undefined }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                    placeholder="ex: 2010"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Pozitie</label>
-                  <input
-                    type="text"
-                    value={editingProspect.position || ''}
-                    onChange={e => setEditingProspect(prev => ({ ...prev, position: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                    placeholder="ex: Centru"
-                  />
-                </div>
-              </div>
-
-              {/* Current Club */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Club curent</label>
-                <input
-                  type="text"
-                  value={editingProspect.currentClub || ''}
-                  onChange={e => setEditingProspect(prev => ({ ...prev, currentClub: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  placeholder="ex: CSM Bucuresti"
-                />
-              </div>
-
-              {/* Rating */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
-                <StarRating
-                  rating={editingProspect.rating ?? 0}
-                  onChange={r => setEditingProspect(prev => ({ ...prev, rating: r }))}
-                />
-              </div>
-
-              {/* Status */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select
-                  value={editingProspect.status || 'identified'}
-                  onChange={e => setEditingProspect(prev => ({ ...prev, status: e.target.value }))}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg ${STATUS_BG_COLORS[editingProspect.status || 'identified']}`}
-                >
-                  {STATUS_COLUMNS.map(s => (
-                    <option key={s.key} value={s.key}>{s.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Contact Info */}
-              <div className="pt-2 border-t">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Contact</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Telefon</label>
-                    <input
-                      type="tel"
-                      value={editingProspect.phone || ''}
-                      onChange={e => setEditingProspect(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                      placeholder="07xx xxx xxx"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Email</label>
-                    <input
-                      type="email"
-                      value={editingProspect.email || ''}
-                      onChange={e => setEditingProspect(prev => ({ ...prev, email: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                      placeholder="email@exemplu.ro"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Notes */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notite</label>
-                <textarea
-                  value={editingProspect.notes || ''}
-                  onChange={e => setEditingProspect(prev => ({ ...prev, notes: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  rows={3}
-                  placeholder="Observatii despre prospect..."
-                />
-              </div>
-
-              {/* Report link */}
-              {selectedProspect.scoutingReport && (
-                <div className="text-xs text-gray-500 bg-gray-50 rounded-lg p-2">
-                  Raport: {selectedProspect.scoutingReport.eventName} ({new Date(selectedProspect.scoutingReport.eventDate).toLocaleDateString('ro-RO')})
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={handleSaveProspect}
-                  className="flex-1 px-4 py-2 bg-dinamo-red text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm"
-                >
-                  Salveaza
-                </button>
-                <button
-                  onClick={() => handleDeleteProspect(selectedProspect.id)}
-                  className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm"
-                >
-                  Sterge
-                </button>
-                <button
-                  onClick={() => setSelectedProspect(null)}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-                >
-                  Inchide
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ProspectDetailModal
+          selectedProspect={selectedProspect}
+          editingProspect={editingProspect}
+          setEditingProspect={setEditingProspect}
+          onClose={() => setSelectedProspect(null)}
+          onSave={handleSaveProspect}
+          onDelete={handleDeleteProspect}
+        />
       )}
 
       {/* Add Prospect Modal */}
       {addingProspect && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setAddingProspect(false)}>
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading font-bold text-lg text-dinamo-blue">Prospect Nou</h2>
-              <button onClick={() => setAddingProspect(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nume *</label>
-                <input
-                  type="text"
-                  value={newProspect.name || ''}
-                  onChange={e => setNewProspect(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  placeholder="Numele prospectului"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">An nastere</label>
-                  <input
-                    type="number"
-                    value={newProspect.birthYear || ''}
-                    onChange={e => setNewProspect(prev => ({ ...prev, birthYear: e.target.value ? Number(e.target.value) : undefined }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                    placeholder="ex: 2010"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Pozitie</label>
-                  <input
-                    type="text"
-                    value={newProspect.position || ''}
-                    onChange={e => setNewProspect(prev => ({ ...prev, position: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                    placeholder="ex: Centru"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Club curent</label>
-                <input
-                  type="text"
-                  value={newProspect.currentClub || ''}
-                  onChange={e => setNewProspect(prev => ({ ...prev, currentClub: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  placeholder="ex: CSM Bucuresti"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
-                <StarRating
-                  rating={newProspect.rating ?? 0}
-                  onChange={r => setNewProspect(prev => ({ ...prev, rating: r }))}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select
-                  value={newProspect.status || 'identified'}
-                  onChange={e => setNewProspect(prev => ({ ...prev, status: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                >
-                  {STATUS_COLUMNS.map(s => (
-                    <option key={s.key} value={s.key}>{s.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
-                  <input
-                    type="tel"
-                    value={newProspect.phone || ''}
-                    onChange={e => setNewProspect(prev => ({ ...prev, phone: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                    placeholder="07xx xxx xxx"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={newProspect.email || ''}
-                    onChange={e => setNewProspect(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                    placeholder="email@exemplu.ro"
-                  />
-                </div>
-              </div>
-
-              {/* Link to scouting report */}
-              {reports.length > 0 && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Raport scouting (optional)</label>
-                  <select
-                    value={newProspect.scoutingReportId || ''}
-                    onChange={e => setNewProspect(prev => ({ ...prev, scoutingReportId: e.target.value || null }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                  >
-                    <option value="">-- Fara raport --</option>
-                    {reports.map(r => (
-                      <option key={r.id} value={r.id}>
-                        {r.eventName} ({new Date(r.eventDate).toLocaleDateString('ro-RO')})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notite</label>
-                <textarea
-                  value={newProspect.notes || ''}
-                  onChange={e => setNewProspect(prev => ({ ...prev, notes: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  rows={3}
-                  placeholder="Observatii..."
-                />
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={handleCreateProspect}
-                  className="flex-1 px-4 py-2 bg-dinamo-red text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm"
-                >
-                  Adauga prospect
-                </button>
-                <button
-                  onClick={() => setAddingProspect(false)}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-                >
-                  Anuleaza
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <AddProspectModal
+          newProspect={newProspect}
+          setNewProspect={setNewProspect}
+          reports={reports}
+          onClose={() => setAddingProspect(false)}
+          onCreate={handleCreateProspect}
+        />
       )}
 
       {/* Add Report Modal */}
       {addingReport && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setAddingReport(false)}>
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading font-bold text-lg text-dinamo-blue">Raport Nou</h2>
-              <button onClick={() => setAddingReport(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Numele evenimentului *</label>
-                <input
-                  type="text"
-                  value={reportForm.eventName}
-                  onChange={e => setReportForm(prev => ({ ...prev, eventName: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  placeholder="ex: Turneu U14 Brasov"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Data *</label>
-                <input
-                  type="date"
-                  value={reportForm.eventDate}
-                  onChange={e => setReportForm(prev => ({ ...prev, eventDate: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Locatie</label>
-                <input
-                  type="text"
-                  value={reportForm.location}
-                  onChange={e => setReportForm(prev => ({ ...prev, location: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  placeholder="ex: Stadionul Municipal, Brasov"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notite</label>
-                <textarea
-                  value={reportForm.notes}
-                  onChange={e => setReportForm(prev => ({ ...prev, notes: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  rows={3}
-                  placeholder="Observatii generale..."
-                />
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={handleCreateReport}
-                  className="flex-1 px-4 py-2 bg-dinamo-red text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm"
-                >
-                  Creaza raport
-                </button>
-                <button
-                  onClick={() => setAddingReport(false)}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-                >
-                  Anuleaza
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <AddReportModal
+          reportForm={reportForm}
+          setReportForm={setReportForm}
+          onClose={() => setAddingReport(false)}
+          onCreate={handleCreateReport}
+        />
       )}
 
       {/* Toast */}
