@@ -1,43 +1,18 @@
-import jwt from 'jsonwebtoken'
-import { cookies } from 'next/headers'
+import { createCookieAuth } from '@/lib/cookie-jwt'
 
-function getJwtSecret(): string {
-  const secret = process.env.JWT_SECRET
-  if (!secret) throw new Error('JWT_SECRET environment variable is required')
-  return secret
-}
-
-interface CoachTokenPayload {
+export interface CoachTokenPayload {
   type: 'coach'
   coachId: string
   email: string
 }
 
-export function createCoachToken(coachId: string, email: string): string {
-  return jwt.sign({ type: 'coach', coachId, email }, getJwtSecret(), { expiresIn: '7d' })
-}
+const coachAuth = createCookieAuth({
+  type: 'coach' as const,
+  cookieName: 'coach_token',
+  idField: 'coachId' as const,
+})
 
-export function verifyCoachToken(token: string): CoachTokenPayload | null {
-  try {
-    const payload = jwt.verify(token, getJwtSecret()) as CoachTokenPayload
-    if (payload.type !== 'coach') return null
-    return payload
-  } catch {
-    return null
-  }
-}
-
-export async function isCoachAuthenticated(): Promise<boolean> {
-  const cookieStore = await cookies()
-  const token = cookieStore.get('coach_token')?.value
-  if (!token) return false
-  return verifyCoachToken(token) !== null
-}
-
-export async function getCoachId(): Promise<string | null> {
-  const cookieStore = await cookies()
-  const token = cookieStore.get('coach_token')?.value
-  if (!token) return null
-  const payload = verifyCoachToken(token)
-  return payload?.coachId ?? null
-}
+export const createCoachToken = coachAuth.createToken
+export const verifyCoachToken = coachAuth.verifyToken as (token: string) => CoachTokenPayload | null
+export const isCoachAuthenticated = coachAuth.isAuthenticated
+export const getCoachId = coachAuth.getId
