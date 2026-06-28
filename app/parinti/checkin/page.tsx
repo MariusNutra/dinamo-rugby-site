@@ -19,7 +19,7 @@ function CheckinContent() {
   const [results, setResults] = useState<Record<string, { success: boolean; message: string }>>({})
 
   useEffect(() => {
-    fetch('/api/parinti/profile')
+    fetch('/api/parinti/me')
       .then(r => {
         if (!r.ok) throw new Error('Not authenticated')
         return r.json()
