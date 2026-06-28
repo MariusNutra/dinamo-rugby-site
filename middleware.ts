@@ -85,8 +85,7 @@ export async function middleware(req: NextRequest) {
   // The client attaches the token automatically via CsrfFetchPatch; the cookie
   // is set on /api/auth/check. Done here so individual routes can't forget it.
   if (
-    (req.nextUrl.pathname.startsWith('/api/admin/') ||
-      req.nextUrl.pathname === '/api/admin-sportivi') &&
+    req.nextUrl.pathname.startsWith('/api/admin/') &&
     !CSRF_SAFE_METHODS.has(req.method)
   ) {
     const cookieToken = req.cookies.get('csrf_token')?.value
@@ -148,7 +147,6 @@ export const config = {
   matcher: [
     '/api/parinti/verify',
     '/api/admin/:path*',
-    '/api/admin-sportivi',
     '/admin',
     '/admin/:path*',
     '/echipe/:path*',
