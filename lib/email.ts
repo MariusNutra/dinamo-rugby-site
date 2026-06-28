@@ -1,5 +1,5 @@
 /**
- * Centralized email sending for CS Dinamo București Rugby.
+ * Centralized email sending for Dinamo Rugby Juniori.
  *
  * This module provides:
  * - A shared nodemailer transporter (localhost:25)
@@ -24,7 +24,7 @@ const transporter = nodemailer.createTransport({
   tls: { rejectUnauthorized: false },
 })
 
-const DEFAULT_FROM = 'CS Dinamo Rugby <noreply@dinamorugby.ro>'
+const DEFAULT_FROM = 'Dinamo Rugby Juniori <noreply@dinamorugby.ro>'
 
 // ---------------------------------------------------------------------------
 // Generic send
@@ -75,7 +75,7 @@ export async function sendMagicLink(
 
   return sendEmail({
     to,
-    subject: 'Conectare Portal Parinti — CS Dinamo Rugby',
+    subject: 'Conectare Portal Parinti — Dinamo Rugby Juniori',
     html,
   })
 }
@@ -95,7 +95,7 @@ export async function sendNotification(
 
   return sendEmail({
     to,
-    subject: `${title} — CS Dinamo Rugby`,
+    subject: `${title} — Dinamo Rugby Juniori`,
     html,
   })
 }
@@ -121,7 +121,7 @@ export async function sendPaymentReceipt(
 
   return sendEmail({
     to,
-    subject: `Confirmare plata ${params.amount.toFixed(2)} RON — CS Dinamo Rugby`,
+    subject: `Confirmare plata ${params.amount.toFixed(2)} RON — Dinamo Rugby Juniori`,
     html,
   })
 }
@@ -145,7 +145,7 @@ export async function sendWelcome(
 
   return sendEmail({
     to,
-    subject: `Bine ati venit la CS Dinamo Bucuresti Rugby!`,
+    subject: `Bine ati venit la Dinamo Rugby Juniori!`,
     html,
   })
 }
@@ -170,7 +170,7 @@ export async function sendPaymentReminder(
 
   return sendEmail({
     to,
-    subject: `Reminder cotizatie ${params.amount.toFixed(2)} RON — CS Dinamo Rugby`,
+    subject: `Reminder cotizatie ${params.amount.toFixed(2)} RON — Dinamo Rugby Juniori`,
     html,
   })
 }

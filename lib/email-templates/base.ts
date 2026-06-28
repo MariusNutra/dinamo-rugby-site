@@ -1,11 +1,11 @@
 /**
- * Base email template wrapper for CS Dinamo București Rugby.
+ * Base email template wrapper for Dinamo Rugby Juniori.
  *
  * Wraps any HTML content in a responsive, table-based email layout
  * compatible with all major email clients (Outlook, Gmail, Yahoo, Apple Mail).
  */
 
-const CLUB_NAME = 'CS Dinamo București Rugby'
+const CLUB_NAME = 'Dinamo Rugby Juniori'
 const LOGO_URL = 'https://dinamorugby.ro/images/dinamo-rugby-bulldog.png'
 const SITE_URL = 'https://dinamorugby.ro'
 

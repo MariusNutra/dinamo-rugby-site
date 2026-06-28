@@ -1,5 +1,5 @@
 /**
- * Individual email template functions for CS Dinamo București Rugby.
+ * Individual email template functions for Dinamo Rugby Juniori.
  *
  * Each function returns the full HTML email (already wrapped in the base template).
  * All text is in Romanian.
@@ -63,7 +63,7 @@ export function magicLinkEmail(params: MagicLinkParams): string {
   const content = `
 ${heading('Conectare Portal Parinti')}
 ${paragraph(`Salut <strong>${name}</strong>,`)}
-${paragraph('Ai solicitat un link de conectare la Portalul Parintilor CS Dinamo Bucuresti Rugby. Apasa butonul de mai jos pentru a accesa contul tau:')}
+${paragraph('Ai solicitat un link de conectare la Portalul Parintilor Dinamo Rugby Juniori. Apasa butonul de mai jos pentru a accesa contul tau:')}
 ${ctaButton('Acceseaza contul', loginUrl)}
 ${paragraph('Daca butonul nu functioneaza, copiaza si lipeste urmatorul link in browserul tau:')}
 <p style="margin: 0 0 16px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; line-height: 1.5; color: ${COLOR_TEXT_LIGHT}; word-break: break-all;">
@@ -184,7 +184,7 @@ export function welcomeEmail(params: WelcomeParams): string {
   const { parentName, childName, teamName, loginUrl } = params
 
   const content = `
-${heading('Bine ati venit la CS Dinamo Bucuresti Rugby!')}
+${heading('Bine ati venit la Dinamo Rugby Juniori!')}
 ${paragraph(`Stimate/a <strong>${parentName}</strong>,`)}
 ${paragraph(`Felicitari! <strong>${childName}</strong> a fost inregistrat/a cu succes in cadrul clubului nostru si a fost repartizat/a la echipa <strong>${teamName}</strong>.`)}
 ${paragraph('Suntem incantati sa il/o avem alaturi de noi si abia asteptam sa incepem aceasta aventura impreuna!')}
