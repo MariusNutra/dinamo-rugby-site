@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
+import CsrfFetchPatch from '@/components/CsrfFetchPatch'
 
 interface SidebarItem {
   href: string
@@ -121,7 +122,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return () => { document.body.style.overflow = '' }
   }, [drawerOpen])
 
-  if (pathname === '/admin/login') return <>{children}</>
+  if (pathname === '/admin/login') return <><CsrfFetchPatch />{children}</>
 
   if (auth === null) {
     return (
@@ -369,6 +370,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-gray-100">
+      <CsrfFetchPatch />
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 bg-dinamo-blue text-white z-40">
         {renderSidebarContent()}

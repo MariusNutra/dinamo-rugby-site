@@ -8,20 +8,24 @@ datasource db {
 }
 
 model User {
-  id            Int                       @id @default(autoincrement())
-  username      String                    @unique
-  password      String
-  name          String
-  email         String?
-  role          String                    @default("editor")
-  active        Boolean                   @default(true)
-  roleId        Int?
-  teamIds       String?
-  createdAt     DateTime                  @default(now())
-  updatedAt     DateTime                  @updatedAt
-  conversations ConversationParticipant[]
-  sentMessages  Message[]
-  roleRef       Role?                     @relation(fields: [roleId], references: [id])
+  id                 Int                       @id @default(autoincrement())
+  username           String                    @unique
+  password           String
+  name               String
+  email              String?
+  role               String                    @default("editor")
+  active             Boolean                   @default(true)
+  roleId             Int?
+  teamIds            String?
+  resetToken         String?
+  resetTokenExpiry   DateTime?
+  mustChangePassword Boolean                   @default(false)
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+  conversations      ConversationParticipant[]
+  sentMessages       Message[]
+  roleRef            Role?                     @relation(fields: [roleId], references: [id])
+  refreshTokens      RefreshToken[]
 }
 
 model Story {
@@ -82,20 +86,24 @@ model Team {
 }
 
 model Coach {
-  id             String   @id @default(cuid())
-  name           String
-  description    String?
-  photo          String?
-  phone          String?
-  email          String?  @unique
-  password       String?
-  certifications String?
-  visible        Boolean  @default(true)
-  order          Int      @default(0)
-  teamId         Int
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  team           Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  id                 String         @id @default(cuid())
+  name               String
+  description        String?
+  photo              String?
+  phone              String?
+  email              String?        @unique
+  password           String?
+  certifications     String?
+  visible            Boolean        @default(true)
+  order              Int            @default(0)
+  teamId             Int?
+  resetToken         String?
+  resetTokenExpiry   DateTime?
+  mustChangePassword Boolean        @default(false)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  team               Team?          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  refreshTokens      RefreshToken[]
 }
 
 model Match {
@@ -163,21 +171,23 @@ model Video {
 }
 
 model Parent {
-  id                String                    @id @default(cuid())
-  name              String
-  email             String                    @unique
-  phone             String?
-  password          String?
-  token             String?
-  tokenExpiry       DateTime?
-  createdAt         DateTime                  @default(now())
-  updatedAt         DateTime                  @updatedAt
-  children          Child[]
-  conversations     ConversationParticipant[]
-  sentMessages      Message[]
-  payments          Payment[]
-  pushSubscriptions PushSubscription[]
-  requests          Request[]
+  id                 String                    @id @default(cuid())
+  name               String
+  email              String                    @unique
+  phone              String?
+  password           String?
+  token              String?
+  tokenExpiry        DateTime?
+  mustChangePassword Boolean                   @default(false)
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+  children           Child[]
+  conversations      ConversationParticipant[]
+  sentMessages       Message[]
+  payments           Payment[]
+  pushSubscriptions  PushSubscription[]
+  requests           Request[]
+  refreshTokens      RefreshToken[]
 }
 
 model Child {
@@ -811,4 +821,25 @@ model AuditLog {
   @@index([entity, entityId])
   @@index([userId])
   @@index([createdAt])
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  userId    Int?
+  parentId  String?
+  coachId   String?
+  role      String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent    Parent?   @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  coach     Coach?    @relation(fields: [coachId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@index([parentId])
+  @@index([coachId])
+  @@index([expiresAt])
 }

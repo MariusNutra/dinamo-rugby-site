@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 import { prisma } from '@/lib/prisma'
 import sharp from 'sharp'
 import path from 'path'
@@ -8,9 +8,8 @@ import fs from 'fs/promises'
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
 export async function POST(req: NextRequest) {
-  if (!await isAdmin()) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('teams.manage')
+  if (authz.error) return authz.error
 
   try {
     const formData = await req.formData()

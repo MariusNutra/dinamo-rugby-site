@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAuthenticated } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 import { isDinamoTeam } from '@/lib/teams'
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!await isAuthenticated()) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('matches.manage')
+  if (authz.error) return authz.error
   const data = await req.json()
 
   const updateData: Record<string, unknown> = {}
@@ -38,9 +37,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!await isAuthenticated()) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('matches.manage')
+  if (authz.error) return authz.error
   await prisma.match.delete({ where: { id: params.id } })
   return NextResponse.json({ success: true })
 }

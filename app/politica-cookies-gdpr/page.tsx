@@ -29,8 +29,8 @@ export default function PoliticaCookiesPage() {
         </p>
 
         <p className="text-gray-700 leading-relaxed mb-8">
-          Clubul Sportiv <strong>Dinamo Rugby</strong> (denumit în continuare
-          &bdquo;noi&rdquo;, &bdquo;Clubul&rdquo; sau &bdquo;dinamorugby.ro&rdquo;) respectă confidențialitatea
+          <strong>Asociația Sportivă Dinamo Rugby Junior</strong> (denumită în continuare
+          &bdquo;noi&rdquo;, &bdquo;Asociația&rdquo; sau &bdquo;dinamorugby.ro&rdquo;) respectă confidențialitatea
           datelor dumneavoastră personale. Această pagină explică modul în care
           utilizăm cookie-urile pe site-ul{" "}
           <strong>dinamorugby.ro</strong> și drepturile pe care le aveți conform
@@ -504,7 +504,7 @@ export default function PoliticaCookiesPage() {
         </h2>
         <div className="bg-red-50 border-2 border-dinamo-red rounded-lg p-6 mb-8">
           <p className="font-heading font-bold text-lg text-gray-800 mb-3">
-            Clubul Sportiv Dinamo Rugby
+            Asociația Sportivă Dinamo Rugby Junior
           </p>
           <p className="text-gray-700 mb-4">
             Pentru orice întrebări sau solicitări legate de cookie-uri, protecția

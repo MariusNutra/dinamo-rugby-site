@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { verifyAppToken } from '@/lib/app-auth'
+import { verifyAppToken, canAccessChild } from '@/lib/app-auth'
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204 })
@@ -16,6 +16,11 @@ export async function GET(
   }
 
   const { childId } = params
+
+  if (!(await canAccessChild(payload, childId))) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const url = new URL(request.url)
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '50'), 200)
 

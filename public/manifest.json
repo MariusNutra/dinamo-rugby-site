@@ -3,7 +3,7 @@
   "short_name": "Dinamo Rugby",
   "description": "Secția de juniori rugby - CS Dinamo București",
   "start_url": "/",
-  "display": "standalone",
+  "display": "browser",
   "background_color": "#1e3a5f",
   "theme_color": "#c62828",
   "orientation": "portrait-primary",

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 import path from 'path'
 import fs from 'fs'
 import { v4 as uuid } from 'uuid'
@@ -8,9 +8,8 @@ import { v4 as uuid } from 'uuid'
 const DOCS_DIR = path.join(process.cwd(), 'uploads', 'documents')
 
 export async function GET() {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('documents.manage')
+  if (authz.error) return authz.error
 
   const documents = await prisma.document.findMany({
     orderBy: { createdAt: 'desc' },
@@ -21,9 +20,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('documents.manage')
+  if (authz.error) return authz.error
 
   const formData = await req.formData()
   const file = formData.get('file') as File | null

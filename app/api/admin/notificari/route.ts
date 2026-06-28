@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 import { validateCsrf } from '@/lib/csrf'
 import nodemailer from 'nodemailer'
 import { sendPushToAll, sendPushToTeam } from '@/lib/web-push'
@@ -13,9 +13,8 @@ const transporter = nodemailer.createTransport({
 })
 
 export async function GET() {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('notifications.manage')
+  if (authz.error) return authz.error
 
   const notifications = await prisma.notification.findMany({
     orderBy: { sentAt: 'desc' },
@@ -25,9 +24,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('notifications.manage')
+  if (authz.error) return authz.error
 
   const csrfError = validateCsrf(req)
   if (csrfError) return csrfError

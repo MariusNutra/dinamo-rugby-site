@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { prisma } from '@/lib/prisma'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
+import { createRefreshToken } from '@/lib/unified-auth'
 
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET
@@ -72,17 +73,24 @@ export async function POST(req: NextRequest) {
       const token = jwt.sign(
         { parentId: parent.id, email: parent.email, role },
         getJwtSecret(),
-        { expiresIn: '30d' }
+        { expiresIn: '7d' }
       )
+
+      const refreshToken = await createRefreshToken({
+        parentId: parent.id,
+        role,
+      })
 
       return NextResponse.json({
         token,
+        refreshToken,
         user: {
           id: parent.id,
           name: isAthlete ? parent.children[0].name : parent.name,
           email: parent.email,
           phone: parent.phone,
           role: role as 'parent' | 'athlete',
+          mustChangePassword: parent.mustChangePassword,
           children: parent.children.map((c) => ({
             id: c.id,
             name: c.name,
@@ -107,19 +115,59 @@ export async function POST(req: NextRequest) {
       const token = jwt.sign(
         { coachId: coach.id, email: coach.email, role: 'coach' },
         getJwtSecret(),
-        { expiresIn: '30d' }
+        { expiresIn: '7d' }
       )
+
+      const refreshToken = await createRefreshToken({
+        coachId: coach.id,
+        role: 'coach',
+      })
 
       return NextResponse.json({
         token,
+        refreshToken,
         user: {
           id: coach.id,
           name: coach.name,
           email: coach.email,
           phone: coach.phone,
           role: 'coach' as const,
+          mustChangePassword: coach.mustChangePassword,
           teamId: String(coach.teamId),
           teamName: coach.team?.grupa || '',
+        },
+      })
+    }
+  }
+
+  // Try User (admin/manager) for app login
+  const user = await prisma.user.findFirst({
+    where: { email: normalizedEmail, active: true },
+  })
+
+  if (user) {
+    const validPassword = await bcrypt.compare(password, user.password)
+    if (validPassword) {
+      const token = jwt.sign(
+        { userId: user.id, username: user.username, email: user.email, role: user.role },
+        getJwtSecret(),
+        { expiresIn: '7d' }
+      )
+
+      const refreshToken = await createRefreshToken({
+        userId: user.id,
+        role: user.role,
+      })
+
+      return NextResponse.json({
+        token,
+        refreshToken,
+        user: {
+          id: String(user.id),
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          mustChangePassword: user.mustChangePassword,
         },
       })
     }

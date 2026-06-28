@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
-import { getAuthUser } from '@/lib/auth'
+import { requireAdmin } from '@/lib/authz'
 import { audit } from '@/lib/audit'
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authUser = await getAuthUser()
-  if (!authUser || authUser.role !== 'admin') {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requireAdmin()
+  if (authz.error) return authz.error
+  const authUser = authz.user
 
   const { id } = await params
   const userId = parseInt(id, 10)
@@ -69,10 +68,9 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authUser = await getAuthUser()
-  if (!authUser || authUser.role !== 'admin') {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requireAdmin()
+  if (authz.error) return authz.error
+  const authUser = authz.user
 
   const { id } = await params
   const userId = parseInt(id, 10)

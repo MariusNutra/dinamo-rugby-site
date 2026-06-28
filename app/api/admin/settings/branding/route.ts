@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 import { validateCsrf, setCsrfCookie } from '@/lib/csrf'
 import { prisma } from '@/lib/prisma'
 
@@ -43,9 +43,8 @@ function isValidHexColor(value: string): boolean {
 }
 
 export async function GET() {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('settings.manage')
+  if (authz.error) return authz.error
 
   const settings = await prisma.siteSettings.upsert({
     where: { id: 1 },
@@ -59,9 +58,8 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('settings.manage')
+  if (authz.error) return authz.error
 
   const csrfError = validateCsrf(req)
   if (csrfError) return csrfError

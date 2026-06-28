@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(req: NextRequest) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('payments.view')
+  if (authz.error) return authz.error
 
   const url = new URL(req.url)
   const status = url.searchParams.get('status')

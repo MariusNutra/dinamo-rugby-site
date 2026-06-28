@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 import fs from 'fs/promises'
 import path from 'path'
 
 export async function DELETE(req: NextRequest, { params }: { params: { childId: string; id: string } }) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('athletes.manage')
+  if (authz.error) return authz.error
 
   const photo = await prisma.childPhoto.findFirst({
     where: { id: params.id, childId: params.childId },

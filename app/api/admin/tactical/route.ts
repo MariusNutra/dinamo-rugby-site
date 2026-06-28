@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isAdmin, getAuthUser } from '@/lib/auth'
+import { getAuthUser } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 import { validateCsrf } from '@/lib/csrf'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(req: NextRequest) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('matches.view')
+  if (authz.error) return authz.error
 
   const teamId = req.nextUrl.searchParams.get('teamId')
 
@@ -29,9 +29,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('matches.manage')
+  if (authz.error) return authz.error
   const csrfError = validateCsrf(req)
   if (csrfError) return csrfError
 

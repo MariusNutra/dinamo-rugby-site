@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isAdmin } from '@/lib/auth'
+import { requireAdmin } from '@/lib/authz'
 import { validateCsrf } from '@/lib/csrf'
 import { prisma } from '@/lib/prisma'
 
@@ -7,9 +7,8 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requireAdmin()
+  if (authz.error) return authz.error
   const csrfError = validateCsrf(req)
   if (csrfError) return csrfError
 
@@ -69,9 +68,8 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requireAdmin()
+  if (authz.error) return authz.error
   const csrfError = validateCsrf(req)
   if (csrfError) return csrfError
 

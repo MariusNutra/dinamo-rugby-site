@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 
 export async function PUT(req: NextRequest) {
-  if (!await isAdmin()) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('teams.manage')
+  if (authz.error) return authz.error
   const { ids } = await req.json() as { ids: string[] }
 
   // Update order for each coach based on position in array

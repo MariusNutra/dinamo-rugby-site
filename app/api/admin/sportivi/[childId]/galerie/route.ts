@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 import { saveImage } from '@/lib/upload'
 
 export async function GET(req: NextRequest, { params }: { params: { childId: string } }) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('athletes.view')
+  if (authz.error) return authz.error
 
   const photos = await prisma.childPhoto.findMany({
     where: { childId: params.childId },
@@ -17,9 +16,8 @@ export async function GET(req: NextRequest, { params }: { params: { childId: str
 }
 
 export async function POST(req: NextRequest, { params }: { params: { childId: string } }) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('athletes.manage')
+  if (authz.error) return authz.error
 
   const child = await prisma.child.findUnique({ where: { id: params.childId } })
   if (!child) {

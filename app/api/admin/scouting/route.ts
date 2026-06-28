@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isAdmin, getAuthUser } from '@/lib/auth'
+import { getAuthUser } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 import { validateCsrf } from '@/lib/csrf'
 import { prisma } from '@/lib/prisma'
 
 export async function GET() {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('athletes.view')
+  if (authz.error) return authz.error
 
   const reports = await prisma.scoutingReport.findMany({
     include: {
@@ -21,9 +21,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('athletes.manage')
+  if (authz.error) return authz.error
   const csrfError = validateCsrf(req)
   if (csrfError) return csrfError
 

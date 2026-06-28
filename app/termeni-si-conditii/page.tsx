@@ -322,7 +322,7 @@ export default function TermeniSiConditiiPage() {
         </h2>
         <div className="bg-red-50 border-2 border-dinamo-red rounded-lg p-6 mb-8">
           <p className="font-heading font-bold text-lg text-gray-800 mb-3">
-            Clubul Sportiv Dinamo Rugby
+            Asociația Sportivă Dinamo Rugby Junior
           </p>
           <p className="text-gray-700 mb-4">
             Pentru orice întrebări sau clarificări legate de acești termeni și
@@ -330,8 +330,8 @@ export default function TermeniSiConditiiPage() {
           </p>
           <ul className="space-y-2 text-gray-700">
             <li>
-              <strong>Adresă:</strong> Șoseaua Ștefan cel Mare nr. 7-9, Sector
-              2, București
+              <strong>Adresă:</strong> Bd. Camil Ressu nr. 2, bl. R1, sc. 1, et.
+              5, ap. 18, Sector 3, București
             </li>
             <li>
               <strong>Email:</strong>{" "}

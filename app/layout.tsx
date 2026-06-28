@@ -24,6 +24,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://dinamorugby.ro"),
   title: "Rugby Juniori Dinamo București",
   description: "Secția de juniori rugby a clubului CS Dinamo București. Grupe de vârstă U10, U12, U14, U16, U18.",
   manifest: "/manifest.json",

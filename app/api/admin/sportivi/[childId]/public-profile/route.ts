@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ childId: string }> }
 ) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('athletes.view')
+  if (authz.error) return authz.error
 
   try {
     const { childId } = await params
@@ -30,9 +29,8 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ childId: string }> }
 ) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('athletes.manage')
+  if (authz.error) return authz.error
 
   try {
     const { childId } = await params

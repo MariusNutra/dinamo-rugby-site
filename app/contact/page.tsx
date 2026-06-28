@@ -126,7 +126,8 @@ export default function ContactPage() {
                 <div className="w-12 h-12 bg-dinamo-red/10 rounded-lg flex items-center justify-center text-xl flex-shrink-0">📍</div>
                 <div>
                   <h3 className="font-bold text-gray-900">Adresă</h3>
-                  <p className="text-gray-600">Șoseaua Ștefan cel Mare nr. 7-9, Sector 2, București</p>
+                  <p className="text-gray-600">Bd. Camil Ressu nr. 2, bl. R1, sc. 1, et. 5, ap. 18, Sector 3, București</p>
+                  <p className="text-gray-400 text-xs mt-1">Asociația Sportivă Dinamo Rugby Junior · Reg. Special nr. 73/14.05.2024</p>
                 </div>
               </div>
               <div className="flex gap-4">

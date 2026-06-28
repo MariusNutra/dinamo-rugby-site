@@ -10,6 +10,10 @@ export async function GET(request: NextRequest) {
   const auth = await requireCoach(request)
   if ('error' in auth) return auth.error
 
+  if (!auth.team) {
+    return NextResponse.json({ data: [] })
+  }
+
   const matches = await prisma.match.findMany({
     where: { category: auth.team.grupa },
     include: { competition: { select: { name: true } } },

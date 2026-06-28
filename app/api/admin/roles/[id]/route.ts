@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getAuthUser } from '@/lib/auth'
+import { requireAdmin } from '@/lib/authz'
 
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authUser = await getAuthUser()
-  if (!authUser || authUser.role !== 'admin') {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requireAdmin()
+  if (authz.error) return authz.error
 
   const { id } = await params
   const roleId = parseInt(id)
@@ -75,10 +73,8 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authUser = await getAuthUser()
-  if (!authUser || authUser.role !== 'admin') {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requireAdmin()
+  if (authz.error) return authz.error
 
   const { id } = await params
   const roleId = parseInt(id)

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAuthenticated } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 
 export async function GET(req: NextRequest, { params }: { params: { grupa: string } }) {
   const team = await prisma.team.findUnique({ where: { grupa: params.grupa } })
@@ -8,9 +8,8 @@ export async function GET(req: NextRequest, { params }: { params: { grupa: strin
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: { grupa: string } }) {
-  if (!await isAuthenticated()) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('teams.manage')
+  if (authz.error) return authz.error
   const data = await req.json()
   const team = await prisma.team.update({
     where: { grupa: params.grupa },
@@ -20,9 +19,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { grupa: str
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { grupa: string } }) {
-  if (!await isAuthenticated()) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('teams.manage')
+  if (authz.error) return authz.error
   const team = await prisma.team.findUnique({ where: { grupa: params.grupa } })
   if (!team) {
     return NextResponse.json({ error: 'Echipa nu există' }, { status: 404 })

@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getAuthUser } from '@/lib/auth'
+import { requireAdmin } from '@/lib/authz'
 
 export async function GET() {
-  const authUser = await getAuthUser()
-  if (!authUser || authUser.role !== 'admin') {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requireAdmin()
+  if (authz.error) return authz.error
 
   const roles = await prisma.role.findMany({
     include: {
@@ -39,10 +37,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const authUser = await getAuthUser()
-  if (!authUser || authUser.role !== 'admin') {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requireAdmin()
+  if (authz.error) return authz.error
 
   const body = await req.json()
   const { name, label, permissions } = body

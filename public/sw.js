@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dinamo-rugby-v1';
+const CACHE_NAME = 'dinamo-rugby-v2';
 const PRECACHE_URLS = ['/', '/offline', '/offline.html'];
 
 // Install: precache essential resources

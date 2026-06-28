@@ -93,6 +93,47 @@ export default function DesprePage() {
             <p className="text-gray-500 text-sm mt-2">Antrenorii secției de juniori rugby CS Dinamo București</p>
           </a>
         </section>
+
+        {/* Date de identificare asociație */}
+        <section className="mt-16">
+          <h2 className="font-heading font-bold text-3xl mb-6 text-dinamo-red">Despre asociație</h2>
+          <div className="bg-gray-50 border-l-4 border-dinamo-red rounded-r-lg p-6 md:p-8">
+            <p className="text-gray-700 leading-relaxed mb-6">
+              <strong>Asociația Sportivă Dinamo Rugby Junior</strong> este o organizație sportivă
+              fără scop patrimonial dedicată promovării și dezvoltării rugby-ului în rândul copiilor
+              și juniorilor. Asociația are sediul în București, Sector 3, Bd. Camil Ressu nr. 2,
+              bl. R1, sc. 1, et. 5, ap. 18 și funcționează pe durată nelimitată. Este înscrisă în
+              Registrul Special al persoanelor juridice fără scop patrimonial sub nr. 73/14.05.2024,
+              Partea A, Secțiunea I.
+            </p>
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
+              <div>
+                <dt className="font-bold text-gray-900">Denumire</dt>
+                <dd className="text-gray-600">Asociația Sportivă Dinamo Rugby Junior</dd>
+              </div>
+              <div>
+                <dt className="font-bold text-gray-900">Denumire anterioară</dt>
+                <dd className="text-gray-600">Asociația Sportivă Rugby Olimpia</dd>
+              </div>
+              <div>
+                <dt className="font-bold text-gray-900">Formă juridică</dt>
+                <dd className="text-gray-600">Asociație sportivă fără scop patrimonial</dd>
+              </div>
+              <div>
+                <dt className="font-bold text-gray-900">Durata de funcționare</dt>
+                <dd className="text-gray-600">Nelimitată</dd>
+              </div>
+              <div>
+                <dt className="font-bold text-gray-900">Sediu social</dt>
+                <dd className="text-gray-600">Bd. Camil Ressu nr. 2, bl. R1, sc. 1, et. 5, ap. 18, Sector 3, București</dd>
+              </div>
+              <div>
+                <dt className="font-bold text-gray-900">Registrul Special</dt>
+                <dd className="text-gray-600">Nr. 73/14.05.2024, Partea A, Secțiunea I</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
       </div>
     </>
   )

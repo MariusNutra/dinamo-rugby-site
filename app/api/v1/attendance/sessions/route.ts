@@ -11,6 +11,10 @@ export async function POST(request: NextRequest) {
   const auth = await requireCoach(request)
   if ('error' in auth) return auth.error
 
+  if (!auth.team) {
+    return NextResponse.json({ error: 'No team assigned' }, { status: 400 })
+  }
+
   const endOfDay = new Date()
   endOfDay.setHours(23, 59, 59, 999)
 
@@ -43,6 +47,10 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const auth = await requireCoach(request)
   if ('error' in auth) return auth.error
+
+  if (!auth.team) {
+    return NextResponse.json({ data: [] })
+  }
 
   const url = new URL(request.url)
   const teamId = url.searchParams.get('teamId')

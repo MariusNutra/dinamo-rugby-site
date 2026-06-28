@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAuthenticated } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!await isAuthenticated()) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('attendance.manage')
+  if (authz.error) return authz.error
   const data = await req.json()
 
   // Validate end time > start time
@@ -43,9 +42,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!await isAuthenticated()) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('attendance.manage')
+  if (authz.error) return authz.error
   await prisma.trainingSession.delete({ where: { id: parseInt(params.id) } })
   return NextResponse.json({ success: true })
 }

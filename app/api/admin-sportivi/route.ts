@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 import nodemailer from 'nodemailer'
 
 const transporter = nodemailer.createTransport({
@@ -13,9 +13,8 @@ const transporter = nodemailer.createTransport({
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
 export async function POST(req: NextRequest) {
-  if (!await isAdmin()) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('athletes.manage')
+  if (authz.error) return authz.error
 
   try {
     const body = await req.json()

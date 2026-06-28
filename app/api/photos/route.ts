@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAuthenticated } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 import { saveImage } from '@/lib/upload'
 
 export async function GET(req: NextRequest) {
@@ -18,9 +18,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!await isAuthenticated()) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('gallery.manage')
+  if (authz.error) return authz.error
 
   const formData = await req.formData()
   const files = formData.getAll('files') as File[]

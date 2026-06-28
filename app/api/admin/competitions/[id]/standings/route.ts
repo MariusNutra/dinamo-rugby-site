@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 
 export async function POST(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('competitions.manage')
+  if (authz.error) return authz.error
 
   const competition = await prisma.competition.findUnique({
     where: { id: params.id },

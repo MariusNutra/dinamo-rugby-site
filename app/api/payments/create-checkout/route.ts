@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
+import { getParentId } from '@/lib/parent-auth'
+
+const MAX_AMOUNT = 100000 // RON, abuse guard
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { amount, type, childId, campaignId, parentId, returnUrl, donorName, email } = body
+  const { amount, type, childId, campaignId, donorName, email } = body
 
-  if (!amount || typeof amount !== 'number' || amount < 1) {
+  if (!amount || typeof amount !== 'number' || amount < 1 || amount > MAX_AMOUNT) {
     return NextResponse.json({ error: 'Suma invalida' }, { status: 400 })
   }
 
@@ -14,13 +17,42 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Tip plata invalid' }, { status: 400 })
   }
 
+  // Donations are public/anonymous (campaign-scoped, never attributed to a
+  // parent/child). Member fees (cotizatie/inscriere) require an authenticated
+  // parent, and the identity is taken from the session — never from the client.
+  let parentId: string | null = null
+  let safeChildId: string | null = null
+
+  if (type === 'donatie') {
+    parentId = null
+    safeChildId = null
+  } else {
+    const sessionParentId = await getParentId()
+    if (!sessionParentId) {
+      return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
+    }
+    parentId = sessionParentId
+
+    if (childId) {
+      // Verify the child belongs to the authenticated parent
+      const child = await prisma.child.findFirst({
+        where: { id: String(childId), parentId: sessionParentId },
+        select: { id: true },
+      })
+      if (!child) {
+        return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
+      }
+      safeChildId = child.id
+    }
+  }
+
   const stripe = getStripe()
 
   // Create payment record first
   const payment = await prisma.payment.create({
     data: {
-      parentId: parentId || null,
-      childId: childId || null,
+      parentId,
+      childId: safeChildId,
       amount,
       type,
       status: 'pending',
@@ -32,7 +64,8 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  const baseUrl = returnUrl || req.nextUrl.origin
+  // Never trust a client-supplied returnUrl (open-redirect via Stripe).
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || req.nextUrl.origin
 
   const lineItemName = type === 'donatie'
     ? 'Donatie - CS Dinamo Bucuresti Rugby'
@@ -67,7 +100,7 @@ export async function POST(req: NextRequest) {
         paymentId: payment.id,
         type,
         campaignId: campaignId || '',
-        childId: childId || '',
+        childId: safeChildId || '',
         parentId: parentId || '',
         donorName: donorName || '',
       },

@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
-import { getAuthUser } from '@/lib/auth'
+import { requireAdmin } from '@/lib/authz'
 import { audit } from '@/lib/audit'
 
 export async function GET() {
-  const authUser = await getAuthUser()
-  if (!authUser || authUser.role !== 'admin') {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requireAdmin()
+  if (authz.error) return authz.error
 
   const users = await prisma.user.findMany({
     select: {
@@ -27,10 +25,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const authUser = await getAuthUser()
-  if (!authUser || authUser.role !== 'admin') {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requireAdmin()
+  if (authz.error) return authz.error
 
   const body = await req.json()
   const { username, password, name, email, role } = body

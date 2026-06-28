@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server'
-import { isAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 import { getOverviewAlerts } from '@/lib/ai/coach-assistant'
 
 export async function GET() {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('athletes.view')
+  if (authz.error) return authz.error
 
   try {
     const alerts = await getOverviewAlerts()

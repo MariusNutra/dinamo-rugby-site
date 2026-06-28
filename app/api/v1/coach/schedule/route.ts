@@ -10,6 +10,10 @@ export async function GET(request: NextRequest) {
   const auth = await requireCoach(request)
   if ('error' in auth) return auth.error
 
+  if (!auth.team) {
+    return NextResponse.json({ data: [] })
+  }
+
   const events = await prisma.calendarEvent.findMany({
     where: {
       date: { gte: new Date() },

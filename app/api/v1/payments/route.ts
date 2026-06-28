@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { verifyAppToken } from '@/lib/app-auth'
+import { verifyAppToken, getAccessibleChildIds } from '@/lib/app-auth'
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204 })
@@ -16,8 +16,17 @@ export async function GET(request: NextRequest) {
   const childId = url.searchParams.get('childId')
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '20'), 100)
 
+  // Restrict to children the caller may access (own children / coach's team / all for admin)
+  const accessibleIds = await getAccessibleChildIds(appUser)
   const where: Record<string, unknown> = {}
-  if (childId) where.childId = childId
+  if (childId) {
+    if (accessibleIds !== null && !accessibleIds.includes(childId)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+    where.childId = childId
+  } else if (accessibleIds !== null) {
+    where.childId = { in: accessibleIds }
+  }
 
   const payments = await prisma.payment.findMany({
     where,

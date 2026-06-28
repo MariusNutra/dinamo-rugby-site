@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
-import { isAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 
 export async function GET() {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('payments.view')
+  if (authz.error) return authz.error
 
   try {
     const stripe = getStripe()

@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 import { analyzeAthlete } from '@/lib/ai/analysis'
 import { getTeamSuggestions, getAthleteRecommendations } from '@/lib/ai/coach-assistant'
 
 export async function POST(req: NextRequest) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('athletes.view')
+  if (authz.error) return authz.error
 
   let body: Record<string, unknown>
   try {

@@ -16,10 +16,12 @@ export default function AdminLogin() {
     setLoading(true)
     setError('')
 
+    // If input looks like an email, send as email; otherwise as username
+    const isEmail = username.includes('@')
     const res = await fetch('/api/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify(isEmail ? { email: username, password } : { username, password }),
     })
 
     if (res.ok) {
@@ -41,7 +43,7 @@ export default function AdminLogin() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Utilizator</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email sau utilizator</label>
             <input
               type="text"
               value={username}

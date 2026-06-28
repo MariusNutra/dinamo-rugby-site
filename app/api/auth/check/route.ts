@@ -49,7 +49,8 @@ export async function GET(req: NextRequest) {
             name: parent.name,
             email: parent.email,
             phone: parent.phone,
-            role: 'parent',
+            role: decoded.role || 'parent',
+            mustChangePassword: parent.mustChangePassword,
             children: parent.children.map((c) => ({
               id: c.id,
               name: c.name,
@@ -80,6 +81,7 @@ export async function GET(req: NextRequest) {
             email: coach.email,
             phone: coach.phone,
             role: 'coach',
+            mustChangePassword: coach.mustChangePassword,
             teamId: String(coach.teamId),
             teamName: coach.team?.grupa || '',
           },

@@ -45,8 +45,10 @@ export default function PoliticaConfidentialitatePage() {
         </h2>
         <div className="bg-blue-50 border-l-4 border-dinamo-red p-4 rounded-r mb-6">
           <p className="text-gray-700 text-sm">
-            <strong>CS Dinamo București — Secția Rugby Juniori</strong><br />
-            Adresă: Șoseaua Ștefan cel Mare nr. 7-9, Sector 2, București<br />
+            <strong>ASOCIAȚIA SPORTIVĂ DINAMO RUGBY JUNIOR</strong><br />
+            Asociație sportivă fără scop patrimonial<br />
+            Sediu social: Bd. Camil Ressu nr. 2, bl. R1, sc. 1, et. 5, ap. 18, Sector 3, București<br />
+            Registrul Special nr. 73/14.05.2024, Partea A, Secțiunea I<br />
             Email: <a href="mailto:gdpr@dinamorugby.ro" className="text-dinamo-red underline hover:text-dinamo-dark">gdpr@dinamorugby.ro</a><br />
             Telefon: +40 767 858 858
           </p>
@@ -458,8 +460,8 @@ export default function PoliticaConfidentialitatePage() {
               </a>
             </li>
             <li>
-              <strong>Adresă:</strong> Șoseaua Ștefan cel Mare nr. 7-9, Sector
-              2, București
+              <strong>Adresă:</strong> Bd. Camil Ressu nr. 2, bl. R1, sc. 1, et.
+              5, ap. 18, Sector 3, București
             </li>
             <li>
               <strong>Telefon:</strong> +40 767 858 858

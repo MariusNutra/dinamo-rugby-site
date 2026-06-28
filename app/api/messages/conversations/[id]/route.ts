@@ -118,6 +118,25 @@ export async function POST(
       return NextResponse.json({ error: 'Mesajul nu poate fi gol' }, { status: 400 })
     }
 
+    // Verify the sender participates in this conversation (admins may post anywhere)
+    const conversation = await prisma.conversation.findUnique({
+      where: { id },
+      include: { participants: { select: { parentId: true, userId: true } } },
+    })
+
+    if (!conversation) {
+      return NextResponse.json({ error: 'Conversație negăsită' }, { status: 404 })
+    }
+
+    const isParticipant = conversation.participants.some(
+      p => (parentId && p.parentId === parentId) || (user && p.userId === user.userId)
+    )
+    const isAdmin = user?.role === 'admin'
+
+    if (!isParticipant && !isAdmin) {
+      return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
+    }
+
     // Create message
     const message = await prisma.message.create({
       data: {

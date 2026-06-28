@@ -14,9 +14,11 @@ export async function GET(
   if ('error' in auth) return auth.error
 
   const teamId = parseInt(params.teamId)
-  if (auth.team.id !== teamId) {
+  if (!auth.team || auth.team.id !== teamId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
+
+  const coachTeam = auth.team
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -43,7 +45,7 @@ export async function GET(
     data: children.map((c) => ({
       id: c.id,
       name: c.name,
-      teamName: auth.team.grupa,
+      teamName: coachTeam.grupa,
       attendanceStatus: attendanceMap.get(c.id) || 'unmarked',
     })),
   })

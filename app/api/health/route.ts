@@ -1,25 +1,40 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { isAdmin } from '@/lib/auth'
 import fs from 'fs'
 import path from 'path'
 
 export async function GET() {
+  // Always probe the DB so the status code is meaningful for monitoring.
+  let dbOk = true
+  let dbError: string | null = null
+  let teamCount = 0
+  try {
+    teamCount = await prisma.team.count()
+  } catch (e) {
+    dbOk = false
+    dbError = String(e)
+  }
+
+  const status = dbOk ? 'ok' : 'degraded'
+  const statusCode = dbOk ? 200 : 503
+
+  // Public response: only liveness, no internals (uptime/memory/paths/errors).
+  if (!(await isAdmin())) {
+    return NextResponse.json(
+      { status, timestamp: new Date().toISOString() },
+      { status: statusCode }
+    )
+  }
+
+  // Detailed diagnostics for authenticated admins only.
   const checks: Record<string, unknown> = {
-    status: 'ok',
+    status,
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
+    database: dbOk ? { status: 'ok', teams: teamCount } : { status: 'error', error: dbError },
   }
 
-  // Check database
-  try {
-    const count = await prisma.team.count()
-    checks.database = { status: 'ok', teams: count }
-  } catch (e) {
-    checks.database = { status: 'error', error: String(e) }
-    checks.status = 'degraded'
-  }
-
-  // Check disk space for DB
   try {
     const dbPath = path.join(process.cwd(), 'prisma', 'dev.db')
     const stats = fs.statSync(dbPath)
@@ -28,19 +43,13 @@ export async function GET() {
     checks.dbSize = 'unknown'
   }
 
-  // Check uploads directory
   try {
     const uploadsDir = path.join(process.cwd(), 'uploads')
-    if (fs.existsSync(uploadsDir)) {
-      checks.uploads = { status: 'ok' }
-    } else {
-      checks.uploads = { status: 'missing' }
-    }
+    checks.uploads = { status: fs.existsSync(uploadsDir) ? 'ok' : 'missing' }
   } catch {
     checks.uploads = { status: 'error' }
   }
 
-  // Memory usage
   const mem = process.memoryUsage()
   checks.memory = {
     heapUsed: `${(mem.heapUsed / 1024 / 1024).toFixed(1)} MB`,
@@ -48,6 +57,5 @@ export async function GET() {
     rss: `${(mem.rss / 1024 / 1024).toFixed(1)} MB`,
   }
 
-  const statusCode = checks.status === 'ok' ? 200 : 503
   return NextResponse.json(checks, { status: statusCode })
 }

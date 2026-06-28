@@ -15,7 +15,7 @@ export async function GET(
   if ('error' in auth) return auth.error
 
   const teamId = parseInt(params.teamId)
-  if (auth.team.id !== teamId) {
+  if (!auth.team || auth.team.id !== teamId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

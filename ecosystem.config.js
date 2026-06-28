@@ -3,10 +3,11 @@ module.exports = {
     name: 'rugby-dinamo',
     script: 'node_modules/.bin/next',
     args: 'start',
-    cwd: '/var/www/rugby-dinamo',
+    exec_mode: 'fork',
+    cwd: '/mnt/HC_Volume_105236627/www/rugby-dinamo',
     env: {
       NODE_ENV: 'production',
-      PORT: 3000,
+      PORT: 3003,
     },
     instances: 1,
     autorestart: true,

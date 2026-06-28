@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 import nodemailer from 'nodemailer'
 
 const transporter = nodemailer.createTransport({
@@ -16,9 +16,8 @@ export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ childId: string }> }
 ) {
-  if (!await isAdmin()) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('parents.manage')
+  if (authz.error) return authz.error
 
   const { childId } = await params
 

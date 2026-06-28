@@ -21,9 +21,11 @@ export async function POST(
     return NextResponse.json({ error: 'Session not found' }, { status: 404 })
   }
 
-  if (session.teamId !== auth.team.id) {
+  if (!auth.team || session.teamId !== auth.team.id) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
+
+  const teamId = auth.team.id
 
   const body = await request.json()
   const records: Array<{ childId: string; status: string }> = body.records
@@ -40,7 +42,7 @@ export async function POST(
       const existing = await prisma.attendance.findFirst({
         where: {
           childId: record.childId,
-          teamId: auth.team.id,
+          teamId,
           date: { gte: today, lt: new Date(today.getTime() + 86400000) },
         },
       })
@@ -60,7 +62,7 @@ export async function POST(
           childId: record.childId,
           date: new Date(),
           present: record.status === 'present',
-          teamId: auth.team.id,
+          teamId,
           sessionId: session.id,
           type: 'antrenament',
         },

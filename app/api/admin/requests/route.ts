@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAdmin, getAuthUser } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
+import { getAuthUser } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
-  if (!await isAdmin()) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('requests.manage')
+  if (authz.error) return authz.error
 
   const status = req.nextUrl.searchParams.get('status')
   const type = req.nextUrl.searchParams.get('type')
@@ -45,9 +45,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  if (!await isAdmin()) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('requests.manage')
+  if (authz.error) return authz.error
 
   const user = await getAuthUser()
 

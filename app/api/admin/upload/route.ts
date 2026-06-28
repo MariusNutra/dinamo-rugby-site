@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isAdmin } from '@/lib/auth'
+import { requireUser } from '@/lib/authz'
 import { saveImage } from '@/lib/upload'
 
 const ALLOWED_FOLDERS = ['fundraising', 'products', 'sponsors', 'gallery', 'stories']
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
 export async function POST(req: NextRequest) {
-  if (!await isAdmin()) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requireUser()
+  if (authz.error) return authz.error
 
   try {
     const formData = await req.formData()

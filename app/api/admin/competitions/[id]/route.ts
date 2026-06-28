@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('teams.view')
+  if (authz.error) return authz.error
 
   const competition = await prisma.competition.findUnique({
     where: { id: params.id },
@@ -48,9 +47,8 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('competitions.manage')
+  if (authz.error) return authz.error
 
   let body: Record<string, unknown>
   try {
@@ -97,9 +95,8 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('competitions.manage')
+  if (authz.error) return authz.error
 
   const existing = await prisma.competition.findUnique({ where: { id: params.id } })
   if (!existing) {

@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 import { audit } from '@/lib/audit'
 
 export async function GET(req: NextRequest) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('evaluations.view')
+  if (authz.error) return authz.error
 
   const { searchParams } = new URL(req.url)
   const teamId = searchParams.get('teamId')
@@ -32,9 +31,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('evaluations.manage')
+  if (authz.error) return authz.error
 
   let body: Record<string, unknown>
   try {

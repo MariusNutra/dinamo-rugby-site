@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getAuthUser } from '@/lib/auth'
+import { requireAdmin } from '@/lib/authz'
 import { DEFAULT_ROLES } from '@/lib/permissions'
 
 export async function POST() {
-  const authUser = await getAuthUser()
-  if (!authUser || authUser.role !== 'admin') {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requireAdmin()
+  if (authz.error) return authz.error
 
   const created: string[] = []
   const skipped: string[] = []

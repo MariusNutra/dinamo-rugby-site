@@ -12,6 +12,10 @@ export async function GET(request: NextRequest) {
 
   const { team } = auth
 
+  if (!team) {
+    return NextResponse.json({ data: [] })
+  }
+
   const playerCount = await prisma.child.count({ where: { teamId: team.id } })
 
   return NextResponse.json({

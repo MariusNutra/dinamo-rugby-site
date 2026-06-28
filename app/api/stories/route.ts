@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isAuthenticated } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 import { audit } from '@/lib/audit'
 
 export async function GET(req: NextRequest) {
@@ -23,9 +23,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!await isAuthenticated()) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('stories.manage')
+  if (authz.error) return authz.error
 
   const data = await req.json()
   const slug = data.title

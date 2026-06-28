@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAuthenticated } from '@/lib/auth'
+import { requirePermission } from '@/lib/authz'
 import { generateQRToken } from '@/lib/qr'
 
 // POST - Create a new QR attendance session
 export async function POST(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
+  const authz = await requirePermission('attendance.manage')
+  if (authz.error) return authz.error
 
   try {
     const { teamId, durationMinutes = 120 } = await req.json()

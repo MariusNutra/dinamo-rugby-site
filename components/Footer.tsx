@@ -11,6 +11,10 @@ export default function Footer() {
               Secția de juniori rugby a clubului CS Dinamo București.
               Formăm viitorii campioni ai rugby-ului românesc.
             </p>
+            <p className="text-gray-400 text-xs leading-relaxed mt-4">
+              ASOCIAȚIA SPORTIVĂ DINAMO RUGBY JUNIOR<br />
+              Registrul Special nr. 73/14.05.2024, Partea A, Secțiunea I
+            </p>
           </div>
           <div>
             <h3 className="font-heading font-bold text-lg mb-4">Link-uri rapide</h3>
@@ -29,7 +33,7 @@ export default function Footer() {
           <div>
             <h3 className="font-heading font-bold text-lg mb-4">Contact</h3>
             <ul className="space-y-2 text-sm text-gray-300">
-              <li>Șoseaua Ștefan cel Mare nr. 7-9, Sector 2, București</li>
+              <li>Bd. Camil Ressu nr. 2, bl. R1, sc. 1, et. 5, ap. 18, Sector 3, București</li>
               <li>contact@dinamorugby.ro</li>
               <li>+40 767 858 858</li>
             </ul>
@@ -43,7 +47,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="border-t border-gray-600 mt-8 pt-8 text-center text-sm text-gray-400">
-          <p>&copy; {new Date().getFullYear()} CS Dinamo București — Secția Rugby Juniori. Toate drepturile rezervate.</p>
+          <p>&copy; {new Date().getFullYear()} Asociația Sportivă Dinamo Rugby Junior. Toate drepturile rezervate.</p>
           <p className="mt-2">
             <Link href="/politica-cookies-gdpr" className="text-gray-400 hover:text-white transition-colors underline">
               Politica de Cookies &amp; GDPR
@@ -56,6 +60,9 @@ export default function Footer() {
             <Link href="/termeni-si-conditii" className="text-gray-400 hover:text-white transition-colors underline">
               Termeni și Condiții
             </Link>
+          </p>
+          <p className="mt-3 text-gray-500 text-xs">
+            Platformă realizată de Nutra Pharma Consulting
           </p>
         </div>
         <p className="mt-4">
