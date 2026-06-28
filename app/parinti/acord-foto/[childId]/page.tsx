@@ -172,7 +172,7 @@ export default function AcordFotoPage() {
         <p className="mb-3">
           Subsemnatul/Subsemnata <strong>{data.parentName}</strong>, in calitate de parinte/tutore legal al
           minorului <strong>{data.childName}</strong>, nascut in anul <strong>{data.birthYear}</strong>,
-          legitimat la CS Dinamo Bucuresti — Sectia Rugby Juniori
+          legitimat la Asociatia Sportiva Dinamo Rugby Junior
           {data.teamName && <>, echipa <strong>{data.teamName}</strong></>}:
         </p>
       </div>

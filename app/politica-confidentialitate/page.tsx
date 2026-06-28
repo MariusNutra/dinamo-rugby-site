@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Politica de Confidențialitate | Dinamo Rugby Juniori",
   description:
-    "Politica de confidențialitate și protecția datelor personale pentru site-ul dinamorugby.ro — Secția Rugby Juniori CS Dinamo București.",
+    "Politica de confidențialitate și protecția datelor personale pentru site-ul dinamorugby.ro — Asociația Sportivă Dinamo Rugby Junior.",
 };
 
 export default function PoliticaConfidentialitatePage() {
@@ -29,8 +29,8 @@ export default function PoliticaConfidentialitatePage() {
         </p>
 
         <p className="text-gray-700 leading-relaxed mb-8">
-          Clubul Sportiv <strong>Dinamo București — Secția Rugby Juniori</strong>{" "}
-          (denumit în continuare &bdquo;Clubul&rdquo;, &bdquo;noi&rdquo; sau
+          <strong>Asociația Sportivă Dinamo Rugby Junior</strong>{" "}
+          (denumită în continuare &bdquo;Asociația&rdquo;, &bdquo;noi&rdquo; sau
           &bdquo;Operatorul&rdquo;) se angajează să protejeze
           confidențialitatea datelor dumneavoastră personale. Această politică
           descrie modul în care colectăm, utilizăm, stocăm și protejăm datele

@@ -71,6 +71,7 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "SportsTeam",
               name: "CS Dinamo București Rugby Juniori",
+              legalName: "Asociația Sportivă Dinamo Rugby Junior",
               url: "https://dinamorugby.ro",
               sport: "Rugby",
               memberOf: {

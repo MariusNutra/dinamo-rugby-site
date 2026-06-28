@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Termeni și Condiții | Dinamo Rugby Juniori",
   description:
-    "Termenii și condițiile de utilizare a site-ului dinamorugby.ro — Secția Rugby Juniori CS Dinamo București.",
+    "Termenii și condițiile de utilizare a site-ului dinamorugby.ro — Asociația Sportivă Dinamo Rugby Junior.",
 };
 
 export default function TermeniSiConditiiPage() {
@@ -30,9 +30,9 @@ export default function TermeniSiConditiiPage() {
 
         <p className="text-gray-700 leading-relaxed mb-8">
           Vă rugăm să citiți cu atenție acești termeni și condiții înainte de a
-          utiliza site-ul <strong>dinamorugby.ro</strong>, operat de Clubul
-          Sportiv <strong>Dinamo București — Secția Rugby Juniori</strong>{" "}
-          (denumit în continuare &bdquo;Clubul&rdquo;, &bdquo;noi&rdquo; sau
+          utiliza site-ul <strong>dinamorugby.ro</strong>, operat de{" "}
+          <strong>Asociația Sportivă Dinamo Rugby Junior</strong>{" "}
+          (denumită în continuare &bdquo;Clubul&rdquo;, &bdquo;noi&rdquo; sau
           &bdquo;site-ul&rdquo;). Prin accesarea și utilizarea acestui site,
           confirmați că ați citit, înțeles și acceptat acești termeni în
           integralitatea lor.
@@ -57,7 +57,7 @@ export default function TermeniSiConditiiPage() {
           </li>
           <li className="flex gap-2">
             <span className="text-dinamo-red font-bold">—</span>
-            <span><strong>&bdquo;Clubul&rdquo;</strong> — CS Dinamo București — Secția Rugby Juniori, operatorul site-ului.</span>
+            <span><strong>&bdquo;Clubul&rdquo;</strong> — Asociația Sportivă Dinamo Rugby Junior, operatorul site-ului.</span>
           </li>
         </ul>
 
@@ -87,7 +87,7 @@ export default function TermeniSiConditiiPage() {
         <ul className="space-y-2 text-gray-700 mb-6">
           <li className="flex gap-2">
             <span className="text-dinamo-red font-bold">—</span>
-            <span>Prezentarea activității Secției de Rugby Juniori a CS Dinamo București;</span>
+            <span>Prezentarea activității de rugby juniori a Asociației Sportive Dinamo Rugby Junior;</span>
           </li>
           <li className="flex gap-2">
             <span className="text-dinamo-red font-bold">—</span>
@@ -110,7 +110,7 @@ export default function TermeniSiConditiiPage() {
         <p className="text-gray-700 leading-relaxed mb-4">
           Întregul conținut al site-ului — inclusiv, dar fără a se limita la
           texte, fotografii, imagini, logo-uri, grafică, videoclipuri, design și
-          structura site-ului — este proprietatea CS Dinamo București sau este
+          structura site-ului — este proprietatea Asociației Sportive Dinamo Rugby Junior sau este
           utilizat cu acordul titularilor drepturilor de autor și este protejat
           de legislația română și internațională privind drepturile de autor și
           proprietatea intelectuală.
@@ -321,8 +321,11 @@ export default function TermeniSiConditiiPage() {
           14. Contact
         </h2>
         <div className="bg-red-50 border-2 border-dinamo-red rounded-lg p-6 mb-8">
-          <p className="font-heading font-bold text-lg text-gray-800 mb-3">
+          <p className="font-heading font-bold text-lg text-gray-800 mb-1">
             Asociația Sportivă Dinamo Rugby Junior
+          </p>
+          <p className="text-gray-600 text-sm mb-3">
+            Asociație sportivă fără scop patrimonial · Registrul Special nr. 73/14.05.2024, Partea A, Secțiunea I
           </p>
           <p className="text-gray-700 mb-4">
             Pentru orice întrebări sau clarificări legate de acești termeni și

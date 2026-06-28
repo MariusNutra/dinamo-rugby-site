@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Politica de Cookies & GDPR | Dinamo Rugby Juniori",
   description:
-    "Politica de utilizare cookies și protecția datelor personale (GDPR) pentru site-ul dinamorugby.ro — Secția Rugby Juniori CS Dinamo București.",
+    "Politica de utilizare cookies și protecția datelor personale (GDPR) pentru site-ul dinamorugby.ro — Asociația Sportivă Dinamo Rugby Junior.",
 };
 
 export default function PoliticaCookiesPage() {
