@@ -36,8 +36,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# database
-prisma/dev.db
+# database (incl. WAL artifacts: dev.db-wal, dev.db-shm, dev.db-journal)
+prisma/dev.db*
 
 # uploads
 /uploads

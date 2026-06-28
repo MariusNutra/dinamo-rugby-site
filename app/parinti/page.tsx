@@ -9,7 +9,6 @@ function LoginForm() {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
-  const [notRegistered, setNotRegistered] = useState(false)
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -22,7 +21,6 @@ function LoginForm() {
     e.preventDefault()
     setStatus('sending')
     setErrorMsg('')
-    setNotRegistered(false)
 
     try {
       const res = await fetch('/api/parinti/auth', {
@@ -33,13 +31,10 @@ function LoginForm() {
       const data = await res.json()
 
       if (!res.ok) {
-        if (data.error === 'not_registered') {
-          setNotRegistered(true)
-          setStatus('error')
-        } else {
-          setErrorMsg(data.error || data.message || 'Eroare la trimitere.')
-          setStatus('error')
-        }
+        // Anti-enumeration: the API no longer reveals whether an email is
+        // registered. Only genuine errors (validation, rate limit) reach here.
+        setErrorMsg(data.error || data.message || 'Eroare la trimitere.')
+        setStatus('error')
         return
       }
 
@@ -65,18 +60,9 @@ function LoginForm() {
           <p className="text-gray-600">Acceseaza informatiile echipei copilului tau</p>
         </div>
 
-        {errorMsg && !notRegistered && (
+        {errorMsg && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
             {errorMsg}
-          </div>
-        )}
-
-        {notRegistered && (
-          <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg mb-4">
-            <p className="font-medium mb-1">Acest email nu este inregistrat.</p>
-            <p className="text-sm">
-              Solicita acces mai jos sau contacteaza antrenorul echipei.
-            </p>
           </div>
         )}
 
@@ -87,10 +73,16 @@ function LoginForm() {
               Verifica email-ul!
             </h2>
             <p className="text-green-700">
-              Am trimis un link de acces la <strong>{email}</strong>.
+              Daca <strong>{email}</strong> este inregistrat, ti-am trimis un link de acces.
               Verifica si folderul Spam daca nu gasesti email-ul.
             </p>
             <p className="text-green-600 text-sm mt-2">Linkul este valid 24 de ore.</p>
+            <p className="text-gray-500 text-sm mt-3">
+              Nu primesti nimic? Poate nu ai inca un cont.{' '}
+              <Link href="/parinti/solicita-acces" className="text-dinamo-red hover:underline">
+                Solicita acces
+              </Link>.
+            </p>
             <button
               onClick={() => { setStatus('idle'); setEmail('') }}
               className="mt-4 text-sm text-green-600 hover:underline"

@@ -71,9 +71,13 @@ export async function checkRateLimit(
     })
     return { allowed: true, remaining: maxAttempts - 1 }
   } catch (error) {
-    // If DB fails, allow the request (fail open) but log
-    console.error('Rate limit check failed:', error)
-    return { allowed: true, remaining: maxAttempts }
+    // Fail CLOSED: if the rate-limit store is unavailable we deny the request
+    // rather than allow it. Failing open let an attacker bypass throttling on
+    // sensitive endpoints (login, password reset, registration) simply by
+    // inducing DB errors. These endpoints can't function without the DB anyway,
+    // so denying during an outage costs nothing extra.
+    console.error('Rate limit check failed — failing closed:', error)
+    return { allowed: false, remaining: 0, retryAfterSeconds: 60 }
   }
 }
 

@@ -40,12 +40,15 @@ export async function POST(req: NextRequest) {
 
   const normalizedEmail = email.toLowerCase().trim()
 
+  // Anti-enumeration: never reveal whether an email is a registered parent.
+  const neutralResponse = NextResponse.json({
+    success: true,
+    message: 'Daca adresa este inregistrata, ti-am trimis un link de acces pe email.',
+  })
+
   const parent = await prisma.parent.findUnique({ where: { email: normalizedEmail } })
   if (!parent) {
-    return NextResponse.json({
-      error: 'not_registered',
-      message: 'Acest email nu este inregistrat. Solicita acces mai jos sau contacteaza antrenorul.',
-    }, { status: 404 })
+    return neutralResponse
   }
 
   const token = randomBytes(32).toString('hex')
@@ -88,9 +91,9 @@ export async function POST(req: NextRequest) {
       `,
     })
 
-    return NextResponse.json({ success: true, message: 'Link-ul a fost trimis pe email.' })
+    return neutralResponse
   } catch (error) {
     console.error('Magic link email error:', error)
-    return NextResponse.json({ error: 'Eroare la trimiterea email-ului.' }, { status: 500 })
+    return neutralResponse
   }
 }

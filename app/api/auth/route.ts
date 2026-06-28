@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import { createToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
+import { createRefreshToken } from '@/lib/unified-auth'
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req)
@@ -22,12 +23,20 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const { username, password } = await req.json()
+  const { username, email, password } = await req.json()
 
-  // Find user in database
-  const user = await prisma.user.findUnique({
-    where: { username },
-  })
+  // Find user by username or email
+  let user = null
+  if (username) {
+    user = await prisma.user.findUnique({ where: { username } })
+  }
+  if (!user && email) {
+    user = await prisma.user.findFirst({ where: { email: email.toLowerCase().trim(), active: true } })
+  }
+  // If input looks like an email and was sent as username, try email lookup
+  if (!user && username && username.includes('@')) {
+    user = await prisma.user.findFirst({ where: { email: username.toLowerCase().trim(), active: true } })
+  }
 
   if (!user || !user.active) {
     return NextResponse.json({ error: 'Credențiale invalide' }, { status: 401 })
@@ -41,11 +50,17 @@ export async function POST(req: NextRequest) {
       username: user.username,
       role: user.role,
     })
-    const response = NextResponse.json({ success: true })
+
+    const refreshToken = await createRefreshToken({
+      userId: user.id,
+      role: user.role,
+    })
+
+    const response = NextResponse.json({ success: true, refreshToken })
     response.cookies.set('admin_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       maxAge: 60 * 60 * 24 * 7,
       path: '/',
     })
