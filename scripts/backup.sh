@@ -11,6 +11,14 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 BACKUP_DIR="${BACKUP_BASE}/${TIMESTAMP}"
 RETENTION_DAYS=30
 
+# Offsite replication target (adam server). Keeps backups on a separate
+# machine/disk so a primary VPS or disk failure does not lose both the
+# database and its backups. Failure here is logged but never aborts the
+# local backup.
+OFFSITE_HOST="root@78.47.187.31"
+OFFSITE_DIR="/root/offsite-backups/dinamo-rugby"
+OFFSITE_RETENTION_DAYS=30
+
 echo "[$(date)] Starting backup..."
 
 # Create backup directory
@@ -44,6 +52,19 @@ cp "${APP_DIR}/.env" "${BACKUP_DIR}/env.bak"
 # Calculate total size
 TOTAL_SIZE=$(du -sh "$BACKUP_DIR" | cut -f1)
 echo "  Total backup size: ${TOTAL_SIZE}"
+
+# Replicate this backup offsite (best-effort, never aborts the local backup)
+echo "  Replicating offsite to ${OFFSITE_HOST}..."
+if rsync -az -e "ssh -o BatchMode=yes -o ConnectTimeout=15 -o StrictHostKeyChecking=accept-new" \
+    "${BACKUP_DIR}/" "${OFFSITE_HOST}:${OFFSITE_DIR}/${TIMESTAMP}/" 2>/dev/null; then
+  echo "  Offsite replication OK: ${OFFSITE_DIR}/${TIMESTAMP}"
+  # Prune old offsite backups
+  ssh -o BatchMode=yes -o ConnectTimeout=15 "${OFFSITE_HOST}" \
+    "find '${OFFSITE_DIR}' -mindepth 1 -maxdepth 1 -type d -mtime +${OFFSITE_RETENTION_DAYS} -exec rm -rf {} \; 2>/dev/null || true" \
+    2>/dev/null || true
+else
+  echo "  WARNING: offsite replication FAILED — local backup is intact, but offsite copy is stale!"
+fi
 
 # Remove old backups (older than RETENTION_DAYS)
 echo "  Cleaning backups older than ${RETENTION_DAYS} days..."
