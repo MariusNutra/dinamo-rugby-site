@@ -33,25 +33,39 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero Banner — videoul umple tot dreptunghiul; gradientul ramane
-          dedesubt fiindca el e ce se vede daca filmul nu se incarca. */}
-      <section className="relative flex min-h-[85vh] items-center justify-center overflow-hidden bg-gradient-to-br from-dinamo-red via-dinamo-dark to-dinamo-blue text-white">
-        {/* Numele clubului nu mai e scris aici: stema din finalul filmului il
-            spune deja. `h1` ramane — o pagina fara el n-are titlu nici pentru
-            Google, nici pentru cititoarele de ecran — dar poarta textul cerut.
-            Tot ce e inauntru se aprinde dupa ce se aseaza stema. */}
+      {/* Hero cinematic. Fundalul e carbon aproape negru, ca fundalul propriu
+          al filmului — asa nu mai exista muchie intre video si pagina. Rosul
+          clubului ramane accent (butonul), nu fundal. */}
+      <section className="relative flex h-[70vh] min-h-[460px] items-end overflow-hidden bg-[#0a0a0c] text-white">
         <HeroVideo>
-          <h1 className="font-heading font-extrabold text-3xl md:text-5xl lg:text-6xl mb-3">
+          {/* Eticheta de deasupra titlului: linia rosie o ancoreaza si aduce
+              culoarea clubului fara sa inunde ecranul. */}
+          <p className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.28em] text-white/60">
+            <span aria-hidden="true" className="inline-block h-px w-10 bg-dinamo-red" />
+            CS Dinamo București · din 1948
+          </p>
+
+          <h1 className="font-heading text-5xl font-extrabold leading-[0.95] tracking-tight md:text-7xl">
             Secția de Juniori
           </h1>
-          <p className="text-lg md:text-xl opacity-90 max-w-2xl mx-auto">
-            Formăm viitorii campioni ai rugby-ului românesc
+
+          <p className="mt-5 max-w-md text-base leading-relaxed text-white/70 md:text-lg">
+            Formăm viitorii campioni ai rugby-ului românesc.
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link href="/contact" className="bg-white text-dinamo-red px-8 py-3 rounded-full font-heading font-bold hover:bg-gray-100 transition-colors shadow-lg">
+
+          <div className="mt-9 flex flex-wrap items-center gap-6">
+            <Link
+              href="/contact"
+              className="rounded-full bg-dinamo-red px-9 py-4 font-heading font-bold text-white shadow-lg shadow-dinamo-red/25 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-dinamo-red/35"
+            >
               Înscrie-te acum
             </Link>
-            <Link href="/despre" className="border-2 border-white text-white px-8 py-3 rounded-full font-heading font-bold hover:bg-white/10 transition-colors">
+            {/* A doua actiune ramane link, nu buton: doua butoane egale nu spun
+                nimanui ce se asteapta de la el. */}
+            <Link
+              href="/despre"
+              className="border-b border-white/30 pb-0.5 font-heading font-semibold text-white/80 transition hover:border-white hover:text-white"
+            >
               Află mai multe
             </Link>
           </div>
