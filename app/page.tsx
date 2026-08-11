@@ -5,9 +5,9 @@ import StoryCard from '@/components/StoryCard'
 import UpcomingMatch from '@/components/UpcomingMatch'
 import LatestResults from '@/components/LatestResults'
 import VideoCard from '@/components/VideoCard'
-import Image from 'next/image'
 import Link from 'next/link'
 import DownloadSection from '@/components/DownloadSection'
+import HeroVideo from '@/components/HeroVideo'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,21 +33,19 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero Banner */}
-      <section className="relative bg-gradient-to-br from-dinamo-red via-dinamo-dark to-dinamo-blue min-h-[70vh] flex items-center justify-center text-white">
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="relative text-center px-4 fade-in">
-          <div className="w-36 h-36 mx-auto mb-6 drop-shadow-2xl">
-            <Image src="/images/dinamo-rugby-bulldog.png" alt="Dinamo Rugby București" width={144} height={144} className="w-full h-full object-contain" priority />
-          </div>
-          <h1 className="font-heading font-extrabold text-4xl md:text-6xl lg:text-7xl mb-4">
-            Dinamo Rugby
-          </h1>
-          <p className="text-xl md:text-2xl font-light opacity-90 mb-2">
+      {/* Hero Banner — videoul umple tot dreptunghiul; gradientul ramane
+          dedesubt fiindca el e ce se vede daca filmul nu se incarca. */}
+      <section className="relative flex min-h-[80vh] items-center justify-center overflow-hidden bg-gradient-to-br from-dinamo-red via-dinamo-dark to-dinamo-blue text-white">
+        {/* Numele clubului nu mai e scris aici: stema din finalul filmului il
+            spune deja. `h1` ramane — o pagina fara el n-are titlu nici pentru
+            Google, nici pentru cititoarele de ecran — dar poarta textul cerut.
+            Tot ce e inauntru se aprinde dupa ce se aseaza stema. */}
+        <HeroVideo>
+          <h1 className="font-heading font-extrabold text-3xl md:text-5xl lg:text-6xl mb-3">
             Secția de Juniori
-          </p>
-          <p className="text-lg opacity-75 max-w-2xl mx-auto mt-4">
-            Formăm viitorii campioni ai rugby-ului românesc din 1949
+          </h1>
+          <p className="text-lg md:text-xl opacity-90 max-w-2xl mx-auto">
+            Formăm viitorii campioni ai rugby-ului românesc
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Link href="/contact" className="bg-white text-dinamo-red px-8 py-3 rounded-full font-heading font-bold hover:bg-gray-100 transition-colors shadow-lg">
@@ -57,7 +55,7 @@ export default async function HomePage() {
               Află mai multe
             </Link>
           </div>
-        </div>
+        </HeroVideo>
       </section>
 
       {/* Grupe de vârstă */}
