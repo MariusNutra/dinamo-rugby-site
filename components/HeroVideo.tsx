@@ -107,15 +107,16 @@ export default function HeroVideo({ children }: { children?: React.ReactNode }) 
   const arataTextul = terminat || miscareRedusa || prinsDeTimp
 
   return (
-    <>
-      {/* `object-contain`, NU `cover`: cover umplea dreptunghiul taind din
-          cadru, iar ce se pierdea era exact marginea stemei. Contain arata
-          filmul intreg; unde raportul ecranului nu se potriveste cu 16:9 ramane
-          la vedere gradientul rosu al clubului, deci golul citeste ca rama, nu
-          ca greseala. */}
+    <div className="relative z-10 flex w-full flex-col items-center py-10">
+      {/* Videoul sta in FLUXUL normal, nu pozitionat absolut.
+          Cat a fost absolut, orice marire il impingea peste titlu — masurat:
+          51px de suprapunere chiar si la 70% inaltime. Asa, textul e mereu
+          dedesubt, la orice dimensiune, si latimea de mai jos se poate schimba
+          fara sa strice nimic.
+          `object-contain` pe raportul 16:9: filmul se vede intreg, netaiat. */}
       <video
         ref={videoRef}
-        className="absolute inset-0 h-full w-full object-contain"
+        className="block aspect-video w-[82%] object-contain"
         src="/video/dinamo-hero.mp4"
         poster="/video/dinamo-hero-poster.jpg"
         playsInline
@@ -124,20 +125,7 @@ export default function HeroVideo({ children }: { children?: React.ReactNode }) 
         aria-hidden="true"
       />
 
-      {/* Voalul are DOUA stari, si asta rezolva singurul conflict real al
-          machetei: stema e dimensionata de latimea ecranului, deci pe un monitor
-          mare ajunge exact acolo unde trebuie sa stea textul. Nu se poate „muta"
-          — object-position n-are ce decupa cand cutia e aproape de 16:9.
-          Cat ruleaza filmul, voalul e subtire: se vede stema, nu se acopera nimic.
-          Cand s-a terminat, se ingroasa — stema devine fundal, iar titlul are pe
-          ce sta. Filmul si-a spus replica deja; de aici incolo conteaza mesajul. */}
-      <div
-        className={`absolute inset-0 transition-colors duration-1000 ${
-          arataTextul ? 'bg-black/60' : 'bg-gradient-to-t from-black/60 to-transparent'
-        }`}
-      />
-
-      <div className="relative z-10 w-full px-4 py-20 text-center">
+      <div className="w-full px-4 pt-8 text-center">
         {children && (
           <div
             className={`transition-opacity duration-1000 ${arataTextul ? 'opacity-100' : 'opacity-0'}`}
@@ -156,6 +144,6 @@ export default function HeroVideo({ children }: { children?: React.ReactNode }) 
           </button>
         )}
       </div>
-    </>
+    </div>
   )
 }

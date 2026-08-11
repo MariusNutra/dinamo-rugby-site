@@ -35,7 +35,7 @@ export default async function HomePage() {
     <>
       {/* Hero Banner — videoul umple tot dreptunghiul; gradientul ramane
           dedesubt fiindca el e ce se vede daca filmul nu se incarca. */}
-      <section className="relative flex min-h-[80vh] items-center justify-center overflow-hidden bg-gradient-to-br from-dinamo-red via-dinamo-dark to-dinamo-blue text-white">
+      <section className="relative flex min-h-[85vh] items-center justify-center overflow-hidden bg-gradient-to-br from-dinamo-red via-dinamo-dark to-dinamo-blue text-white">
         {/* Numele clubului nu mai e scris aici: stema din finalul filmului il
             spune deja. `h1` ramane — o pagina fara el n-are titlu nici pentru
             Google, nici pentru cititoarele de ecran — dar poarta textul cerut.
