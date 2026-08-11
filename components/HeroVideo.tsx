@@ -102,9 +102,24 @@ export default function HeroVideo({ children }: { children?: React.ReactNode }) 
 
   return (
     <>
+      {/* Fundalul care umple banda: posterul, marit si blurat.
+          De ce nu lasam filmul sa umple singur — `object-cover` decupeaza cu
+          atat mai mult cu cat ecranul e mai lat. La 1920 taia steaua de sus si
+          varful stemei de jos. Ca sa NU taie, filmul trebuie sa incapa intreg,
+          adica `object-contain` — dar atunci ar ramane goluri pe laturi si ar
+          arata iar ca un video centrat in pagina.
+          Fundalul asta acopera golurile. E o imagine statica, nu al doilea
+          video: fundalul filmului e o textura de carbon care nu se misca, deci
+          nimeni nu vede diferenta, iar noi nu decodam acelasi fisier de doua ori. */}
+      <div
+        className="absolute inset-0 scale-110 bg-cover bg-center blur-2xl"
+        style={{ backgroundImage: 'url(/video/dinamo-hero-poster.jpg)' }}
+        aria-hidden="true"
+      />
+
       <video
         ref={videoRef}
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-contain"
         src="/video/dinamo-hero.mp4"
         poster="/video/dinamo-hero-poster.jpg"
         playsInline
