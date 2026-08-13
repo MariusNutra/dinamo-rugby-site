@@ -95,8 +95,9 @@ export default function AcordFotoForm({ grupe }: { grupe: string[] }) {
   const [parinteTelefon, setParinteTelefon] = useState('')
   const [parinteEmail, setParinteEmail] = useState('')
   const [copii, setCopii] = useState<Copil[]>([copilNou()])
-  const [consimtSite, setConsimtSite] = useState(false)
-  const [consimtWA, setConsimtWA] = useState(false)
+  const [acorduri, setAcorduri] = useState<Record<string, boolean>>({
+    site: false, platforme: false, whatsapp: false,
+  })
   const [refuz, setRefuz] = useState(false)
   const [website, setWebsite] = useState('') // capcana pentru roboti
   const [seTrimite, setSeTrimite] = useState(false)
@@ -196,15 +197,18 @@ export default function AcordFotoForm({ grupe }: { grupe: string[] }) {
 
   function bifeazaRefuz(valoare: boolean) {
     setRefuz(valoare)
-    if (valoare) {
-      setConsimtSite(false)
-      setConsimtWA(false)
-    }
+    // „Nu sunt de acord" si o bifa de permisiune nu pot fi adevarate deodata.
+    if (valoare) setAcorduri({ site: false, platforme: false, whatsapp: false })
   }
 
-  function bifeazaAcord(setter: (v: boolean) => void, valoare: boolean) {
-    setter(valoare)
+  function bifeazaAcord(cheie: string, valoare: boolean) {
+    setAcorduri((a) => ({ ...a, [cheie]: valoare }))
     if (valoare) setRefuz(false)
+  }
+
+  function bifeazaTot() {
+    setRefuz(false)
+    setAcorduri({ site: true, platforme: true, whatsapp: true })
   }
 
   async function trimite(e: React.FormEvent) {
@@ -215,7 +219,8 @@ export default function AcordFotoForm({ grupe }: { grupe: string[] }) {
       setEroare('Vă rugăm să semnați în casetă.')
       return
     }
-    if (!consimtSite && !consimtWA && !refuz) {
+    const aBifatCeva = Object.values(acorduri).some(Boolean)
+    if (!aBifatCeva && !refuz) {
       setEroare('Alegeți o variantă: fie unde permiteți publicarea, fie că nu sunteți de acord.')
       return
     }
@@ -230,8 +235,15 @@ export default function AcordFotoForm({ grupe }: { grupe: string[] }) {
           parinteTelefon,
           parinteEmail,
           website,
-          consimtSite,
-          consimtWhatsApp: consimtWA,
+          consimtSite: acorduri.site,
+          // O singura bifa in formular, trei coloane in baza. Parintele
+          // bifeaza „platformele", dar in CRM se poate scoate una singura daca
+          // cineva suna si spune „pe TikTok nu" — fara sa-i cerem sa reia tot
+          // formularul.
+          consimtFacebook: acorduri.platforme,
+          consimtInstagram: acorduri.platforme,
+          consimtTikTok: acorduri.platforme,
+          consimtWhatsApp: acorduri.whatsapp,
           semnatura: canvasRef.current?.toDataURL('image/png'),
           copii: copii.map((c) => ({
             nume: c.nume,
@@ -439,31 +451,44 @@ export default function AcordFotoForm({ grupe }: { grupe: string[] }) {
 
       {/* Acordul */}
       <section className="mb-10">
-        <h2 className="mb-4 font-heading text-xl font-bold text-dinamo-red">Ce permiteți</h2>
+        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-heading text-xl font-bold text-dinamo-red">Ce permiteți</h2>
+          <button type="button" onClick={bifeazaTot}
+            className="text-sm font-semibold text-gray-500 underline hover:text-dinamo-red">
+            Bifează tot
+          </button>
+        </div>
+
+        {/* Platformele stau intr-o singura bifa, nu una pentru fiecare.
+            Un formular cu cinci bife se completeaza „bifez tot" sau deloc —
+            granularitatea pe care n-o foloseste nimeni nu e granularitate, e
+            frictiune. Numele platformelor sunt scrise pe fata, ca parintele sa
+            stie exact unde ajunge poza; asta e ce conteaza pentru un acord
+            informat, nu numarul de casute. In baza raman trei coloane separate,
+            deci se poate scoate una singura din CRM la cerere. */}
         <div className="space-y-3">
-          <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 p-4 hover:border-dinamo-red">
-            <input type="checkbox" checked={consimtSite} className="mt-1 h-5 w-5 flex-shrink-0 accent-red-600"
-              onChange={(e) => bifeazaAcord(setConsimtSite, e.target.checked)} />
-            <span className="text-gray-700">
-              Sunt de acord ca imaginea copilului meu să fie publicată pe <strong>dinamorugby.ro</strong> și
-              pe pagina oficială de <strong>Facebook</strong> a echipei, pentru promovarea activității sportive.
-            </span>
-          </label>
+          {[
+            { cheie: 'site', titlu: 'Situl clubului', text: 'dinamorugby.ro — galerie, povești, pagini de echipă.' },
+            { cheie: 'platforme', titlu: 'Platformele de socializare', text: 'Facebook, Instagram și TikTok — conturile oficiale ale echipei.' },
+            { cheie: 'whatsapp', titlu: 'Grupurile de WhatsApp', text: 'Grupurile private ale echipei, doar pentru părinți și antrenori.' },
+          ].map((o) => (
+            <label key={o.cheie}
+              className="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 p-4 hover:border-dinamo-red">
+              <input type="checkbox" checked={acorduri[o.cheie] === true}
+                className="mt-1 h-5 w-5 flex-shrink-0 accent-red-600"
+                onChange={(e) => bifeazaAcord(o.cheie, e.target.checked)} />
+              <span className="text-gray-700">
+                <strong>{o.titlu}</strong>
+                <span className="mt-0.5 block text-sm text-gray-500">{o.text}</span>
+              </span>
+            </label>
+          ))}
 
-          <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 p-4 hover:border-dinamo-red">
-            <input type="checkbox" checked={consimtWA} className="mt-1 h-5 w-5 flex-shrink-0 accent-red-600"
-              onChange={(e) => bifeazaAcord(setConsimtWA, e.target.checked)} />
-            <span className="text-gray-700">
-              Sunt de acord ca imaginea copilului meu să fie distribuită în <strong>grupurile private
-              de WhatsApp</strong> ale echipei.
-            </span>
-          </label>
-
-          <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 p-4 hover:border-gray-400">
+          <label className="flex cursor-pointer items-start gap-3 rounded-lg border-2 border-gray-300 bg-gray-50 p-4 hover:border-gray-400">
             <input type="checkbox" checked={refuz} className="mt-1 h-5 w-5 flex-shrink-0 accent-gray-600"
               onChange={(e) => bifeazaRefuz(e.target.checked)} />
             <span className="text-gray-700">
-              <strong>Nu sunt de acord</strong> cu publicarea imaginii copilului meu.
+              <strong>Nu sunt de acord</strong> cu publicarea imaginii copilului meu, nicăieri.
             </span>
           </label>
         </div>

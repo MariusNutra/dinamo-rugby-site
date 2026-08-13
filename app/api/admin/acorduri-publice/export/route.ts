@@ -15,7 +15,7 @@ export async function GET() {
   const cap = [
     'Data', 'Parinte', 'Telefon parinte', 'Email parinte',
     'Copil', 'An nastere', 'Grupa', 'Post', 'Telefon copil', 'Email copil',
-    'Acord site+Facebook', 'Acord WhatsApp', 'Are poza',
+    'Acord sit', 'Acord Facebook', 'Acord Instagram', 'Acord TikTok', 'Acord WhatsApp', 'Are poza',
   ]
 
   const scapa = (v: unknown) => {
@@ -30,6 +30,9 @@ export async function GET() {
         a.parinteNume, a.parinteTelefon, a.parinteEmail,
         c.nume, c.anNastere, c.grupa, c.pozitie ?? '', c.telefon ?? '', c.email ?? '',
         a.consimtSite ? 'DA' : 'NU',
+        a.consimtFacebook ? 'DA' : 'NU',
+        a.consimtInstagram ? 'DA' : 'NU',
+        a.consimtTikTok ? 'DA' : 'NU',
         a.consimtWhatsApp ? 'DA' : 'NU',
         c.pozaUrl ? 'DA' : 'NU',
       ].map(scapa).join(',')

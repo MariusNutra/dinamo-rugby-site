@@ -32,6 +32,9 @@ type Acord = {
   parinteTelefon: string
   parinteEmail: string
   consimtSite: boolean
+  consimtFacebook: boolean
+  consimtInstagram: boolean
+  consimtTikTok: boolean
   consimtWhatsApp: boolean
   semnatura: string
   createdAt: string
@@ -113,6 +116,9 @@ export default function AcorduriPublicePage() {
       parinteTelefon: r.acord.parinteTelefon,
       parinteEmail: r.acord.parinteEmail,
       consimtSite: r.acord.consimtSite,
+      consimtFacebook: r.acord.consimtFacebook,
+      consimtInstagram: r.acord.consimtInstagram,
+      consimtTikTok: r.acord.consimtTikTok,
       consimtWhatsApp: r.acord.consimtWhatsApp,
     })
   }
@@ -165,13 +171,24 @@ export default function AcorduriPublicePage() {
   const linkPublic =
     typeof window !== 'undefined' ? `${window.location.origin}/acord-foto` : '/acord-foto'
 
-  const cuAcord = randuri.filter((r) => r.acord.consimtSite || r.acord.consimtWhatsApp).length
+  const areVreunAcord = (a: Acord) =>
+    a.consimtSite || a.consimtFacebook || a.consimtInstagram || a.consimtTikTok || a.consimtWhatsApp
+  const cuAcord = randuri.filter((r) => areVreunAcord(r.acord)).length
   const cuPoza = randuri.filter((r) => r.pozaUrl).length
 
   const th = 'px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-gray-500'
   const thSort = `${th} cursor-pointer select-none hover:text-dinamo-red`
   const td = 'px-3 py-2.5 text-sm text-gray-700 whitespace-nowrap'
   const campEdit = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-dinamo-red focus:ring-2 focus:ring-dinamo-red/30'
+  /** Insignele de acord, in ordinea in care apar si in formular. */
+  const insigne = (a: Acord) => [
+    ['Sit', a.consimtSite],
+    ['FB', a.consimtFacebook],
+    ['IG', a.consimtInstagram],
+    ['TT', a.consimtTikTok],
+    ['WA', a.consimtWhatsApp],
+  ].filter(([, da]) => da).map(([e]) => e as string)
+
   const sageata = (col: Coloana) => (sortare === col ? (crescator ? ' ▲' : ' ▼') : '')
 
   return (
@@ -274,14 +291,11 @@ export default function AcorduriPublicePage() {
                       </a>
                     </td>
                     <td className={td}>
-                      {r.acord.consimtSite || r.acord.consimtWhatsApp ? (
-                        <span className="flex gap-1">
-                          {r.acord.consimtSite && (
-                            <span className="rounded bg-green-100 px-1.5 py-0.5 text-xs font-bold text-green-800" title="Site + Facebook">Site</span>
-                          )}
-                          {r.acord.consimtWhatsApp && (
-                            <span className="rounded bg-green-100 px-1.5 py-0.5 text-xs font-bold text-green-800" title="Grupuri WhatsApp">WA</span>
-                          )}
+                      {areVreunAcord(r.acord) ? (
+                        <span className="flex flex-wrap gap-1">
+                          {insigne(r.acord).map((i) => (
+                            <span key={i} className="rounded bg-green-100 px-1.5 py-0.5 text-xs font-bold text-green-800">{i}</span>
+                          ))}
                         </span>
                       ) : (
                         <span className="rounded bg-gray-200 px-1.5 py-0.5 text-xs font-bold text-gray-700">Refuz</span>
@@ -380,16 +394,23 @@ export default function AcorduriPublicePage() {
 
               <div>
                 <div className="mb-2 text-sm font-bold text-gray-900">Ce a permis</div>
-                <label className="flex items-center gap-2 text-sm text-gray-700">
-                  <input type="checkbox" className="h-4 w-4 accent-red-600" checked={form.consimtSite === true}
-                    onChange={(e) => setForm((f) => ({ ...f, consimtSite: e.target.checked }))} />
-                  Site + Facebook
-                </label>
-                <label className="mt-1 flex items-center gap-2 text-sm text-gray-700">
-                  <input type="checkbox" className="h-4 w-4 accent-red-600" checked={form.consimtWhatsApp === true}
-                    onChange={(e) => setForm((f) => ({ ...f, consimtWhatsApp: e.target.checked }))} />
-                  Grupuri WhatsApp
-                </label>
+                {/* Aici bifele SUNT separate pe platforma, desi in formular
+                    parintele a bifat „platformele" dintr-o data: cand cineva
+                    suna si spune „pe TikTok nu", trebuie sa se poata scoate
+                    doar aia, fara sa-i cerem sa reia tot formularul. */}
+                {[
+                  ['consimtSite', 'Situl clubului'],
+                  ['consimtFacebook', 'Facebook'],
+                  ['consimtInstagram', 'Instagram'],
+                  ['consimtTikTok', 'TikTok'],
+                  ['consimtWhatsApp', 'Grupuri WhatsApp'],
+                ].map(([cheie, eticheta]) => (
+                  <label key={cheie} className="mt-1 flex items-center gap-2 text-sm text-gray-700">
+                    <input type="checkbox" className="h-4 w-4 accent-red-600" checked={form[cheie] === true}
+                      onChange={(e) => setForm((f) => ({ ...f, [cheie]: e.target.checked }))} />
+                    {eticheta}
+                  </label>
+                ))}
               </div>
 
               {/* Semnatura ramane cea data de parinte. Daca se schimba numele de
@@ -467,7 +488,10 @@ export default function AcorduriPublicePage() {
             <div className="mt-5 rounded border border-gray-200 p-3">
               <div className="mb-2 text-sm font-bold text-gray-900">Ce a permis</div>
               <ul className="space-y-1 text-sm text-gray-700">
-                <li>{detaliu.acord.consimtSite ? '✓' : '✗'} Site + Facebook</li>
+                <li>{detaliu.acord.consimtSite ? '✓' : '✗'} Situl clubului</li>
+                <li>{detaliu.acord.consimtFacebook ? '✓' : '✗'} Facebook</li>
+                <li>{detaliu.acord.consimtInstagram ? '✓' : '✗'} Instagram</li>
+                <li>{detaliu.acord.consimtTikTok ? '✓' : '✗'} TikTok</li>
                 <li>{detaliu.acord.consimtWhatsApp ? '✓' : '✗'} Grupuri WhatsApp</li>
               </ul>
             </div>

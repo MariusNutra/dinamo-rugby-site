@@ -855,8 +855,16 @@ model AcordFoto {
   parinteNume     String
   parinteTelefon  String
   parinteEmail    String
-  consimtSite     Boolean          @default(false)
-  consimtWhatsApp Boolean          @default(false)
+  /// Situl clubului, dinamorugby.ro.
+  consimtSite      Boolean          @default(false)
+  /// Retelele publice, fiecare separat. Un parinte poate fi de acord cu
+  /// Facebook si nu cu TikTok — audientele si felul in care circula o
+  /// inregistrare sunt diferite, si diferenta conteaza cand e vorba de un copil.
+  consimtFacebook  Boolean          @default(false)
+  consimtInstagram Boolean          @default(false)
+  consimtTikTok    Boolean          @default(false)
+  /// Grupurile private de WhatsApp ale echipei.
+  consimtWhatsApp  Boolean          @default(false)
   /// Semnatura desenata pe ecran, ca imagine PNG in format data URL.
   semnatura       String
   /// Pastrate ca dovada ca declaratia a fost data: fara ele, un acord contestat
