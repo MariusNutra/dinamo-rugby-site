@@ -31,11 +31,10 @@ type Partener = {
 
 const PARTENERI: Partener[] = [
   {
-    nume: 'Colegiul Național Aurel Vlaicu',
+    nume: 'Colegiul Național „Aurel Vlaicu”',
     scurt: 'CNAV',
-    // Pune fisierul la public/images/parteneri/cnav.png si scrie calea aici.
-    logo: null,
-    site: null,
+    logo: '/images/parteneri/cnav.png',
+    site: 'https://www.cnav.ro/',
     monogram: 'CNAV',
     descriere:
       'Colegiul sprijină constant secția de juniori prin donații și ne este alături în programul prin care copii aflați în dificultate ajung la școală și rămân acolo.',
@@ -70,9 +69,9 @@ export default function ParteneriPage() {
                     <Image
                       src={p.logo}
                       alt={`Sigla ${p.nume}`}
-                      width={96}
-                      height={96}
-                      className="h-20 w-20 object-contain"
+                      width={148}
+                      height={192}
+                      className="h-20 w-auto max-w-[80px] object-contain"
                     />
                   ) : (
                     <span

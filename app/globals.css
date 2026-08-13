@@ -56,6 +56,20 @@ body {
   border-radius: 8px;
 }
 
+/* Clasele `prose` vin de la @tailwindcss/typography, care NU e instalat aici —
+   asa ca pana acum nu faceau nimic si paragrafele stateau lipite unul de altul
+   pe /despre, /povesti/[slug] si /parteneri. Punem doar respiratia dintre
+   paragrafe, nu tot pluginul: acela ar restila titluri, liste, linkuri si
+   citate in continut deja publicat. */
+.prose p {
+  margin-bottom: 1.25em;
+  line-height: 1.75;
+}
+
+.prose p:last-child {
+  margin-bottom: 0;
+}
+
 .prose h2 {
   color: #D0021B;
 }
