@@ -63,7 +63,7 @@ async function hasValidAdminToken(req: NextRequest): Promise<boolean> {
   }
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   // Server-side gate for the admin UI. The admin layout only checks auth
   // client-side (fetch /api/auth/check + redirect), so the admin shell was
   // served to anyone. Verify the admin JWT at the edge and bounce

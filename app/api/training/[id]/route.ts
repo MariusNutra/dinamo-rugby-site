@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requirePermission } from '@/lib/authz'
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const authz = await requirePermission('attendance.manage')
   if (authz.error) return authz.error
   const data = await req.json()
@@ -41,7 +42,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json(session)
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const authz = await requirePermission('attendance.manage')
   if (authz.error) return authz.error
   await prisma.trainingSession.delete({ where: { id: parseInt(params.id) } })

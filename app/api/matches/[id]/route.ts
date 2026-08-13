@@ -3,7 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { requirePermission } from '@/lib/authz'
 import { isDinamoTeam } from '@/lib/teams'
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const authz = await requirePermission('matches.manage')
   if (authz.error) return authz.error
   const data = await req.json()
@@ -36,7 +37,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json(match)
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const authz = await requirePermission('matches.manage')
   if (authz.error) return authz.error
   await prisma.match.delete({ where: { id: params.id } })

@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requirePermission } from '@/lib/authz'
 
-export async function GET(req: NextRequest, { params }: { params: { grupa: string } }) {
+export async function GET(req: NextRequest, props: { params: Promise<{ grupa: string }> }) {
+  const params = await props.params;
   const team = await prisma.team.findUnique({ where: { grupa: params.grupa } })
   return NextResponse.json(team)
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { grupa: string } }) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ grupa: string }> }) {
+  const params = await props.params;
   const authz = await requirePermission('teams.manage')
   if (authz.error) return authz.error
   const data = await req.json()
@@ -18,7 +20,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { grupa: str
   return NextResponse.json(team)
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { grupa: string } }) {
+export async function DELETE(req: NextRequest, props: { params: Promise<{ grupa: string }> }) {
+  const params = await props.params;
   const authz = await requirePermission('teams.manage')
   if (authz.error) return authz.error
   const team = await prisma.team.findUnique({ where: { grupa: params.grupa } })

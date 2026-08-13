@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getParentId } from '@/lib/parent-auth'
 
-export async function GET(req: NextRequest, { params }: { params: { childId: string } }) {
+export async function GET(req: NextRequest, props: { params: Promise<{ childId: string }> }) {
+  const params = await props.params;
   const parentId = await getParentId()
   if (!parentId) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })

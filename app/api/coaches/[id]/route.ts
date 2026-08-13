@@ -3,7 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { requirePermission } from '@/lib/authz'
 import { audit } from '@/lib/audit'
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const authz = await requirePermission('teams.manage')
   if (authz.error) return authz.error
   const data = await req.json()
@@ -28,7 +29,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json(coach)
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const authz = await requirePermission('teams.manage')
   if (authz.error) return authz.error
   await prisma.coach.delete({ where: { id: params.id } })

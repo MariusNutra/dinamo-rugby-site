@@ -6,10 +6,8 @@ export async function OPTIONS() {
   return new NextResponse(null, { status: 204 })
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { teamId: string } }
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ teamId: string }> }) {
+  const params = await props.params;
   const auth = await requireCoach(request)
   if ('error' in auth) return auth.error
 

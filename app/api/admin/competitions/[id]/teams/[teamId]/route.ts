@@ -4,8 +4,9 @@ import { requirePermission } from '@/lib/authz'
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string; teamId: string } }
+  props: { params: Promise<{ id: string; teamId: string }> }
 ) {
+  const params = await props.params;
   const authz = await requirePermission('competitions.manage')
   if (authz.error) return authz.error
 

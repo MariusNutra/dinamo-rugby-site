@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requirePermission } from '@/lib/authz'
 
-export async function GET(req: NextRequest, { params }: { params: { childId: string } }) {
+export async function GET(req: NextRequest, props: { params: Promise<{ childId: string }> }) {
+  const params = await props.params;
   const authz = await requirePermission('athletes.view')
   if (authz.error) return authz.error
 
@@ -14,7 +15,8 @@ export async function GET(req: NextRequest, { params }: { params: { childId: str
   return NextResponse.json(profiles)
 }
 
-export async function POST(req: NextRequest, { params }: { params: { childId: string } }) {
+export async function POST(req: NextRequest, props: { params: Promise<{ childId: string }> }) {
+  const params = await props.params;
   const authz = await requirePermission('athletes.manage')
   if (authz.error) return authz.error
 

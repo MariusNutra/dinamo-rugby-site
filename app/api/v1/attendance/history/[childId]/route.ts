@@ -6,10 +6,8 @@ export async function OPTIONS() {
   return new NextResponse(null, { status: 204 })
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { childId: string } }
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ childId: string }> }) {
+  const params = await props.params;
   const payload = verifyAppToken(request)
   if (!payload) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

@@ -3,7 +3,8 @@ import { requirePermission } from '@/lib/authz'
 import { validateCsrf } from '@/lib/csrf'
 import { prisma } from '@/lib/prisma'
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const authz = await requirePermission('shop.manage')
   if (authz.error) return authz.error
   const csrfError = validateCsrf(req)
@@ -27,7 +28,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json(product)
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const authz = await requirePermission('shop.manage')
   if (authz.error) return authz.error
   const csrfError = validateCsrf(req)

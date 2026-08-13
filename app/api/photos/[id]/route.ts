@@ -4,7 +4,8 @@ import { requirePermission } from '@/lib/authz'
 import fs from 'fs/promises'
 import path from 'path'
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const authz = await requirePermission('gallery.manage')
   if (authz.error) return authz.error
   const id = parseInt(params.id)
@@ -16,7 +17,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   return NextResponse.json(photo)
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const authz = await requirePermission('gallery.manage')
   if (authz.error) return authz.error
   const id = parseInt(params.id)

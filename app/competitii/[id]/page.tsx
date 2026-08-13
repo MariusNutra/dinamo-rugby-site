@@ -12,10 +12,11 @@ const TYPE_LABELS: Record<string, string> = {
 }
 
 interface PageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+  const params = await props.params;
   const competition = await prisma.competition.findUnique({
     where: { id: params.id },
     select: { name: true, category: true, season: true, description: true },
@@ -35,7 +36,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default async function CompetitieDetailPage({ params }: PageProps) {
+export default async function CompetitieDetailPage(props: PageProps) {
+  const params = await props.params;
   const competition = await prisma.competition.findUnique({
     where: { id: params.id },
     include: {

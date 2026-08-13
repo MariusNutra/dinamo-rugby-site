@@ -6,10 +6,8 @@ export async function OPTIONS() {
   return new NextResponse(null, { status: 204 })
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { sessionId: string } }
-) {
+export async function POST(request: NextRequest, props: { params: Promise<{ sessionId: string }> }) {
+  const params = await props.params;
   const auth = await requireCoach(request)
   if ('error' in auth) return auth.error
 
