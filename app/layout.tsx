@@ -76,6 +76,7 @@ export default function RootLayout({
               sameAs: [
                 "https://www.facebook.com/profile.php?id=61592998121958",
                 "https://www.instagram.com/dinamorugbyjuniori/",
+                "https://www.tiktok.com/@dinamo.rugby",
               ],
               url: "https://dinamorugby.ro",
               sport: "Rugby",
