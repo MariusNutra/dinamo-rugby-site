@@ -30,6 +30,7 @@ type CopilIntrare = {
   grupa?: unknown
   telefon?: unknown
   email?: unknown
+  pozitie?: unknown
   poza?: unknown
 }
 
@@ -115,6 +116,7 @@ export async function POST(req: NextRequest) {
     grupa: string
     telefon: string | null
     email: string | null
+    pozitie: string | null
     poza: string | null
   }[] = []
 
@@ -124,6 +126,7 @@ export async function POST(req: NextRequest) {
     const grupa = textCurat(c.grupa, 40)
     const telefon = textCurat(c.telefon, 30)
     const email = textCurat(c.email, 160).toLowerCase()
+    const pozitie = textCurat(c.pozitie, 60)
 
     if (nume.length < 3) {
       return NextResponse.json({ error: `Numele copilului ${i + 1} este obligatoriu.` }, { status: 400 })
@@ -172,6 +175,7 @@ export async function POST(req: NextRequest) {
       grupa,
       telefon: telefon || null,
       email: email || null,
+      pozitie: pozitie || null,
       poza: pozaUrl,
     })
   }
@@ -193,6 +197,7 @@ export async function POST(req: NextRequest) {
           grupa: c.grupa,
           telefon: c.telefon,
           email: c.email,
+          pozitie: c.pozitie,
           pozaUrl: c.poza,
         })),
       },

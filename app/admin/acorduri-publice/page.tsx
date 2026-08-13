@@ -18,6 +18,7 @@ type Copil = {
   grupa: string
   telefon: string | null
   email: string | null
+  pozitie: string | null
   pozaUrl: string | null
 }
 
@@ -176,6 +177,7 @@ export default function AcorduriPublicePage() {
                         <div className="min-w-0 text-sm">
                           <div className="font-heading font-bold text-gray-900">{c.nume}</div>
                           <div className="text-gray-600">{c.grupa} · născut {c.anNastere}</div>
+                          {c.pozitie && <div className="text-gray-600">post: {c.pozitie}</div>}
                           {c.telefon && <div className="text-gray-600">tel: {c.telefon}</div>}
                           {c.email && <div className="break-all text-gray-600">{c.email}</div>}
                         </div>

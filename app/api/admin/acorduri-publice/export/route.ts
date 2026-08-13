@@ -14,7 +14,7 @@ export async function GET() {
 
   const cap = [
     'Data', 'Parinte', 'Telefon parinte', 'Email parinte',
-    'Copil', 'An nastere', 'Grupa', 'Telefon copil', 'Email copil',
+    'Copil', 'An nastere', 'Grupa', 'Post', 'Telefon copil', 'Email copil',
     'Acord site+Facebook', 'Acord WhatsApp', 'Are poza',
   ]
 
@@ -28,7 +28,7 @@ export async function GET() {
       [
         a.createdAt.toISOString().slice(0, 16).replace('T', ' '),
         a.parinteNume, a.parinteTelefon, a.parinteEmail,
-        c.nume, c.anNastere, c.grupa, c.telefon ?? '', c.email ?? '',
+        c.nume, c.anNastere, c.grupa, c.pozitie ?? '', c.telefon ?? '', c.email ?? '',
         a.consimtSite ? 'DA' : 'NU',
         a.consimtWhatsApp ? 'DA' : 'NU',
         c.pozaUrl ? 'DA' : 'NU',

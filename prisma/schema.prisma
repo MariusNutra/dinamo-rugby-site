@@ -875,6 +875,8 @@ model AcordFotoCopil {
   grupa     String
   telefon   String?
   email     String?
+  /// Postul pe care joaca. Optional: multi juniori inca n-au unul fix.
+  pozitie   String?
   /// Poza tip buletin, incarcata de parinte.
   pozaUrl   String?
   acord     AcordFoto @relation(fields: [acordId], references: [id], onDelete: Cascade)

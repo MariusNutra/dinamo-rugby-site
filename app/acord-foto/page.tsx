@@ -1,7 +1,15 @@
-import { getActiveGrupe } from '@/lib/active-teams'
 import AcordFotoForm from './AcordFotoForm'
 
-export const dynamic = 'force-dynamic'
+/**
+ * Grupele oferite in formular sunt o lista fixa, nu grupele active de pe sit.
+ *
+ * Paginile de echipe arata doar grupele care functioneaza acum (la 13.08.2026:
+ * U10, U12, U16). Dar acordul se strange si de la parinti ai caror copii sunt
+ * la o grupa care inca nu are pagina, sau care tocmai se formeaza. Daca lista
+ * ar veni din baza, acei parinti n-ar avea ce bifa si ar alege ceva gresit doar
+ * ca sa poata trimite.
+ */
+const GRUPE = ['U8', 'U10', 'U12', 'U14', 'U16', 'U18'] as const
 
 export const metadata = {
   title: 'Acord pentru fotografii — Dinamo Rugby Juniori',
@@ -12,14 +20,7 @@ export const metadata = {
   robots: { index: false, follow: false },
 }
 
-export default async function AcordFotoPage() {
-  let grupe: string[] = []
-  try {
-    grupe = await getActiveGrupe()
-  } catch {
-    grupe = []
-  }
-
+export default function AcordFotoPage() {
   return (
     <>
       <section className="bg-gradient-to-br from-dinamo-red to-dinamo-dark py-14 text-white">
@@ -33,7 +34,7 @@ export default async function AcordFotoPage() {
         </div>
       </section>
 
-      <AcordFotoForm grupe={grupe} />
+      <AcordFotoForm grupe={[...GRUPE]} />
     </>
   )
 }

@@ -26,11 +26,38 @@ type Copil = {
   grupa: string
   telefon: string
   email: string
+  pozitie: string
   poza: string | null
   pozaNume: string
 }
 
 const AN_CURENT = new Date().getFullYear()
+
+/**
+ * Posturile, cu denumirile folosite in rugby-ul romanesc si grupate cum se
+ * grupeaza la juniori: pilierii de pe ambele parti sunt „Pilier", cei doi
+ * flankeri sunt „Flanker", si tot asa. Un parinte stie ca baiatul lui joaca
+ * centru; nu stie, si nici nu trebuie, daca e primul sau al doilea centru.
+ *
+ * Ultima varianta exista pentru ca la varstele mici copiii sunt mutati de la
+ * un post la altul de la un meci la altul — iar un camp obligatoriu fara
+ * raspuns potrivit se completeaza la intamplare, si atunci datele nu mai spun
+ * nimic.
+ */
+const POSTURI = [
+  'Pilier',
+  'Taloner',
+  'Linia a doua',
+  'Flanker',
+  'Number 8',
+  'Mijlocaș la grămadă',
+  'Mijlocaș la deschidere',
+  'Centru',
+  'Aripă',
+  'Fundaș',
+  'Nu știu / joacă mai multe',
+] as const
+
 let contorCheie = 1
 
 function copilNou(): Copil {
@@ -41,6 +68,7 @@ function copilNou(): Copil {
     grupa: '',
     telefon: '',
     email: '',
+    pozitie: '',
     poza: null,
     pozaNume: '',
   }
@@ -211,6 +239,7 @@ export default function AcordFotoForm({ grupe }: { grupe: string[] }) {
             grupa: c.grupa,
             telefon: c.telefon,
             email: c.email,
+            pozitie: c.pozitie,
             poza: c.poza,
           })),
         }),
@@ -350,19 +379,50 @@ export default function AcordFotoForm({ grupe }: { grupe: string[] }) {
                 </div>
 
                 <div>
+                  <label className={eticheta}>Pe ce post joacă</label>
+                  <select className={camp} value={c.pozitie}
+                    onChange={(e) => actualizeaza(c.cheie, 'pozitie', e.target.value)}>
+                    <option value="">Alege…</option>
+                    {POSTURI.map((p) => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                </div>
+
+                <div>
                   <label className={eticheta}>Poză tip buletin</label>
                   <p className="mb-2 text-xs text-gray-500">
                     Copilul în picioare, cu spatele la un perete simplu, fotografiat din față, de la piept în sus.
                   </p>
-                  <input type="file" accept="image/*" capture="environment"
-                    onChange={(e) => alegePoza(c.cheie, e.target.files?.[0])}
-                    className="block w-full text-sm text-gray-600 file:mr-4 file:rounded-full file:border-0 file:bg-dinamo-red file:px-5 file:py-2.5 file:font-heading file:text-sm file:font-bold file:text-white" />
+                  {/* Doua butoane, nu unul.
+                      `capture` deschide DIRECT camera si, pe multe telefoane,
+                      scoate cu totul optiunea de a alege din galerie — deci un
+                      singur camp cu `capture` ii ia parintelui posibilitatea de
+                      a trimite o poza facuta ieri. Doua intrari separate spun pe
+                      fata ce face fiecare. */}
+                  <div className="flex flex-wrap gap-3">
+                    <label className="cursor-pointer rounded-full bg-dinamo-red px-5 py-2.5 font-heading text-sm font-bold text-white transition hover:bg-dinamo-dark">
+                      📷 Fă poză acum
+                      <input type="file" accept="image/*" capture="environment" className="hidden"
+                        onChange={(e) => alegePoza(c.cheie, e.target.files?.[0])} />
+                    </label>
+                    <label className="cursor-pointer rounded-full border-2 border-gray-300 px-5 py-2.5 font-heading text-sm font-bold text-gray-700 transition hover:border-dinamo-red hover:text-dinamo-red">
+                      🖼️ Alege din galerie
+                      <input type="file" accept="image/*" className="hidden"
+                        onChange={(e) => alegePoza(c.cheie, e.target.files?.[0])} />
+                    </label>
+                  </div>
                   {c.poza && (
                     <div className="mt-3 flex items-center gap-3">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={c.poza} alt={`Poza pentru ${c.nume || 'copil'}`}
                         className="h-24 w-20 rounded border border-gray-300 object-cover" />
-                      <span className="text-sm text-green-700">Poză adăugată ✓</span>
+                      <div>
+                        <div className="text-sm font-semibold text-green-700">Poză adăugată ✓</div>
+                        <button type="button"
+                          onClick={() => { actualizeaza(c.cheie, 'poza', null); actualizeaza(c.cheie, 'pozaNume', '') }}
+                          className="text-sm text-gray-500 underline hover:text-dinamo-red">
+                          Schimbă poza
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
