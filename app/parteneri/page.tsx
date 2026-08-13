@@ -64,24 +64,30 @@ export default function ParteneriPage() {
                 key={p.nume}
                 className="flex flex-col sm:flex-row sm:items-start gap-6 rounded-r-lg border-l-4 border-dinamo-red bg-gray-50 p-6 md:p-8"
               >
-                <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-gray-200">
-                  {p.logo ? (
-                    <Image
-                      src={p.logo}
-                      alt={`Sigla ${p.nume}`}
-                      width={148}
-                      height={192}
-                      className="h-20 w-auto max-w-[80px] object-contain"
-                    />
-                  ) : (
+                {/* Sigla sta direct pe cartonas, fara chenar alb in spate.
+                    Stema CNAV are fundal transparent si contur propriu de scut
+                    — o caseta alba in spatele ei ar taia conturul intr-un
+                    dreptunghi si ar face-o sa para lipita peste pagina. Doar
+                    monogramul de rezerva primeste o suprafata, fiindca un text
+                    singur pe fundal gri n-ar citi ca sigla. */}
+                {p.logo ? (
+                  <Image
+                    src={p.logo}
+                    alt={`Sigla ${p.nume}`}
+                    width={148}
+                    height={192}
+                    className="h-28 w-auto flex-shrink-0 object-contain"
+                  />
+                ) : (
+                  <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-gray-200">
                     <span
                       aria-hidden="true"
                       className="font-heading text-xl font-extrabold tracking-tight text-dinamo-red"
                     >
                       {p.monogram}
                     </span>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 <div className="min-w-0">
                   <h3 className="font-heading text-xl font-bold text-gray-900">{p.nume}</h3>
