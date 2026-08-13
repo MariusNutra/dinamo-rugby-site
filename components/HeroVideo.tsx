@@ -113,7 +113,6 @@ export default function HeroVideo({ children }: { children?: React.ReactNode }) 
       <video
         ref={videoRef}
         className="absolute inset-0 h-full w-full object-cover"
-        src="/video/dinamo-hero.mp4"
         poster="/video/dinamo-hero-poster.jpg"
         autoPlay
         muted
@@ -122,7 +121,19 @@ export default function HeroVideo({ children }: { children?: React.ReactNode }) 
         onEnded={() => setTerminat(true)}
         onError={() => setTerminat(true)}
         aria-hidden="true"
-      />
+      >
+        {/* Doua marimi, alese dupa latimea ecranului. Filmul e singurul lucru
+            greu din pagina — tot restul sitului inseamna vreo 20 KB — asa ca
+            aici se decide daca pagina se simte rapida sau nu pe date mobile.
+            Telefonul primeste 854x480 (590 KB) in loc de 1280x720 (1 MB): pe o
+            banda de 70vh latime de ecran, diferenta nu se vede, dar se simte.
+
+            `media` pe <source> se evalueaza O SINGURA DATA, la incarcare, si nu
+            reactioneaza la redimensionarea ferestrei. Pentru un hero care
+            ruleaza o data la intrarea in pagina, e exact ce trebuie. */}
+        <source src="/video/dinamo-hero-480.mp4" type="video/mp4" media="(max-width: 767px)" />
+        <source src="/video/dinamo-hero.mp4" type="video/mp4" />
+      </video>
 
       {/* Vinietare: intuneca marginile si colturile, lasand centrul curat. Face
           doua lucruri deodata — duce ochiul spre stema si da textului de jos un
