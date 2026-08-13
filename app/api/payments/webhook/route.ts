@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getStripe } from '@/lib/stripe'
+import { getStripe, platileSuntConfigurate, raspunsPlatiIndisponibile } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import nodemailer from 'nodemailer'
 
@@ -18,6 +18,10 @@ function generateReceiptNumber(): string {
 }
 
 export async function POST(req: NextRequest) {
+  // Fara cheie de plata configurata, `getStripe()` arunca sincron si Next
+  // raspunde 500 cu corpul gol. Iesim devreme, cu un mesaj citibil.
+  if (!platileSuntConfigurate()) return raspunsPlatiIndisponibile()
+
   const body = await req.text()
   const sig = req.headers.get('stripe-signature')
 

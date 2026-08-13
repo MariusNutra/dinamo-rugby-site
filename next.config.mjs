@@ -14,22 +14,12 @@ const nextConfig = {
         source: '/uploads/:path*',
         destination: '/api/uploads/:path*',
       },
-      // Security: route parinti auth/verify through secure versions
-      {
-        source: '/api/parinti/auth',
-        destination: '/api/parinti-secure/auth',
-      },
+      // Ruta reala `/api/parinti/verify` nu exista; rewrite-ul o duce la
+      // versiunea securizata. Perechile ei (`auth`, `solicita-acces`) au fost
+      // scoase: acolo exista rute reale, care umbresc oricum rewrite-ul.
       {
         source: '/api/parinti/verify',
         destination: '/api/parinti-secure/verify',
-      },
-      {
-        source: '/api/parinti/solicita-acces',
-        destination: '/api/parinti-secure/solicita-acces',
-      },
-{
-        source: '/api/admin/sportivi',
-        destination: '/api/admin-sportivi',
       },
     ]
   },

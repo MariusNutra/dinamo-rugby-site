@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server'
-import { getStripe } from '@/lib/stripe'
+import { getStripe, platileSuntConfigurate, raspunsPlatiIndisponibile } from '@/lib/stripe'
 import { requirePermission } from '@/lib/authz'
 
 export async function GET() {
+  // Fara cheie de plata configurata, `getStripe()` arunca sincron si Next
+  // raspunde 500 cu corpul gol. Iesim devreme, cu un mesaj citibil.
+  if (!platileSuntConfigurate()) return raspunsPlatiIndisponibile()
+
   const authz = await requirePermission('payments.view')
   if (authz.error) return authz.error
 

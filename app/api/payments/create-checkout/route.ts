@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getStripe } from '@/lib/stripe'
+import { getStripe, platileSuntConfigurate, raspunsPlatiIndisponibile } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import { getParentId } from '@/lib/parent-auth'
 
 const MAX_AMOUNT = 100000 // RON, abuse guard
 
 export async function POST(req: NextRequest) {
+  // Fara cheie de plata configurata, `getStripe()` arunca sincron si Next
+  // raspunde 500 cu corpul gol. Iesim devreme, cu un mesaj citibil.
+  if (!platileSuntConfigurate()) return raspunsPlatiIndisponibile()
+
   const body = await req.json()
   const { amount, type, childId, campaignId, donorName, email } = body
 
