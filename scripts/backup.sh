@@ -43,6 +43,16 @@ if [ -d "${APP_DIR}/uploads" ]; then
   echo "  Uploads backed up: ${BACKUP_DIR}/uploads.tar.gz"
 fi
 
+# Pozele din acordurile de imagine. Stau separat de `uploads/` fiindca nu-s
+# publice, si tocmai de aceea era usor sa ramana pe dinafara: scriptul stia doar
+# de dosarul public. Sunt singura copie a unor poze pe care parintii le-au
+# trimis o data.
+if [ -d "${APP_DIR}/private-uploads" ]; then
+  echo "  Backing up private uploads (acorduri)..."
+  tar -czf "${BACKUP_DIR}/private-uploads.tar.gz" -C "${APP_DIR}" private-uploads/
+  echo "  Private uploads backed up: ${BACKUP_DIR}/private-uploads.tar.gz"
+fi
+
 # Backup public images
 if [ -d "${APP_DIR}/public/images" ]; then
   echo "  Backing up public images..."
