@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next'
 import { prisma } from '@/lib/prisma'
+import { getActiveGrupe } from '@/lib/active-teams'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://dinamorugby.ro'
@@ -28,12 +29,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/statistici`, changeFrequency: 'weekly' as const, priority: 0.5 },
   ]
 
-  // Team pages
-  const teamPages = ['U10', 'U12', 'U14', 'U16', 'U18'].map(grupa => ({
-    url: `${baseUrl}/echipe/${grupa}`,
-    changeFrequency: 'weekly' as const,
-    priority: 0.8,
-  }))
+  // Team pages. Grupele vin din baza de date, nu dintr-o lista scrisa de mana:
+  // `/echipe/[grupa]` raspunde 404 pentru o grupa dezactivata, iar un sitemap
+  // care trimite motoarele de cautare in 404 isi pierde increderea. La 13.08.2026
+  // lista fixa anunta U14 si U18, amandoua inactive — amandoua 404.
+  let teamPages: MetadataRoute.Sitemap = []
+  try {
+    const grupe = await getActiveGrupe()
+    teamPages = grupe.map(grupa => ({
+      url: `${baseUrl}/echipe/${grupa}`,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    }))
+  } catch {
+    // DB unavailable — skip teams
+  }
 
   // Story pages from DB
   let storyPages: MetadataRoute.Sitemap = []

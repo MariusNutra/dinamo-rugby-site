@@ -17,17 +17,20 @@ import { useEffect, useRef, useState } from 'react'
  * peste rosu. Pe fundal negru muchia dispare, si atunci filmul nu mai pare
  * incarcat in pagina — pare pagina. Rosul ramane accent (butonul), nu fundal.
  *
- * ## Sunetul — ce se poate si ce nu
+ * ## Sunetul — de ce filmul porneste MUT
  *
- * Niciun browser nu porneste un video cu sunet inainte ca omul sa fi atins
- * pagina. Regula e din 2018 si nu se ocoleste: daca ceri `play()` cu sunet si
- * esti refuzat, promisiunea e RESPINSA si filmul nu porneste deloc. Deci
- * incercam in trepte, si niciuna nu presupune ca precedenta a mers:
+ * Pe telefon, `muted` trebuie sa fie ATRIBUT in marcaj, nu doar proprietate
+ * pusa din JS: Safari pe iOS se uita la atribut cand decide daca are voie sa
+ * porneasca singur. Versiunea anterioara cerea intai redare CU sunet si abia
+ * pe esec trecea pe mut — pe iOS prima cerere era refuzata, iar a doua pornea
+ * un element care nu fusese niciodata marcat `muted`, deci era refuzata si ea.
+ * Rezultat: pe telefon nu pornea nimic, se vedea doar posterul.
  *
- *   1. cu sunet — reuseste la cine a mai interactionat cu situl
- *   2. daca a fost refuzat, mut — ca sa se vada oricum filmul
- *   3. la PRIMA atingere a paginii, sunetul se aprinde singur, cat filmul ruleaza
- *   4. butonul „Cu sunet", pentru cine n-a atins nimic
+ * Acum ordinea e inversa, si asa e si corect: filmul porneste mut, garantat,
+ * peste tot. Sunetul e adaugat deasupra, nu conditie de pornire:
+ *
+ *   1. la PRIMA atingere a paginii, sunetul se aprinde singur, cat filmul ruleaza
+ *   2. butonul „Cu sunet", pentru cine n-a atins nimic pana la final
  */
 export default function HeroVideo({ children }: { children?: React.ReactNode }) {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -37,10 +40,14 @@ export default function HeroVideo({ children }: { children?: React.ReactNode }) 
   const [prinsDeTimp, setPrinsDeTimp] = useState(false)
 
   useEffect(() => {
+    const v = videoRef.current
+
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
     if (mq.matches) {
-      // Cine cere mai putina miscare are de obicei un motiv medical. Nu pornim
-      // nimic — posterul e stema, deci pagina arata intreaga oricum.
+      // Cine cere mai putina miscare are de obicei un motiv medical. Oprim
+      // filmul pornit de atributul `autoplay` — posterul e stema, deci pagina
+      // arata intreaga oricum.
+      v?.pause()
       setMiscareRedusa(true)
       return
     }
@@ -69,15 +76,13 @@ export default function HeroVideo({ children }: { children?: React.ReactNode }) 
       document.addEventListener(e, laPrimaAtingere, { once: true, passive: true })
     }
 
-    const v = videoRef.current
+    // Atributul `autoplay` face treaba singur in mod normal. Cerem redarea si
+    // din JS pentru cazul in care elementul a fost montat dupa ce browserul a
+    // evaluat atributul. Refuzul aici inseamna blocare totala (de pilda modul
+    // economie de energie pe iOS) — atunci aratam textul pe loc, nu peste 12s.
     if (v) {
-      v.muted = false
-      v.play()
-        .then(() => setSAAuzit(true))
-        .catch(() => {
-          v.muted = true
-          v.play().catch(() => setTerminat(true))
-        })
+      v.muted = true
+      v.play().catch(() => setTerminat(true))
     }
 
     return () => {
@@ -102,14 +107,20 @@ export default function HeroVideo({ children }: { children?: React.ReactNode }) 
 
   return (
     <>
+      {/* `muted` + `playsInline` + `autoPlay` sunt reteta pe care o cere iOS ca
+          sa porneasca singur. Toate trei trebuie sa fie ATRIBUTE aici — puse
+          din JS dupa montare, Safari nu le ia in seama. */}
       <video
         ref={videoRef}
         className="absolute inset-0 h-full w-full object-cover"
         src="/video/dinamo-hero.mp4"
         poster="/video/dinamo-hero-poster.jpg"
+        autoPlay
+        muted
         playsInline
         preload="auto"
         onEnded={() => setTerminat(true)}
+        onError={() => setTerminat(true)}
         aria-hidden="true"
       />
 
