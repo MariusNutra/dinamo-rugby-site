@@ -7,6 +7,7 @@ import CookieConsent from "@/components/CookieConsent";
 import AppBanner from "@/components/AppBanner";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import RegisterSW from "@/components/RegisterSW";
+import InvelisPublic from "@/components/InvelisPublic";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -92,11 +93,13 @@ export default function RootLayout({
             }),
           }}
         />
-        <Header />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
-        <CookieConsent />
-        <AppBanner />
+        <InvelisPublic
+          antet={<Header />}
+          subsol={<Footer />}
+          benzi={<><CookieConsent /><AppBanner /></>}
+        >
+          {children}
+        </InvelisPublic>
         <GoogleAnalytics />
         <RegisterSW />
       </body>
