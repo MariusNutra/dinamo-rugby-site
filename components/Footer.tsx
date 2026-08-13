@@ -27,6 +27,7 @@ export default function Footer() {
               <li><Link href="/povesti" className="text-gray-300 hover:text-white transition-colors">Povești</Link></li>
               <li><Link href="/galerie" className="text-gray-300 hover:text-white transition-colors">Galerie Foto</Link></li>
               <li><Link href="/despre" className="text-gray-300 hover:text-white transition-colors">Despre Noi</Link></li>
+              <li><Link href="/parteneri" className="text-gray-300 hover:text-white transition-colors">Parteneri</Link></li>
               <li><Link href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</Link></li>
               <li><Link href="/parinti" className="text-gray-300 hover:text-white transition-colors">Portal Parinti</Link></li>
             </ul>

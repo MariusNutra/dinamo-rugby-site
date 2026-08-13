@@ -23,6 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/competitii`, changeFrequency: 'weekly' as const, priority: 0.7 },
     { url: `${baseUrl}/sportivi`, changeFrequency: 'weekly' as const, priority: 0.5 },
     { url: `${baseUrl}/fundraising`, changeFrequency: 'monthly' as const, priority: 0.5 },
+    { url: `${baseUrl}/parteneri`, changeFrequency: 'monthly' as const, priority: 0.5 },
     { url: `${baseUrl}/sponsori`, changeFrequency: 'monthly' as const, priority: 0.4 },
     { url: `${baseUrl}/magazin`, changeFrequency: 'weekly' as const, priority: 0.5 },
     { url: `${baseUrl}/video-highlights`, changeFrequency: 'weekly' as const, priority: 0.5 },

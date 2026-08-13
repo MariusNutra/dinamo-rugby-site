@@ -24,6 +24,7 @@ const NAV_STRUCTURE: NavEntry[] = [
   { key: 'club', label: 'Clubul', type: 'dropdown', items: [
     { href: '/despre', label: 'Despre noi', moduleKey: 'moduleDespre' },
     { href: '/antrenori', label: 'Antrenori', moduleKey: 'moduleEchipe' },
+    { href: '/parteneri', label: 'Parteneri', moduleKey: 'moduleDespre' },
     { href: '/sponsori', label: 'Sponsori', moduleKey: 'moduleSponsori' },
   ]},
   { key: 'echipe', label: 'Echipe', type: 'teams-dropdown', moduleKey: 'moduleEchipe' },
