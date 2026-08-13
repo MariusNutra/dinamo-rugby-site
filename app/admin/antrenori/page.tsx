@@ -41,7 +41,10 @@ const emptyForm = {
   phone: '',
   email: '',
   certifications: '',
-  teamId: 0,
+  // Lista, nu un singur id: un antrenor lucreaza des cu doua-trei grupe.
+  // In baza asta ramane un rand per echipa (modelul de pana acum, pe care
+  // ecranul il grupeaza dupa nume) — se schimba doar felul in care se aleg.
+  teamIds: [] as number[],
   order: 0,
   visible: true,
 }
@@ -110,7 +113,7 @@ export default function AdminAntrenori() {
 
   const openAdd = () => {
     setEditingIds([])
-    setForm({ ...emptyForm, teamId: teams[0]?.id || 0 })
+    setForm({ ...emptyForm, teamIds: [] })
     setPhotoFile(null)
     setPhotoPreview(null)
     setModalOpen(true)
@@ -127,7 +130,7 @@ export default function AdminAntrenori() {
       phone: best.phone || '',
       email: best.email || '',
       certifications: best.certifications || '',
-      teamId: first.teamId,
+      teamIds: g.records.map(r => r.teamId),
       order: g.order,
       visible: g.visible,
     })
@@ -175,32 +178,80 @@ export default function AdminAntrenori() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.name.trim() || !form.teamId) return
+    if (!form.name.trim() || form.teamIds.length === 0) return
     setSaving(true)
 
     try {
+      const comune = {
+        name: form.name,
+        description: form.description || null,
+        phone: form.phone || null,
+        email: form.email || null,
+        certifications: form.certifications || null,
+        visible: form.visible,
+      }
+
       if (editingIds.length > 0) {
-        // Update all records in the group with shared fields
-        const shared = {
-          name: form.name,
-          description: form.description || null,
-          phone: form.phone || null,
-          email: form.email || null,
-          certifications: form.certifications || null,
-          visible: form.visible,
-        }
-        await Promise.all(editingIds.map(id =>
-          fetch(`/api/coaches/${id}`, {
+        // Un rand per echipa. Comparam ce era cu ce s-a bifat si facem doar
+        // diferenta: randurile ramase se actualizeaza, cele pentru echipe
+        // debifate se sterg, iar pentru echipele nou bifate se creeaza randuri
+        // noi. Asa antrenorul nu-si pierde poza si datele cand i se adauga o
+        // grupa.
+        const existente = coaches.filter(c => editingIds.includes(c.id))
+        const echipeVechi = existente.map(c => c.teamId)
+        const deAdaugat = form.teamIds.filter(id => !echipeVechi.includes(id))
+        const deSters = existente.filter(c => !form.teamIds.includes(c.teamId))
+        const deActualizat = existente.filter(c => form.teamIds.includes(c.teamId))
+
+        await Promise.all(deActualizat.map(c =>
+          fetch(`/api/coaches/${c.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(shared),
+            body: JSON.stringify(comune),
           })
         ))
-        if (photoFile) {
-          // Upload photo to first record, then sync URL to others
-          const url = await uploadPhoto(editingIds[0])
-          if (url && editingIds.length > 1) {
-            await Promise.all(editingIds.slice(1).map(id =>
+
+        let poza = existente[0]?.photo || null
+        if (photoFile && deActualizat.length > 0) {
+          poza = (await uploadPhoto(deActualizat[0].id)) || poza
+          const restul = deActualizat.slice(1).map(c => c.id)
+          if (poza && restul.length > 0) {
+            await Promise.all(restul.map(id =>
+              fetch(`/api/coaches/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ photo: poza }),
+              })
+            ))
+          }
+        }
+
+        await Promise.all(deAdaugat.map(teamId =>
+          fetch('/api/coaches', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...comune, teamId, photo: poza }),
+          })
+        ))
+
+        await Promise.all(deSters.map(c =>
+          fetch(`/api/coaches/${c.id}`, { method: 'DELETE' })
+        ))
+      } else {
+        // Antrenor nou: cate un rand pentru fiecare echipa bifata. Poza se
+        // incarca o data, pe primul, si se copiaza pe celelalte.
+        const creat = await Promise.all(form.teamIds.map(teamId =>
+          fetch('/api/coaches', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...comune, teamId }),
+          }).then(r => (r.ok ? r.json() : null))
+        ))
+        const idNoi = creat.filter(Boolean).map((c: { id: string }) => c.id)
+        if (photoFile && idNoi.length > 0) {
+          const url = await uploadPhoto(idNoi[0])
+          if (url && idNoi.length > 1) {
+            await Promise.all(idNoi.slice(1).map(id =>
               fetch(`/api/coaches/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -208,25 +259,6 @@ export default function AdminAntrenori() {
               })
             ))
           }
-        }
-      } else {
-        // Create
-        const res = await fetch('/api/coaches', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: form.name,
-            description: form.description || null,
-            phone: form.phone || null,
-            email: form.email || null,
-            certifications: form.certifications || null,
-            teamId: form.teamId,
-            visible: form.visible,
-          }),
-        })
-        if (res.ok && photoFile) {
-          const created = await res.json()
-          await uploadPhoto(created.id)
         }
       }
 
@@ -580,23 +612,35 @@ export default function AdminAntrenori() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Echipa {!isEditing && '*'}
                   </label>
-                  {isEditing && editingIds.length > 1 ? (
-                    <div className="flex flex-wrap gap-1 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50">
-                      {coaches.filter(c => editingIds.includes(c.id)).map(c => (
-                        <span key={c.id} className="px-2 py-0.5 bg-dinamo-red/10 text-dinamo-red text-xs font-semibold rounded-full">
-                          {c.team?.grupa}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <select value={form.teamId}
-                      onChange={e => setForm({ ...form, teamId: parseInt(e.target.value) })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-dinamo-red outline-none">
-                      <option value={0} disabled>Selecteaza...</option>
-                      {teams.map(t => (
-                        <option key={t.id} value={t.id}>{t.grupa}</option>
-                      ))}
-                    </select>
+                  {/* Bife, nu lista derulanta. Cu `select` se putea alege o
+                      singura echipa la creare, iar la editare echipele existente
+                      apareau doar ca etichete, fara nicio cale de a adauga sau
+                      scoate vreuna. Un antrenor care ia si U18 pe langa U16
+                      trebuia sters si facut din nou. */}
+                  <div className="flex flex-wrap gap-2 rounded-lg border border-gray-300 p-3">
+                    {teams.map(t => {
+                      const bifat = form.teamIds.includes(t.id)
+                      return (
+                        <label key={t.id}
+                          className={`cursor-pointer rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors ${
+                            bifat
+                              ? 'border-dinamo-red bg-dinamo-red text-white'
+                              : 'border-gray-300 text-gray-600 hover:border-dinamo-red hover:text-dinamo-red'
+                          }`}>
+                          <input type="checkbox" className="sr-only" checked={bifat}
+                            onChange={e => setForm({
+                              ...form,
+                              teamIds: e.target.checked
+                                ? [...form.teamIds, t.id]
+                                : form.teamIds.filter(id => id !== t.id),
+                            })} />
+                          {t.grupa}
+                        </label>
+                      )
+                    })}
+                  </div>
+                  {form.teamIds.length === 0 && (
+                    <p className="mt-1 text-xs text-red-500">Alege cel puțin o echipă.</p>
                   )}
                 </div>
                 <div>
