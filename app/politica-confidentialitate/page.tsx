@@ -461,7 +461,7 @@ export default function PoliticaConfidentialitatePage() {
               </a>
             </li>
             <li>
-              <strong>Adresă:</strong> Bd. Camil Ressu nr. 2, bl. R1, sc. 1, et.
+              <strong>Sediu social:</strong> Bd. Camil Ressu nr. 2, bl. R1, sc. 1, et.
               5, ap. 18, Sector 3, București
             </li>
             <li>

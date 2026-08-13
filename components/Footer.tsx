@@ -36,7 +36,7 @@ export default function Footer() {
             <h3 className="font-heading font-bold text-lg mb-4">Contact</h3>
             <ul className="space-y-2 text-sm text-gray-300">
               <li className="font-semibold text-white">Asociația Sportivă Dinamo Rugby Junior</li>
-              <li>Bd. Camil Ressu nr. 2, bl. R1, sc. 1, et. 5, ap. 18, Sector 3, București</li>
+              <li>Stadionul Dinamo · Șos. Ștefan cel Mare nr. 7-9, Sector 2, București</li>
               <li>contact@dinamorugby.ro</li>
               <li>+40 767 858 858</li>
             </ul>

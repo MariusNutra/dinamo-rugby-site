@@ -87,7 +87,12 @@ export default function RootLayout({
               },
               address: {
                 "@type": "PostalAddress",
+                // Stadionul, nu sediul social: pentru cautarea locala conteaza
+                // unde se antreneaza copiii, nu unde raspunde asociatia in fata
+                // legii. Sediul social ramane in paginile legale.
+                streetAddress: "Șos. Ștefan cel Mare nr. 7-9",
                 addressLocality: "București",
+                addressRegion: "Sector 2",
                 addressCountry: "RO",
               },
             }),
