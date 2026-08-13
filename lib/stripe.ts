@@ -36,7 +36,9 @@ export function platileSuntConfigurate(): boolean {
 }
 
 export const MESAJ_PLATI_INDISPONIBILE =
-  'Platile online nu sunt momentan disponibile. Te rugam sa ne contactezi la contact@dinamorugby.ro sau la telefon pentru a finaliza plata.'
+  'Platile online nu sunt momentan disponibile. Poti plati prin transfer bancar in contul '  +
+  'Asociatia Sportiva Dinamo Rugby Junior, IBAN RO77 RNCB 0082 1792 8045 0001 (BCR), '      +
+  'sau ne poti scrie la contact@dinamorugby.ro.'
 
 export function raspunsPlatiIndisponibile(): Response {
   return Response.json(

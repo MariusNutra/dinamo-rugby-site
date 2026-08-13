@@ -131,6 +131,10 @@ export default function DesprePage() {
                 <dt className="font-bold text-gray-900">Registrul Special</dt>
                 <dd className="text-gray-600">Nr. 73/14.05.2024, Partea A, Secțiunea I</dd>
               </div>
+              <div>
+                <dt className="font-bold text-gray-900">Cod de identificare fiscală</dt>
+                <dd className="text-gray-600">50227280</dd>
+              </div>
             </dl>
           </div>
         </section>

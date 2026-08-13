@@ -44,5 +44,10 @@ describe('raspunsPlatiIndisponibile', () => {
 
   test('the message tells the person how to pay anyway', () => {
     expect(MESAJ_PLATI_INDISPONIBILE).toContain('contact@dinamorugby.ro')
+    expect(MESAJ_PLATI_INDISPONIBILE).toContain('RO77 RNCB 0082 1792 8045 0001')
+  })
+
+  test('the message stays on one line — it is rendered inside a toast', () => {
+    expect(MESAJ_PLATI_INDISPONIBILE).not.toContain('\n')
   })
 })

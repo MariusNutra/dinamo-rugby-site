@@ -51,6 +51,36 @@ export default function FundraisingClient({ initialCampaigns }: { initialCampaig
         </p>
       </div>
 
+      {/* Contul bancar sta la vedere, nu doar in spatele butonului de plata
+          online: transferul e singura cale care functioneaza azi, si ramane
+          utila si dupa ce plata cu cardul porneste — multi donatori prefera
+          ordinul de plata, iar firmele au oricum nevoie de IBAN pentru
+          sponsorizare. */}
+      <div className="mb-10 rounded-xl border-2 border-dinamo-red/20 bg-red-50/60 p-6">
+        <h2 className="font-heading font-bold text-lg text-gray-900 mb-3">Donatie prin transfer bancar</h2>
+        <dl className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-3 text-sm">
+          <div className="sm:col-span-2">
+            <dt className="font-bold text-gray-900">Beneficiar</dt>
+            <dd className="text-gray-700">Asociatia Sportiva Dinamo Rugby Junior</dd>
+          </div>
+          <div>
+            <dt className="font-bold text-gray-900">CIF</dt>
+            <dd className="text-gray-700">50227280</dd>
+          </div>
+          <div className="sm:col-span-2">
+            <dt className="font-bold text-gray-900">IBAN</dt>
+            <dd className="font-mono text-gray-900 tracking-tight">RO77 RNCB 0082 1792 8045 0001</dd>
+          </div>
+          <div>
+            <dt className="font-bold text-gray-900">Banca</dt>
+            <dd className="text-gray-700">BCR</dd>
+          </div>
+        </dl>
+        <p className="text-gray-500 text-xs mt-4">
+          Te rugam sa treci la detaliile platii numele copilului sau al campaniei, ca sa stim cui sa multumim.
+        </p>
+      </div>
+
       {campaigns.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-xl shadow-sm border">
           <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">

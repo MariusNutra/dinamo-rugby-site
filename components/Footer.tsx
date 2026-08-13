@@ -13,7 +13,8 @@ export default function Footer() {
             </p>
             <p className="text-gray-400 text-xs leading-relaxed mt-4">
               ASOCIAȚIA SPORTIVĂ DINAMO RUGBY JUNIOR<br />
-              Registrul Special nr. 73/14.05.2024, Partea A, Secțiunea I
+              Registrul Special nr. 73/14.05.2024, Partea A, Secțiunea I<br />
+              CIF 50227280
             </p>
           </div>
           <div>

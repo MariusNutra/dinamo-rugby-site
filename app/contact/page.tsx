@@ -127,7 +127,7 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-bold text-gray-900">Adresă</h3>
                   <p className="text-gray-600">Bd. Camil Ressu nr. 2, bl. R1, sc. 1, et. 5, ap. 18, Sector 3, București</p>
-                  <p className="text-gray-400 text-xs mt-1">Asociația Sportivă Dinamo Rugby Junior · Reg. Special nr. 73/14.05.2024</p>
+                  <p className="text-gray-400 text-xs mt-1">Asociația Sportivă Dinamo Rugby Junior · Reg. Special nr. 73/14.05.2024 · CIF 50227280<br />IBAN: RO77 RNCB 0082 1792 8045 0001 (BCR)</p>
                 </div>
               </div>
               <div className="flex gap-4">

@@ -72,6 +72,7 @@ export default function RootLayout({
               "@type": "SportsTeam",
               name: "CS Dinamo București Rugby Juniori",
               legalName: "Asociația Sportivă Dinamo Rugby Junior",
+              taxID: "50227280",
               url: "https://dinamorugby.ro",
               sport: "Rugby",
               memberOf: {

@@ -325,7 +325,7 @@ export default function TermeniSiConditiiPage() {
             Asociația Sportivă Dinamo Rugby Junior
           </p>
           <p className="text-gray-600 text-sm mb-3">
-            Asociație sportivă fără scop patrimonial · Registrul Special nr. 73/14.05.2024, Partea A, Secțiunea I
+            Asociație sportivă fără scop patrimonial · Registrul Special nr. 73/14.05.2024, Partea A, Secțiunea I · CIF 50227280
           </p>
           <p className="text-gray-700 mb-4">
             Pentru orice întrebări sau clarificări legate de acești termeni și

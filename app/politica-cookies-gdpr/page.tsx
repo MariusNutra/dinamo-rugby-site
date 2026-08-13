@@ -503,9 +503,10 @@ export default function PoliticaCookiesPage() {
           11. Contact
         </h2>
         <div className="bg-red-50 border-2 border-dinamo-red rounded-lg p-6 mb-8">
-          <p className="font-heading font-bold text-lg text-gray-800 mb-3">
+          <p className="font-heading font-bold text-lg text-gray-800 mb-1">
             Asociația Sportivă Dinamo Rugby Junior
           </p>
+          <p className="text-gray-600 text-sm mb-3">CIF 50227280</p>
           <p className="text-gray-700 mb-4">
             Pentru orice întrebări sau solicitări legate de cookie-uri, protecția
             datelor personale sau exercitarea drepturilor dumneavoastră GDPR, ne

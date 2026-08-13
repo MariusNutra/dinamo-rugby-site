@@ -49,6 +49,7 @@ export default function PoliticaConfidentialitatePage() {
             Asociație sportivă fără scop patrimonial<br />
             Sediu social: Bd. Camil Ressu nr. 2, bl. R1, sc. 1, et. 5, ap. 18, Sector 3, București<br />
             Registrul Special nr. 73/14.05.2024, Partea A, Secțiunea I<br />
+            Cod de identificare fiscală (CIF): 50227280<br />
             Email: <a href="mailto:gdpr@dinamorugby.ro" className="text-dinamo-red underline hover:text-dinamo-dark">gdpr@dinamorugby.ro</a><br />
             Telefon: +40 767 858 858
           </p>
