@@ -73,7 +73,10 @@ export default function RootLayout({
               name: "CS Dinamo București Rugby Juniori",
               legalName: "Asociația Sportivă Dinamo Rugby Junior",
               taxID: "50227280",
-              sameAs: ["https://www.facebook.com/profile.php?id=61592998121958"],
+              sameAs: [
+                "https://www.facebook.com/profile.php?id=61592998121958",
+                "https://www.instagram.com/dinamorugbyjuniori/",
+              ],
               url: "https://dinamorugby.ro",
               sport: "Rugby",
               memberOf: {

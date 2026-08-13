@@ -108,7 +108,7 @@ export function wrapInTemplate(content: string, options?: WrapOptions): string {
                         </td>
                         <td style="color: ${COLOR_BORDER}; font-size: 13px;">|</td>
                         <td style="padding: 0 8px;">
-                          <a href="https://www.instagram.com/dinamorugby" target="_blank" style="color: ${COLOR_BLUE}; text-decoration: none; font-size: 13px; font-family: Arial, Helvetica, sans-serif;">Instagram</a>
+                          <a href="https://www.instagram.com/dinamorugbyjuniori" target="_blank" style="color: ${COLOR_BLUE}; text-decoration: none; font-size: 13px; font-family: Arial, Helvetica, sans-serif;">Instagram</a>
                         </td>
                         <td style="color: ${COLOR_BORDER}; font-size: 13px;">|</td>
                         <td style="padding: 0 8px;">
