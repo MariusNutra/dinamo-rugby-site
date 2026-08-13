@@ -4,10 +4,8 @@ import { requirePermission } from '@/lib/authz'
 import { validateCsrf } from '@/lib/csrf'
 import { prisma } from '@/lib/prisma'
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { videoId: string } }
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ videoId: string }> }) {
+  const params = await props.params;
   const authz = await requirePermission('matches.view')
   if (authz.error) return authz.error
 
@@ -24,10 +22,8 @@ export async function GET(
   return NextResponse.json(annotations)
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { videoId: string } }
-) {
+export async function POST(req: NextRequest, props: { params: Promise<{ videoId: string }> }) {
+  const params = await props.params;
   const authz = await requirePermission('matches.manage')
   if (authz.error) return authz.error
   const csrfError = validateCsrf(req)

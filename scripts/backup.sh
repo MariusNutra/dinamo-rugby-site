@@ -6,7 +6,11 @@
 set -euo pipefail
 
 APP_DIR="/var/www/rugby-dinamo"
-BACKUP_BASE="${1:-/var/www/rugby-dinamo/backups}"
+# Backupurile stau IN AFARA directorului aplicatiei. Cat au stat inauntru,
+# `env.bak` (drepturi 600, root) era vazut de tracer-ul de build al Next 16 si
+# omora build-ul cu „Permission denied"; pe langa asta, arhive cu secrete in
+# arborele aplicatiei web sunt oricum locul gresit.
+BACKUP_BASE="${1:-/mnt/HC_Volume_105236627/backups/rugby-dinamo}"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 BACKUP_DIR="${BACKUP_BASE}/${TIMESTAMP}"
 RETENTION_DAYS=30

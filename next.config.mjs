@@ -1,5 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Turbopack urmareste fisierele din radacina proiectului cand construieste
+  // harta de dependinte. `backups/` sta chiar aici si contine `env.bak` cu
+  // drepturi 600 pe root — build-ul dadea peste el si murea cu „Permission
+  // denied". Nu e nimic de urmarit acolo: sunt arhive, nu cod.
+  outputFileTracingExcludes: {
+    '*': ['./backups/**', './uploads/**'],
+  },
   images: {
     remotePatterns: [
       {

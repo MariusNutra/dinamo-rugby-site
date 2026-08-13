@@ -3,7 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { requirePermission } from '@/lib/authz'
 import { audit } from '@/lib/audit'
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const id = parseInt(params.id)
   if (isNaN(id)) {
     const story = await prisma.story.findUnique({ where: { slug: params.id }, include: { photos: true } })
@@ -15,7 +16,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json(story)
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const authz = await requirePermission('stories.manage')
   if (authz.error) return authz.error
   const id = parseInt(params.id)
@@ -36,7 +38,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json(story)
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const authz = await requirePermission('stories.manage')
   if (authz.error) return authz.error
   const id = parseInt(params.id)

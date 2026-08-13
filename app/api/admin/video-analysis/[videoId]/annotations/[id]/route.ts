@@ -5,8 +5,9 @@ import { prisma } from '@/lib/prisma'
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { videoId: string; id: string } }
+  props: { params: Promise<{ videoId: string; id: string }> }
 ) {
+  const params = await props.params;
   const authz = await requirePermission('matches.manage')
   if (authz.error) return authz.error
   const csrfError = validateCsrf(req)

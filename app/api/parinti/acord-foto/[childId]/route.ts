@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getParentId } from '@/lib/parent-auth'
 
-export async function GET(req: NextRequest, { params }: { params: { childId: string } }) {
+export async function GET(req: NextRequest, props: { params: Promise<{ childId: string }> }) {
+  const params = await props.params;
   const parentId = await getParentId()
   if (!parentId) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
@@ -33,7 +34,8 @@ export async function GET(req: NextRequest, { params }: { params: { childId: str
   })
 }
 
-export async function POST(req: NextRequest, { params }: { params: { childId: string } }) {
+export async function POST(req: NextRequest, props: { params: Promise<{ childId: string }> }) {
+  const params = await props.params;
   const parentId = await getParentId()
   if (!parentId) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
@@ -79,7 +81,8 @@ export async function POST(req: NextRequest, { params }: { params: { childId: st
   return NextResponse.json({ success: true })
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { childId: string } }) {
+export async function DELETE(req: NextRequest, props: { params: Promise<{ childId: string }> }) {
+  const params = await props.params;
   const parentId = await getParentId()
   if (!parentId) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })

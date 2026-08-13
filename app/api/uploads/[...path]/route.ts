@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import fs from 'fs/promises'
 import path from 'path'
 
-export async function GET(req: NextRequest, { params }: { params: { path: string[] } }) {
+export async function GET(req: NextRequest, props: { params: Promise<{ path: string[] }> }) {
+  const params = await props.params;
   const uploadDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads')
   const filePath = path.join(uploadDir, ...params.path)
 
