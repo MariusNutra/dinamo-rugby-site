@@ -74,8 +74,8 @@ export default function ParteneriPage() {
                   <Image
                     src={p.logo}
                     alt={`Sigla ${p.nume}`}
-                    width={148}
-                    height={192}
+                    width={163}
+                    height={224}
                     className="h-28 w-auto flex-shrink-0 object-contain"
                   />
                 ) : (
