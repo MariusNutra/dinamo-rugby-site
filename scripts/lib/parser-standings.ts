@@ -2,6 +2,7 @@ import * as cheerio from 'cheerio'
 import { DINAMO_PATTERN, REGION_NAMES, NATIONAL_REGION } from './config'
 import type { StandingRow } from '../../types/results'
 import { logger } from './logger'
+import { extrageTaburi } from './tabs'
 
 function parseStandingsTable($: cheerio.CheerioAPI, table: cheerio.Cheerio<cheerio.Element>): StandingRow[] {
   const rows: StandingRow[] = []
@@ -91,51 +92,19 @@ export function parseStandings(html: string, hasRegions: boolean): Record<string
   const regions: Record<string, StandingRow[]> = {}
 
   if (hasRegions) {
-    const tabTitles: string[] = []
-
-    $('[data-tab]').each((_, el) => {
-      const $el = $(el)
-      if ($el.hasClass('elementor-tab-title') || $el.hasClass('elementor-tab-desktop-title')) {
-        const title = $el.text().trim()
-        if (title && REGION_NAMES.some(r => title.includes(r))) {
-          tabTitles.push(title)
-        }
+    for (const { nume, $panel } of extrageTaburi($)) {
+      const tables = $panel.find('table')
+      if (tables.length > 0) {
+        regions[nume] = parseStandingsTable($, tables.first())
       }
-    })
-
-    const tabContents = $('[role="tabpanel"], .elementor-tab-content')
-
-    if (tabTitles.length > 0 && tabContents.length > 0) {
-      tabContents.each((index, panel) => {
-        const regionName = tabTitles[index] || REGION_NAMES[index] || `Region ${index + 1}`
-        const normalizedRegion = REGION_NAMES.find(r => regionName.includes(r)) || regionName
-        const $panel = $(panel)
-        const tables = $panel.find('table')
-
-        if (tables.length > 0) {
-          regions[normalizedRegion] = parseStandingsTable($, tables.first())
-        }
-      })
     }
 
-    // Fallback
+    // Ca la rezultate: fara taburi, nu ghicim regiunea dupa pozitia tabelului.
     if (Object.keys(regions).length === 0) {
-      logger.warn('No Elementor tabs found for standings, trying fallback')
-      const tables = $('table')
-
-      if (tables.length >= 3) {
-        tables.each((index, table) => {
-          if (index < 3) {
-            const regionName = REGION_NAMES[index] || `Region ${index + 1}`
-            regions[regionName] = parseStandingsTable($, $(table))
-          }
-        })
-      } else if (tables.length > 0) {
-        tables.each((index, table) => {
-          const regionName = REGION_NAMES[index] || `Region ${index + 1}`
-          regions[regionName] = parseStandingsTable($, $(table))
-        })
-      }
+      logger.warn(
+        'Niciun tab Elementor gasit la clasamente — structura paginii s-a ' +
+        'schimbat. Nu etichetam tabelele dupa pozitie; datele anterioare raman.'
+      )
     }
   } else {
     const tables = $('table')

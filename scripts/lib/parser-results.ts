@@ -3,6 +3,7 @@ import type { AnyNode } from 'domhandler'
 import { DINAMO_PATTERN, REGION_NAMES, NATIONAL_REGION } from './config'
 import type { EtapaGroup, MatchResult } from '../../types/results'
 import { logger } from './logger'
+import { extrageTaburi } from './tabs'
 
 function parseMatchesFromTable($: cheerio.CheerioAPI, table: cheerio.Cheerio<AnyNode>): EtapaGroup[] {
   const groups: EtapaGroup[] = []
@@ -112,58 +113,27 @@ export function parseResults(html: string, hasRegions: boolean): Record<string, 
   const regions: Record<string, EtapaGroup[]> = {}
 
   if (hasRegions) {
-    // Find Elementor tab content panels
-    const tabTitles: string[] = []
-
-    // Collect tab titles from Elementor tab widget
-    $('[data-tab]').each((_, el) => {
-      const $el = $(el)
-      // Only get tab title elements (not content panels)
-      if ($el.hasClass('elementor-tab-title') || $el.hasClass('elementor-tab-desktop-title')) {
-        const title = $el.text().trim()
-        if (title && REGION_NAMES.some(r => title.includes(r))) {
-          tabTitles.push(title)
-        }
+    // Titlul si panoul se leaga prin `data-tab`, in interiorul aceluiasi
+    // widget. Vezi tabs.ts pentru ce mergea prost cand se lipeau dupa pozitie.
+    for (const { nume, $panel } of extrageTaburi($)) {
+      const tables = $panel.find('table.frr, table')
+      if (tables.length > 0) {
+        regions[nume] = parseMatchesFromTable($, tables.first())
       }
-    })
-
-    // Find tab content panels
-    const tabContents = $('[role="tabpanel"], .elementor-tab-content')
-
-    if (tabTitles.length > 0 && tabContents.length > 0) {
-      tabContents.each((index, panel) => {
-        const regionName = tabTitles[index] || REGION_NAMES[index] || `Region ${index + 1}`
-        // Normalize to just the region name
-        const normalizedRegion = REGION_NAMES.find(r => regionName.includes(r)) || regionName
-        const $panel = $(panel)
-        const tables = $panel.find('table.frr, table')
-
-        if (tables.length > 0) {
-          regions[normalizedRegion] = parseMatchesFromTable($, tables.first())
-        }
-      })
     }
 
-    // Fallback: if no tabs found, try to find tables and match them to regions by context
+    // Daca structura paginii s-a schimbat atat de mult incat nu mai gasim
+    // niciun tab, NU ghicim. Varianta veche presupunea ca tabelele vin in
+    // ordinea Moldova, Muntenia, Transilvania si le eticheta dupa pozitie —
+    // exact felul de presupunere care a produs luni de date puse pe regiunea
+    // gresita, fara ca nimic sa para stricat. Mai bine lipsa vizibila decat
+    // eticheta care minte: scraperul pastreaza fisierul anterior cand nu are ce
+    // scrie, iar avertismentul de aici spune de ce.
     if (Object.keys(regions).length === 0) {
-      logger.warn('No Elementor tabs found, trying fallback parsing')
-      const tables = $('table.frr, table')
-
-      if (tables.length >= 3) {
-        // Assume tables are in order: Moldova, Muntenia, Transilvania
-        tables.each((index, table) => {
-          if (index < 3) {
-            const regionName = REGION_NAMES[index] || `Region ${index + 1}`
-            regions[regionName] = parseMatchesFromTable($, $(table))
-          }
-        })
-      } else if (tables.length > 0) {
-        // Single table, put everything under first region
-        tables.each((index, table) => {
-          const regionName = REGION_NAMES[index] || `Region ${index + 1}`
-          regions[regionName] = parseMatchesFromTable($, $(table))
-        })
-      }
+      logger.warn(
+        'Niciun tab Elementor gasit — structura paginii s-a schimbat. ' +
+        'Nu etichetam tabelele dupa pozitie; datele anterioare raman.'
+      )
     }
   } else {
     // U20 - single national table
