@@ -843,3 +843,41 @@ model RefreshToken {
   @@index([coachId])
   @@index([expiresAt])
 }
+
+/// Acordul de imagine strans printr-un link public, trimis parintilor pe
+/// WhatsApp. NU scrie in Parent/Child: formularul e deschis oricui are linkul,
+/// iar a lasa un formular public sa creeze conturi si copii in CRM ar insemna
+/// dubluri, nume scrise gresit si randuri pe care nimeni nu le-a verificat.
+/// Aici se aduna declaratiile ca atare; legarea de un copil existent ramane o
+/// decizie de om, in panoul de administrare.
+model AcordFoto {
+  id              String           @id @default(cuid())
+  parinteNume     String
+  parinteTelefon  String
+  parinteEmail    String
+  consimtSite     Boolean          @default(false)
+  consimtWhatsApp Boolean          @default(false)
+  /// Semnatura desenata pe ecran, ca imagine PNG in format data URL.
+  semnatura       String
+  /// Pastrate ca dovada ca declaratia a fost data: fara ele, un acord contestat
+  /// nu se poate sustine cu nimic.
+  ip              String?
+  userAgent       String?
+  createdAt       DateTime         @default(now())
+  copii           AcordFotoCopil[]
+}
+
+model AcordFotoCopil {
+  id        String    @id @default(cuid())
+  acordId   String
+  nume      String
+  anNastere Int
+  grupa     String
+  telefon   String?
+  email     String?
+  /// Poza tip buletin, incarcata de parinte.
+  pozaUrl   String?
+  acord     AcordFoto @relation(fields: [acordId], references: [id], onDelete: Cascade)
+
+  @@index([acordId])
+}

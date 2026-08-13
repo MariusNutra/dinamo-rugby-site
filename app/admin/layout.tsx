@@ -186,6 +186,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           { href: '/admin/cereri', label: 'Cereri', icon: '📨', moduleKey: null },
           { href: '/admin/mesaje', label: 'Mesaje', icon: '💬', moduleKey: null },
           { href: '/admin/acorduri', label: 'Acorduri', icon: '📋', moduleKey: 'modulePortalParinti' },
+          { href: '/admin/acorduri-publice', label: 'Acorduri (link)', icon: '🔗', moduleKey: 'modulePortalParinti' },
           { href: '/admin/inscrieri', label: 'Inscrieri', icon: '📋', moduleKey: 'moduleInscrieri' },
         ],
       },

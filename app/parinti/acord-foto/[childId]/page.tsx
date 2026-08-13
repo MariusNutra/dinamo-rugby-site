@@ -20,6 +20,7 @@ export default function AcordFotoPage() {
   const router = useRouter()
   const childId = params.childId as string
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const isDrawingRef = useRef(false)
   const [data, setData] = useState<ConsentData | null>(null)
   const [loading, setLoading] = useState(true)
   const [consentSite, setConsentSite] = useState(false)
@@ -27,7 +28,6 @@ export default function AcordFotoPage() {
   const [noConsent, setNoConsent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
-  const [isDrawing, setIsDrawing] = useState(false)
   const [hasDrawn, setHasDrawn] = useState(false)
 
   useEffect(() => {
@@ -76,10 +76,11 @@ export default function AcordFotoPage() {
   }
 
   const startDraw = (e: React.TouchEvent | React.MouseEvent) => {
-    e.preventDefault()
+    // Fara `preventDefault`: React asculta pasiv evenimentele de atingere, deci
+    // apelul esueaza. Derularea e oprita de `touch-none` pe canvas.
     const ctx = canvasRef.current?.getContext('2d')
     if (!ctx) return
-    setIsDrawing(true)
+    isDrawingRef.current = true
     setHasDrawn(true)
     const pos = getPos(e)
     ctx.beginPath()
@@ -87,8 +88,9 @@ export default function AcordFotoPage() {
   }
 
   const draw = (e: React.TouchEvent | React.MouseEvent) => {
-    e.preventDefault()
-    if (!isDrawing) return
+    // Ref, nu state: intre `touchstart` si primul `touchmove` React n-apuca sa
+    // re-randeze, deci un state ar fi inca `false` si linia n-ar incepe.
+    if (!isDrawingRef.current) return
     const ctx = canvasRef.current?.getContext('2d')
     if (!ctx) return
     const pos = getPos(e)
@@ -96,7 +98,7 @@ export default function AcordFotoPage() {
     ctx.stroke()
   }
 
-  const stopDraw = () => setIsDrawing(false)
+  const stopDraw = () => { isDrawingRef.current = false }
 
   const clearCanvas = () => {
     setHasDrawn(false)

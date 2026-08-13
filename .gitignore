@@ -50,3 +50,7 @@ prisma/dev.db*
 
 # uploaded images
 /public/images/antrenori/
+
+# Poze din acordurile de imagine — date personale despre minori, servite
+# doar prin ruta de administrare. Nu ajung nici in git, nici in uploads/.
+private-uploads/

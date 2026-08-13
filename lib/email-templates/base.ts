@@ -104,7 +104,7 @@ export function wrapInTemplate(content: string, options?: WrapOptions): string {
                     <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                       <tr>
                         <td style="padding: 0 8px;">
-                          <a href="https://www.facebook.com/dinamorugby" target="_blank" style="color: ${COLOR_BLUE}; text-decoration: none; font-size: 13px; font-family: Arial, Helvetica, sans-serif;">Facebook</a>
+                          <a href="https://www.facebook.com/profile.php?id=61592998121958" target="_blank" style="color: ${COLOR_BLUE}; text-decoration: none; font-size: 13px; font-family: Arial, Helvetica, sans-serif;">Facebook</a>
                         </td>
                         <td style="color: ${COLOR_BORDER}; font-size: 13px;">|</td>
                         <td style="padding: 0 8px;">
