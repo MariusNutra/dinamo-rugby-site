@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import PasswordInput from '@/components/PasswordInput'
 
 export default function AdminLogin() {
   const [username, setUsername] = useState('')
@@ -54,11 +55,11 @@ export default function AdminLogin() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Parolă</label>
-            <input
-              type="password"
+            <PasswordInput
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={setPassword}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dinamo-red focus:border-dinamo-red outline-none"
+              autoComplete="current-password"
               required
             />
           </div>

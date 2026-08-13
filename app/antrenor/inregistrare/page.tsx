@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import PasswordInput from '@/components/PasswordInput'
 
 interface TeamOption {
   id: number
@@ -121,14 +122,14 @@ export default function InregistrareAntrenorPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Parola *</label>
-            <input
-              type="password"
+            <PasswordInput
               value={form.password}
-              onChange={e => update('password', e.target.value)}
-              required
-              minLength={6}
-              placeholder="Minim 6 caractere"
+              onChange={(v) => update('password', v)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dinamo-red focus:border-transparent outline-none text-base"
+              autoComplete="new-password"
+              placeholder="Minim 6 caractere"
+              minLength={6}
+              required
             />
           </div>
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import PasswordInput from '@/components/PasswordInput'
 
 interface AdminUser {
   id: number
@@ -359,11 +360,11 @@ export default function AdminSettingsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   {editingUser ? 'Parolă nouă (lasă gol pentru a păstra)' : 'Parolă *'}
                 </label>
-                <input
-                  type="password"
+                <PasswordInput
                   value={formPassword}
-                  onChange={e => setFormPassword(e.target.value)}
+                  onChange={setFormPassword}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-dinamo-red outline-none"
+                  autoComplete="new-password"
                   placeholder="Minim 6 caractere"
                 />
               </div>

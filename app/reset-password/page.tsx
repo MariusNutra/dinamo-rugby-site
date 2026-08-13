@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
+import PasswordInput from '@/components/PasswordInput'
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams()
@@ -105,24 +106,24 @@ function ResetPasswordForm() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Parolă nouă</label>
-            <input
-              type="password"
+            <PasswordInput
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={setPassword}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dinamo-red focus:border-dinamo-red outline-none"
-              required
+              autoComplete="new-password"
               minLength={6}
+              required
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Confirmă parola</label>
-            <input
-              type="password"
+            <PasswordInput
               value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
+              onChange={setConfirmPassword}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dinamo-red focus:border-dinamo-red outline-none"
-              required
+              autoComplete="new-password"
               minLength={6}
+              required
             />
           </div>
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
