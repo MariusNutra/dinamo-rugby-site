@@ -9,6 +9,31 @@ interface Props {
 
 type SubTab = 'results' | 'standings'
 
+/**
+ * „Fara scor" nu inseamna „urmeaza".
+ *
+ * Sursa (rugbyromania.ro) lasa uneori casuta de scor goala mult timp dupa meci,
+ * iar uneori pentru totdeauna. Pana acum, ecranul lua primul meci fara scor si
+ * il numea „Urmatorul meci", fara sa se uite la data — asa incat un meci din
+ * 8 mai era anuntat ca urmator si in august.
+ *
+ * Un meci e viitor daca data lui n-a trecut. Unul trecut si fara scor e alta
+ * poveste, si o spunem ca atare: rezultatul lipseste.
+ */
+function dataMeciului(text: string): Date | null {
+  const m = /(\d{2})\.(\d{2})\.(\d{4})/.exec(text || '')
+  if (!m) return null
+  return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]))
+}
+
+function esteViitor(text: string): boolean {
+  const d = dataMeciului(text)
+  if (!d) return false // fara data lizibila nu presupunem ca urmeaza
+  const azi = new Date()
+  azi.setHours(0, 0, 0, 0)
+  return d >= azi
+}
+
 export default function ResultsClient({ data }: Props) {
   const categories = Object.keys(data.categories)
 
@@ -41,15 +66,15 @@ export default function ResultsClient({ data }: Props) {
 
   const regionData = catData?.regions[currentRegion]
 
-  // Find next and latest Dinamo matches in current view
   const nextDinamoMatch = useMemo(() => {
     if (!regionData) return null
-    for (const etapa of regionData.results) {
-      for (const m of etapa.matches) {
-        if (m.isDinamo && !m.played) return m
-      }
-    }
-    return null
+    const viitoare = regionData.results
+      .flatMap((e) => e.matches)
+      .filter((m) => m.isDinamo && !m.played && esteViitor(m.date))
+      .sort((a, b) => (dataMeciului(a.date)!.getTime() - dataMeciului(b.date)!.getTime()))
+    // Cel mai apropiat, nu primul din lista: etapele nu vin mereu in ordine.
+    return viitoare[0] ?? null
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [regionData])
 
   const lastDinamoResult = useMemo(() => {
@@ -255,9 +280,13 @@ function ResultsView({
                           <span className="font-bold">
                             {match.scoreHome} – {match.scoreAway}
                           </span>
-                        ) : (
+                        ) : esteViitor(match.date) ? (
                           <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded">
                             Urmează
+                          </span>
+                        ) : (
+                          <span className="text-xs bg-gray-50 text-gray-400 px-2 py-1 rounded" title="Meciul a avut loc, dar federatia n-a publicat scorul">
+                            Fără rezultat
                           </span>
                         )}
                       </td>
@@ -315,9 +344,14 @@ function ResultsView({
                       <span className="font-bold text-lg shrink-0">
                         {match.scoreAway}
                       </span>
-                    ) : (
+                    ) : esteViitor(match.date) ? (
                       <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded shrink-0">
                         Urmează
+                      </span>
+                    ) : (
+                      <span className="text-xs bg-gray-100 text-gray-400 px-2 py-0.5 rounded shrink-0"
+                        title="Meciul a avut loc, dar federatia n-a publicat scorul">
+                        Fără rezultat
                       </span>
                     )}
                   </div>
