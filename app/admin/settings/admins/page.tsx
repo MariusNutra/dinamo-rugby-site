@@ -16,6 +16,7 @@ interface AdminUser {
 const roles = [
   { value: 'admin', label: 'Administrator', desc: 'Acces complet la toate funcțiile' },
   { value: 'editor', label: 'Editor', desc: 'Poate edita conținut, dar nu utilizatori' },
+  { value: 'coach', label: 'Antrenor', desc: 'Sportivi, prezențe, evaluări, meciuri, scheme de joc, video, fitness' },
   { value: 'photographer', label: 'Fotograf', desc: 'Intră doar în portalul /foto, pentru poze și filmulețe' },
 ]
 

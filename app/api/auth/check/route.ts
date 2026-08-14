@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
-import { isAuthenticated } from '@/lib/auth'
+import { getAuthUser } from '@/lib/auth'
 import { setCsrfCookie } from '@/lib/csrf'
 import { prisma } from '@/lib/prisma'
+import { PERMISSIONS, getUserPermissions } from '@/lib/permissions'
 
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET
@@ -95,10 +96,24 @@ export async function GET(req: NextRequest) {
   }
 
   // Fallback: admin cookie auth (website)
-  const auth = await isAuthenticated()
-  const response = NextResponse.json({ authenticated: auth })
-  if (auth) {
-    return setCsrfCookie(response)
+  const user = await getAuthUser()
+  if (!user) {
+    return NextResponse.json({ authenticated: false })
   }
-  return response
+
+  // Meniul panoului se construieste din lista asta. Fara ea, ecranul aratase
+  // toate cele 35 de sectiuni oricui — inclusiv unui antrenor, care primea 403
+  // abia dupa ce dadea clic. Serverul e in continuare cel care decide accesul;
+  // aici doar nu mai promitem ce oricum nu se poate.
+  const permissions =
+    user.role === 'admin' || user.role === 'superadmin'
+      ? (Object.keys(PERMISSIONS) as string[])
+      : await getUserPermissions(user.userId)
+
+  const response = NextResponse.json({
+    authenticated: true,
+    role: user.role,
+    permissions,
+  })
+  return setCsrfCookie(response)
 }

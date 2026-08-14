@@ -82,7 +82,9 @@ export const DEFAULT_ROLES: Record<string, { label: string; permissions: Permiss
       'teams.view', 'athletes.view', 'athletes.manage',
       'attendance.view', 'attendance.manage',
       'evaluations.view', 'evaluations.manage',
-      'matches.view',
+      // `matches.manage` deschide tabla tactica si video-analiza, nu doar
+      // calendarul de meciuri: schemele de joc stau sub aceeasi permisiune.
+      'matches.view', 'matches.manage',
     ],
   },
   manager: {

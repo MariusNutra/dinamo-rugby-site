@@ -1,38 +1,26 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getCoachId } from '@/lib/coach-auth'
+import { resolveCoachTeam } from '@/lib/coach-teams'
 
-export async function GET() {
-  const coachId = await getCoachId()
-  if (!coachId) {
-    return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
-  }
-
-  const coach = await prisma.coach.findUnique({ where: { id: coachId } })
-  if (!coach) {
-    return NextResponse.json({ error: 'Antrenor negasit' }, { status: 404 })
-  }
-
-  if (!coach.teamId) {
+export async function GET(req: NextRequest) {
+  const resolved = await resolveCoachTeam(req.nextUrl.searchParams.get('teamId'))
+  if (!resolved) {
     return NextResponse.json({ data: [] })
   }
+
+  const { teamId } = resolved
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
 
-  const children = await prisma.child.findMany({
-    where: { teamId: coach.teamId },
-    orderBy: { name: 'asc' },
-  })
-
-  const todayAttendances = await prisma.attendance.findMany({
-    where: {
-      teamId: coach.teamId,
-      date: { gte: today, lt: tomorrow },
-    },
-  })
+  const [children, todayAttendances] = await Promise.all([
+    prisma.child.findMany({ where: { teamId }, orderBy: { name: 'asc' } }),
+    prisma.attendance.findMany({
+      where: { teamId, date: { gte: today, lt: tomorrow } },
+    }),
+  ])
 
   const attendanceMap = new Map(
     todayAttendances.map(a => [a.childId, a.present ? 'present' : 'absent'])

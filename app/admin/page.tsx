@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { usePermissions } from '@/lib/use-permissions'
 import {
   LineChart,
   Line,
@@ -150,6 +151,9 @@ function activityIcon(type: string) {
 // --- Main Component ---
 
 export default function AdminDashboard() {
+  const permissions = usePermissions()
+  const can = (p: string) => permissions?.includes(p) ?? false
+
   const [dashData, setDashData] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -482,15 +486,21 @@ export default function AdminDashboard() {
       <div className="bg-white rounded-xl shadow-md p-6">
         <h2 className="font-heading font-bold text-lg mb-4">Actiuni rapide</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <Link href="/admin/povesti" className="bg-blue-50 text-blue-700 p-4 rounded-lg hover:bg-blue-100 transition-colors text-center font-medium">
-            + Adauga poveste noua
-          </Link>
-          <Link href="/admin/galerie" className="bg-green-50 text-green-700 p-4 rounded-lg hover:bg-green-100 transition-colors text-center font-medium">
-            + Incarca poze
-          </Link>
-          <Link href="/admin/meciuri" className="bg-red-50 text-red-700 p-4 rounded-lg hover:bg-red-100 transition-colors text-center font-medium">
-            + Adauga meci
-          </Link>
+          {can('stories.manage') && (
+            <Link href="/admin/povesti" className="bg-blue-50 text-blue-700 p-4 rounded-lg hover:bg-blue-100 transition-colors text-center font-medium">
+              + Adauga poveste noua
+            </Link>
+          )}
+          {can('gallery.manage') && (
+            <Link href="/admin/galerie" className="bg-green-50 text-green-700 p-4 rounded-lg hover:bg-green-100 transition-colors text-center font-medium">
+              + Incarca poze
+            </Link>
+          )}
+          {can('matches.manage') && (
+            <Link href="/admin/meciuri" className="bg-red-50 text-red-700 p-4 rounded-lg hover:bg-red-100 transition-colors text-center font-medium">
+              + Adauga meci
+            </Link>
+          )}
         </div>
       </div>
     </div>

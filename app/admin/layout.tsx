@@ -10,6 +10,12 @@ interface SidebarItem {
   label: string
   icon: string
   moduleKey: string | null
+  /**
+   * Permisiunea ceruta de rutele din spatele ecranului. Fara ea, elementul
+   * se arata oricui. Trebuie sa fie ACEEASI pe care o cere serverul —
+   * altfel ori ascundem un ecran care merge, ori aratam unul care da 403.
+   */
+  permission?: string
   badge?: number
 }
 
@@ -22,6 +28,7 @@ interface SidebarGroup {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [auth, setAuth] = useState<boolean | null>(null)
+  const [permissions, setPermissions] = useState<string[] | null>(null)
   const [unreadCount, setUnreadCount] = useState<number | null>(null)
   const [moduleSettings, setModuleSettings] = useState<Record<string, boolean> | null>(null)
   const [pendingRequests, setPendingRequests] = useState(0)
@@ -47,6 +54,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           router.push('/admin/login')
         } else {
           setAuth(data.authenticated)
+          setPermissions(Array.isArray(data.permissions) ? data.permissions : [])
         }
       })
   }, [pathname, router])
@@ -133,6 +141,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   function isItemVisible(item: SidebarItem): boolean {
+    // Pana sosesc permisiunile nu presupunem nimic: mai bine un meniu care
+    // apare cu o clipa intarziere decat unul care clipeste sectiuni interzise.
+    if (item.permission) {
+      if (permissions === null) return false
+      if (!permissions.includes(item.permission)) return false
+    }
     if (!item.moduleKey) return true
     if (!moduleSettings) return !['moduleFundraising', 'modulePlati', 'moduleMagazin'].includes(item.moduleKey)
     return moduleSettings[item.moduleKey] !== false
@@ -145,9 +159,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         label: 'CONTINUT',
         icon: '📋',
         items: [
-          { href: '/admin/povesti', label: 'Povesti', icon: '📝', moduleKey: 'modulePovesti' },
-          { href: '/admin/galerie', label: 'Galerie', icon: '📸', moduleKey: 'moduleGalerie' },
-          { href: '/admin/video-highlights', label: 'Video Highlights', icon: '🎬', moduleKey: 'moduleVideoHighlights' },
+          { href: '/admin/povesti', label: 'Povesti', icon: '📝', moduleKey: 'modulePovesti' , permission: 'stories.manage' },
+          { href: '/admin/galerie', label: 'Galerie', icon: '📸', moduleKey: 'moduleGalerie' , permission: 'gallery.manage' },
+          { href: '/admin/video-highlights', label: 'Video Highlights', icon: '🎬', moduleKey: 'moduleVideoHighlights' , permission: 'gallery.manage' },
         ],
       },
       {
@@ -155,25 +169,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         label: 'SPORT',
         icon: '⚽',
         items: [
-          { href: '/admin/echipe', label: 'Echipe', icon: '🏉', moduleKey: 'moduleEchipe' },
-          { href: '/admin/antrenori', label: 'Antrenori', icon: '👨‍🏫', moduleKey: null },
-          { href: '/admin/sportivi', label: 'Sportivi', icon: '🏃', moduleKey: null },
-          { href: '/admin/echipe-management', label: 'Echipe Board', icon: '🔀', moduleKey: null },
-          { href: '/admin/meciuri', label: 'Meciuri', icon: '🏆', moduleKey: 'moduleMeciuri' },
-          { href: '/admin/competitii', label: 'Competitii', icon: '🏆', moduleKey: null },
-          { href: '/admin/program', label: 'Program', icon: '📅', moduleKey: 'moduleProgram' },
-          { href: '/admin/calendar', label: 'Calendar', icon: '📆', moduleKey: 'moduleCalendar' },
-          { href: '/admin/prezente', label: 'Prezente', icon: '✅', moduleKey: null },
-          { href: '/admin/prezente/qr', label: 'QR Prezenta', icon: '📱', moduleKey: null },
-          { href: '/admin/evaluari', label: 'Evaluari', icon: '📊', moduleKey: null },
-          { href: '/admin/statistici', label: 'Statistici', icon: '📈', moduleKey: 'moduleStatistici' },
-          { href: '/admin/fitness', label: 'Fitness', icon: '❤️', moduleKey: null },
-          { href: '/admin/video-analysis', label: 'Video Analiză', icon: '🎥', moduleKey: null },
-          { href: '/admin/tactical', label: 'Tablă Tactică', icon: '📐', moduleKey: null },
-          { href: '/admin/ai-coach', label: 'AI Coach', icon: '🤖', moduleKey: null },
-          { href: '/admin/scouting', label: 'Scouting', icon: '🔍', moduleKey: null },
-          { href: '/admin/gamification', label: 'Gamification', icon: '🏅', moduleKey: null },
-          { href: '/admin/federatie', label: 'Federatie', icon: '🏛️', moduleKey: null },
+          { href: '/admin/echipe', label: 'Echipe', icon: '🏉', moduleKey: 'moduleEchipe' , permission: 'teams.manage' },
+          { href: '/admin/antrenori', label: 'Antrenori', icon: '👨‍🏫', moduleKey: null , permission: 'teams.manage' },
+          { href: '/admin/sportivi', label: 'Sportivi', icon: '🏃', moduleKey: null , permission: 'athletes.view' },
+          { href: '/admin/echipe-management', label: 'Echipe Board', icon: '🔀', moduleKey: null , permission: 'parents.view' },
+          { href: '/admin/meciuri', label: 'Meciuri', icon: '🏆', moduleKey: 'moduleMeciuri' , permission: 'matches.manage' },
+          { href: '/admin/competitii', label: 'Competitii', icon: '🏆', moduleKey: null , permission: 'competitions.manage' },
+          { href: '/admin/program', label: 'Program', icon: '📅', moduleKey: 'moduleProgram' , permission: 'attendance.manage' },
+          { href: '/admin/calendar', label: 'Calendar', icon: '📆', moduleKey: 'moduleCalendar' , permission: 'matches.view' },
+          { href: '/admin/prezente', label: 'Prezente', icon: '✅', moduleKey: null , permission: 'attendance.view' },
+          { href: '/admin/prezente/qr', label: 'QR Prezenta', icon: '📱', moduleKey: null , permission: 'attendance.manage' },
+          { href: '/admin/evaluari', label: 'Evaluari', icon: '📊', moduleKey: null , permission: 'evaluations.view' },
+          { href: '/admin/statistici', label: 'Statistici', icon: '📈', moduleKey: 'moduleStatistici' , permission: 'athletes.view' },
+          { href: '/admin/fitness', label: 'Fitness', icon: '❤️', moduleKey: null , permission: 'athletes.view' },
+          { href: '/admin/video-analysis', label: 'Video Analiză', icon: '🎥', moduleKey: null , permission: 'matches.view' },
+          { href: '/admin/tactical', label: 'Tablă Tactică', icon: '📐', moduleKey: null , permission: 'matches.view' },
+          { href: '/admin/ai-coach', label: 'AI Coach', icon: '🤖', moduleKey: null , permission: 'athletes.view' },
+          { href: '/admin/scouting', label: 'Scouting', icon: '🔍', moduleKey: null , permission: 'athletes.view' },
+          { href: '/admin/gamification', label: 'Gamification', icon: '🏅', moduleKey: null , permission: 'athletes.manage' },
+          { href: '/admin/federatie', label: 'Federatie', icon: '🏛️', moduleKey: null , permission: 'competitions.manage' },
         ],
       },
       {
@@ -181,13 +195,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         label: 'UTILIZATORI',
         icon: '👥',
         items: [
-          { href: '/admin/parinti', label: 'Parinti', icon: '👨‍👩‍👧', moduleKey: 'modulePortalParinti' },
-          { href: '/admin/cereri-acces', label: 'Cereri acces', icon: '📩', moduleKey: 'modulePortalParinti', badge: pendingRequests },
-          { href: '/admin/cereri', label: 'Cereri', icon: '📨', moduleKey: null },
-          { href: '/admin/mesaje', label: 'Mesaje', icon: '💬', moduleKey: null },
-          { href: '/admin/acorduri', label: 'Acorduri', icon: '📋', moduleKey: 'modulePortalParinti' },
-          { href: '/admin/acorduri-publice', label: 'Acorduri (link)', icon: '🔗', moduleKey: 'modulePortalParinti' },
-          { href: '/admin/inscrieri', label: 'Inscrieri', icon: '📋', moduleKey: 'moduleInscrieri' },
+          { href: '/admin/parinti', label: 'Parinti', icon: '👨‍👩‍👧', moduleKey: 'modulePortalParinti' , permission: 'parents.view' },
+          { href: '/admin/cereri-acces', label: 'Cereri acces', icon: '📩', moduleKey: 'modulePortalParinti', badge: pendingRequests , permission: 'requests.manage' },
+          { href: '/admin/cereri', label: 'Cereri', icon: '📨', moduleKey: null , permission: 'requests.manage' },
+          { href: '/admin/mesaje', label: 'Mesaje', icon: '💬', moduleKey: null , permission: 'parents.view' },
+          { href: '/admin/acorduri', label: 'Acorduri', icon: '📋', moduleKey: 'modulePortalParinti' , permission: 'parents.view' },
+          { href: '/admin/acorduri-publice', label: 'Acorduri (link)', icon: '🔗', moduleKey: 'modulePortalParinti' , permission: 'athletes.view' },
+          { href: '/admin/inscrieri', label: 'Inscrieri', icon: '📋', moduleKey: 'moduleInscrieri' , permission: 'registrations.manage' },
         ],
       },
       {
@@ -195,11 +209,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         label: 'FINANCIAR',
         icon: '💰',
         items: [
-          { href: '/admin/plati', label: 'Plati / Cotizatii', icon: '💳', moduleKey: 'modulePlati' },
-          { href: '/admin/abonamente', label: 'Abonamente', icon: '🔄', moduleKey: 'modulePlati' },
-          { href: '/admin/fundraising', label: 'Fundraising', icon: '💰', moduleKey: 'moduleFundraising' },
-          { href: '/admin/magazin', label: 'Magazin', icon: '🛒', moduleKey: 'moduleMagazin' },
-          { href: '/admin/comenzi', label: 'Comenzi', icon: '📦', moduleKey: 'moduleMagazin' },
+          { href: '/admin/plati', label: 'Plati / Cotizatii', icon: '💳', moduleKey: 'modulePlati' , permission: 'payments.view' },
+          { href: '/admin/abonamente', label: 'Abonamente', icon: '🔄', moduleKey: 'modulePlati' , permission: 'payments.view' },
+          { href: '/admin/fundraising', label: 'Fundraising', icon: '💰', moduleKey: 'moduleFundraising' , permission: 'fundraising.manage' },
+          { href: '/admin/magazin', label: 'Magazin', icon: '🛒', moduleKey: 'moduleMagazin' , permission: 'shop.manage' },
+          { href: '/admin/comenzi', label: 'Comenzi', icon: '📦', moduleKey: 'moduleMagazin' , permission: 'shop.manage' },
         ],
       },
       {
@@ -207,15 +221,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         label: 'SETARI',
         icon: '⚙️',
         items: [
-          { href: '/admin/documente', label: 'Documente', icon: '📁', moduleKey: null },
-          { href: '/admin/settings/modules', label: 'Module', icon: '🧩', moduleKey: null },
-          { href: '/admin/settings/admins', label: 'Utilizatori', icon: '🔐', moduleKey: null },
-          { href: '/admin/settings/roles', label: 'Roluri', icon: '🔑', moduleKey: null },
-          { href: '/admin/settings/notificari', label: 'Notificari', icon: '🔔', moduleKey: 'moduleNotificari' },
-          { href: '/admin/sponsori', label: 'Sponsori', icon: '🤝', moduleKey: 'moduleSponsori' },
-          { href: '/admin/settings/branding', label: 'Branding', icon: '🎨', moduleKey: null },
-          { href: '/admin/settings/api-keys', label: 'API Keys', icon: '🔗', moduleKey: null },
-          { href: '/admin/audit', label: 'Jurnal', icon: '📜', moduleKey: null },
+          { href: '/admin/documente', label: 'Documente', icon: '📁', moduleKey: null , permission: 'documents.manage' },
+          { href: '/admin/settings/modules', label: 'Module', icon: '🧩', moduleKey: null , permission: 'settings.manage' },
+          { href: '/admin/settings/admins', label: 'Utilizatori', icon: '🔐', moduleKey: null , permission: 'users.manage' },
+          { href: '/admin/settings/roles', label: 'Roluri', icon: '🔑', moduleKey: null , permission: 'users.manage' },
+          { href: '/admin/settings/notificari', label: 'Notificari', icon: '🔔', moduleKey: 'moduleNotificari' , permission: 'notifications.manage' },
+          { href: '/admin/sponsori', label: 'Sponsori', icon: '🤝', moduleKey: 'moduleSponsori' , permission: 'settings.manage' },
+          { href: '/admin/settings/branding', label: 'Branding', icon: '🎨', moduleKey: null , permission: 'settings.manage' },
+          { href: '/admin/settings/api-keys', label: 'API Keys', icon: '🔗', moduleKey: null , permission: 'users.manage' },
+          { href: '/admin/audit', label: 'Jurnal', icon: '📜', moduleKey: null , permission: 'users.manage' },
         ],
       },
     ]
@@ -353,13 +367,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     </>
   )
 
-  // Bottom nav items for mobile
+  // Bara de jos, pe telefon. Se filtreaza dupa aceleasi reguli ca meniul
+  // lateral: altfel un antrenor vedea aici „Utilizatori" si „Setari", care in
+  // meniul mare nu-i apar — si deschidea un sertar gol.
   const bottomNavItems = [
     { key: 'dashboard', label: 'Dashboard', icon: '📊', action: () => router.push('/admin') },
     { key: 'sport', label: 'Sport', icon: '⚽', action: () => openDrawerWithGroup('sport') },
     { key: 'utilizatori', label: 'Utilizatori', icon: '👥', action: () => openDrawerWithGroup('utilizatori') },
     { key: 'setari', label: 'Setari', icon: '⚙️', action: () => openDrawerWithGroup('setari') },
-  ]
+  ].filter(item => item.key === 'dashboard' || visibleGroups.some(g => g.key === item.key))
 
   const activeBottomNav = (() => {
     if (pathname === '/admin') return 'dashboard'
