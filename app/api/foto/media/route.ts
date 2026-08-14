@@ -28,14 +28,17 @@ export async function GET() {
     return NextResponse.json({ error: 'Neautentificat' }, { status: 401 })
   }
 
-  // Pozele legate de o poveste sunt gestionate din ecranul povestii, nu de aici.
+  // Fiecare fotograf vede doar ce a incarcat el. Pozele puse din admin au
+  // `uploadedBy` gol si raman in seama adminului — portalul nu le atinge.
+  // Pozele legate de o poveste se gestioneaza din ecranul povestii, nu de aici.
   const [photos, clips] = await Promise.all([
     prisma.photo.findMany({
-      where: { storyId: null },
+      where: { storyId: null, uploadedBy: photographerId },
       orderBy: { createdAt: 'desc' },
       take: 300,
     }),
     prisma.videoClip.findMany({
+      where: { uploadedBy: photographerId },
       orderBy: { createdAt: 'desc' },
       take: 300,
     }),

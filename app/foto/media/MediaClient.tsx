@@ -65,7 +65,8 @@ export default function MediaClient() {
       <div className="mb-6">
         <h1 className="font-heading font-bold text-2xl">Poze si filmulete</h1>
         <p className="text-gray-500 text-sm mt-1">
-          {counts.published} pe site &middot; {counts.drafts} in ciorna
+          {counts.published} pe site &middot; {counts.drafts} in ciorna &middot; aici vezi
+          doar ce ai incarcat tu
         </p>
       </div>
 
