@@ -9,17 +9,37 @@ export const metadata = {
 }
 
 export default async function GaleriePage() {
-  const photos = await prisma.photo.findMany({
-    where: { storyId: null },
-    orderBy: { createdAt: 'desc' },
-    take: 200,
-    select: {
-      id: true,
-      path: true,
-      caption: true,
-      grupa: true,
-    },
-  })
+  // `published` decide ce se vede public. Pozele mai vechi au implicit true,
+  // deci galeria arata la fel ca inainte; ce incarca fotograful ca ciorna
+  // ramane doar in portalul lui, pana o trece pe site.
+  const [photos, clips] = await Promise.all([
+    prisma.photo.findMany({
+      where: { storyId: null, published: true },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+      select: {
+        id: true,
+        path: true,
+        title: true,
+        caption: true,
+        grupa: true,
+      },
+    }),
+    prisma.videoClip.findMany({
+      where: { published: true },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+      select: {
+        id: true,
+        path: true,
+        posterPath: true,
+        title: true,
+        description: true,
+        grupa: true,
+        durationSec: true,
+      },
+    }),
+  ])
 
-  return <GalerieClient photos={photos} />
+  return <GalerieClient photos={photos} clips={clips} />
 }

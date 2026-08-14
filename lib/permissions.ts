@@ -94,6 +94,10 @@ export const DEFAULT_ROLES: Record<string, { label: string; permissions: Permiss
       'parents.view',
     ],
   },
+  photographer: {
+    label: 'Fotograf',
+    permissions: ['gallery.view', 'gallery.manage'],
+  },
   secretary: {
     label: 'Secretar',
     permissions: [

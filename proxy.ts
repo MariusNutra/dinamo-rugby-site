@@ -63,6 +63,23 @@ async function hasValidAdminToken(req: NextRequest): Promise<boolean> {
   }
 }
 
+/**
+ * La fel ca verificarea de admin, dar pentru portalul de foto. Fotograful NU
+ * primeste `admin_token`, deci nu poate ajunge in panoul de administrare —
+ * si nici invers: un admin logat nu intra automat in /foto.
+ */
+async function hasValidPhotographerToken(req: NextRequest): Promise<boolean> {
+  const token = req.cookies.get('photographer_token')?.value
+  const secret = process.env.JWT_SECRET
+  if (!token || !secret) return false
+  try {
+    const { payload } = await jwtVerify(token, new TextEncoder().encode(secret))
+    return payload.type === 'photographer'
+  } catch {
+    return false
+  }
+}
+
 export async function proxy(req: NextRequest) {
   // Server-side gate for the admin UI. The admin layout only checks auth
   // client-side (fetch /api/auth/check + redirect), so the admin shell was
@@ -76,6 +93,22 @@ export async function proxy(req: NextRequest) {
     if (!(await hasValidAdminToken(req))) {
       const url = req.nextUrl.clone()
       url.pathname = '/admin/login'
+      url.search = ''
+      return NextResponse.redirect(url)
+    }
+  }
+
+  // Aceeasi poarta pentru portalul de foto: fara ea, invelisul paginii se
+  // servea oricui scria adresa, iar autentificarea se vedea abia dupa ce
+  // pagina rula in browser.
+  const fotoPath = req.nextUrl.pathname
+  if (
+    (fotoPath === '/foto' || fotoPath.startsWith('/foto/')) &&
+    fotoPath !== '/foto/login'
+  ) {
+    if (!(await hasValidPhotographerToken(req))) {
+      const url = req.nextUrl.clone()
+      url.pathname = '/foto/login'
       url.search = ''
       return NextResponse.redirect(url)
     }
@@ -149,6 +182,8 @@ export const config = {
     '/api/admin/:path*',
     '/admin',
     '/admin/:path*',
+    '/foto',
+    '/foto/:path*',
     '/echipe/:path*',
     '/antrenori/:path*',
     '/program/:path*',

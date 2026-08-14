@@ -4,7 +4,7 @@ import path from 'path'
 
 const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads')
 
-function sanitizeFilename(name: string): string {
+export function sanitizeFilename(name: string): string {
   const base = path.basename(name, path.extname(name))
   return base
     .normalize('NFD')

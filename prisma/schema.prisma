@@ -26,6 +26,8 @@ model User {
   sentMessages       Message[]
   roleRef            Role?                     @relation(fields: [roleId], references: [id])
   refreshTokens      RefreshToken[]
+  uploadedPhotos     Photo[]                   @relation("PhotoUploader")
+  uploadedClips      VideoClip[]               @relation("VideoClipUploader")
 }
 
 model Story {
@@ -46,15 +48,45 @@ model Story {
 }
 
 model Photo {
-  id        Int      @id @default(autoincrement())
-  filename  String
-  path      String
-  caption   String?
-  grupa     String?
-  albumName String?
-  storyId   Int?
-  createdAt DateTime @default(now())
-  story     Story?   @relation(fields: [storyId], references: [id])
+  id         Int      @id @default(autoincrement())
+  filename   String
+  path       String
+  title      String?
+  caption    String?
+  grupa      String?
+  albumName  String?
+  storyId    Int?
+  // Implicit true: pozele existente si incarcarile din admin raman vizibile
+  // ca pana acum. Portalul fotografului trimite valoarea explicit.
+  published  Boolean  @default(true)
+  uploadedBy Int?
+  createdAt  DateTime @default(now())
+  story      Story?   @relation(fields: [storyId], references: [id])
+  uploader   User?    @relation("PhotoUploader", fields: [uploadedBy], references: [id])
+
+  @@index([published, createdAt])
+}
+
+/// Filmulete incarcate ca fisier, separate de `Video` (care e strict YouTube
+/// si alimenteaza analiza tactica — un mp4 local nu se poate incorpora acolo).
+model VideoClip {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  grupa       String?
+  filename    String
+  path        String
+  posterPath  String?
+  mimeType    String
+  sizeBytes   Int
+  durationSec Float?
+  published   Boolean  @default(false)
+  uploadedBy  Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  uploader    User?    @relation("VideoClipUploader", fields: [uploadedBy], references: [id])
+
+  @@index([published, createdAt])
 }
 
 model Team {
@@ -851,10 +883,10 @@ model RefreshToken {
 /// Aici se aduna declaratiile ca atare; legarea de un copil existent ramane o
 /// decizie de om, in panoul de administrare.
 model AcordFoto {
-  id              String           @id @default(cuid())
-  parinteNume     String
-  parinteTelefon  String
-  parinteEmail    String
+  id               String           @id @default(cuid())
+  parinteNume      String
+  parinteTelefon   String
+  parinteEmail     String
   /// Situl clubului, dinamorugby.ro.
   consimtSite      Boolean          @default(false)
   /// Retelele publice, fiecare separat. Un parinte poate fi de acord cu
@@ -866,13 +898,13 @@ model AcordFoto {
   /// Grupurile private de WhatsApp ale echipei.
   consimtWhatsApp  Boolean          @default(false)
   /// Semnatura desenata pe ecran, ca imagine PNG in format data URL.
-  semnatura       String
+  semnatura        String
   /// Pastrate ca dovada ca declaratia a fost data: fara ele, un acord contestat
   /// nu se poate sustine cu nimic.
-  ip              String?
-  userAgent       String?
-  createdAt       DateTime         @default(now())
-  copii           AcordFotoCopil[]
+  ip               String?
+  userAgent        String?
+  createdAt        DateTime         @default(now())
+  copii            AcordFotoCopil[]
 }
 
 model AcordFotoCopil {
