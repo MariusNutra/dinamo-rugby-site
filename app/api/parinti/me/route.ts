@@ -66,6 +66,9 @@ export async function GET() {
     name: parent.name,
     email: parent.email,
     phone: parent.phone,
+    // Never expose the hash itself — the UI only needs to know whether a
+    // password exists, to decide between "set" and "change".
+    hasPassword: Boolean(parent.password),
     children: childrenWithStats,
   })
 }

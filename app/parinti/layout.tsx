@@ -56,6 +56,12 @@ export default function ParintiLayout({ children }: { children: React.ReactNode 
           </Link>
           <div className="flex items-center gap-4">
             {parentName && <span className="text-sm text-gray-600 hidden sm:block">{parentName}</span>}
+            <Link
+              href="/parinti/parola"
+              className="text-sm text-gray-500 hover:text-dinamo-red transition-colors"
+            >
+              Parola
+            </Link>
             <button
               onClick={handleLogout}
               className="text-sm text-gray-500 hover:text-dinamo-red transition-colors"

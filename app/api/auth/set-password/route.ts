@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { prisma } from '@/lib/prisma'
+import { validatePassword } from '@/lib/password-policy'
 
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET
@@ -23,11 +24,9 @@ export async function OPTIONS() {
 export async function POST(req: NextRequest) {
   const { password, token: magicToken } = await req.json()
 
-  if (!password || typeof password !== 'string' || password.length < 6) {
-    return NextResponse.json(
-      { error: 'Parola trebuie să aibă minim 6 caractere.' },
-      { status: 400 }
-    )
+  const check = validatePassword(password)
+  if (!check.ok) {
+    return NextResponse.json({ error: check.error }, { status: 400 })
   }
 
   let parentId: string | null = null

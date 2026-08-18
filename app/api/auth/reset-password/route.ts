@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
+import { validatePassword } from '@/lib/password-policy'
 import { revokeAllRefreshTokens } from '@/lib/unified-auth'
 
 export async function OPTIONS() {
@@ -25,11 +26,9 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  if (newPassword.length < 6) {
-    return NextResponse.json(
-      { error: 'Parola trebuie să aibă cel puțin 6 caractere.' },
-      { status: 400 }
-    )
+  const check = validatePassword(newPassword)
+  if (!check.ok) {
+    return NextResponse.json({ error: check.error }, { status: 400 })
   }
 
   const hashedPassword = await bcrypt.hash(newPassword, 12)

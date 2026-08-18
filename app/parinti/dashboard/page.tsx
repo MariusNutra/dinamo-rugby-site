@@ -26,6 +26,7 @@ interface ParentData {
   name: string
   email: string
   phone: string | null
+  hasPassword?: boolean
   children: ChildData[]
 }
 
@@ -426,6 +427,23 @@ export default function DashboardPage() {
         </h1>
         <p className="text-gray-600 text-sm">{parent.email}</p>
       </div>
+
+      {parent.hasPassword === false && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <p className="font-medium text-dinamo-blue">Seteaza-ti o parola</p>
+            <p className="text-sm text-gray-600">
+              Ca sa intri direct data viitoare, fara sa mai astepti link pe email.
+            </p>
+          </div>
+          <Link
+            href="/parinti/parola"
+            className="shrink-0 text-sm bg-dinamo-red text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium text-center"
+          >
+            Seteaza parola
+          </Link>
+        </div>
+      )}
 
       {/* Children Card */}
       <div className="bg-white rounded-lg shadow-sm border p-5">
