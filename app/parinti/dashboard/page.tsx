@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { usePush } from '@/hooks/usePush'
 
 interface ChildData {
   id: string
@@ -52,75 +53,10 @@ interface DocItem {
   team: { grupa: string } | null
 }
 
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ''
-
-function urlBase64ToUint8Array(base64String: string) {
-  const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
-  const rawData = window.atob(base64)
-  const outputArray = new Uint8Array(rawData.length)
-  for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i)
-  return outputArray
-}
-
 function PushNotificationToggle() {
-  const [supported, setSupported] = useState(false)
-  const [subscribed, setSubscribed] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const { suportat, abonat, seLucreaza, comuta } = usePush()
 
-  useEffect(() => {
-    if ('serviceWorker' in navigator && 'PushManager' in window && VAPID_PUBLIC_KEY) {
-      setSupported(true)
-      navigator.serviceWorker.ready.then(reg => {
-        reg.pushManager.getSubscription().then(sub => {
-          setSubscribed(!!sub)
-          setLoading(false)
-        })
-      }).catch(() => setLoading(false))
-    } else {
-      setLoading(false)
-    }
-  }, [])
-
-  const handleToggle = async () => {
-    setLoading(true)
-    try {
-      const reg = await navigator.serviceWorker.ready
-
-      if (subscribed) {
-        const sub = await reg.pushManager.getSubscription()
-        if (sub) {
-          await fetch('/api/push/unsubscribe', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ endpoint: sub.endpoint }),
-          })
-          await sub.unsubscribe()
-        }
-        setSubscribed(false)
-      } else {
-        const sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-        })
-        const subJson = sub.toJSON()
-        await fetch('/api/push/subscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            endpoint: subJson.endpoint,
-            keys: subJson.keys,
-          }),
-        })
-        setSubscribed(true)
-      }
-    } catch {
-      // Permission denied or error
-    }
-    setLoading(false)
-  }
-
-  if (!supported) return null
+  if (!suportat) return null
 
   return (
     <div className="bg-white rounded-lg shadow-sm border p-5">
@@ -130,14 +66,15 @@ function PushNotificationToggle() {
           <p className="text-gray-500 text-sm mt-0.5">Primește notificări instant pe telefon</p>
         </div>
         <button
-          onClick={handleToggle}
-          disabled={loading}
+          onClick={comuta}
+          disabled={seLucreaza}
+          aria-label={abonat ? 'Opreste notificarile' : 'Porneste notificarile'}
           className={`relative w-12 h-7 rounded-full transition-colors ${
-            subscribed ? 'bg-green-500' : 'bg-gray-300'
-          } ${loading ? 'opacity-50' : ''}`}
+            abonat ? 'bg-green-500' : 'bg-gray-300'
+          } ${seLucreaza ? 'opacity-50' : ''}`}
         >
           <span className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-            subscribed ? 'translate-x-5' : ''
+            abonat ? 'translate-x-5' : ''
           }`} />
         </button>
       </div>
@@ -462,9 +399,14 @@ export default function DashboardPage() {
                       <span className="ml-2 text-xs bg-dinamo-blue text-white px-2 py-0.5 rounded-full">{child.teamName}</span>
                     )}
                   </div>
-                  <Link href={`/parinti/sportiv/${child.id}`} className="text-xs bg-dinamo-red text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors font-medium">
-                    Profil sportiv &rarr;
-                  </Link>
+                  <div className="flex shrink-0 gap-1.5">
+                    <Link href={`/parinti/acces-sportiv/${child.id}`} className="text-xs border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg hover:border-dinamo-red hover:text-dinamo-red transition-colors font-medium">
+                      Acces
+                    </Link>
+                    <Link href={`/parinti/sportiv/${child.id}`} className="text-xs bg-dinamo-red text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors font-medium">
+                      Profil sportiv &rarr;
+                    </Link>
+                  </div>
                 </div>
                 {child.sportivStats && (
                   <div className="flex gap-4 mt-2 text-xs text-gray-500">

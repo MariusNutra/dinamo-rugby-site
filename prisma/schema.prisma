@@ -223,34 +223,41 @@ model Parent {
 }
 
 model Child {
-  id               String            @id @default(cuid())
-  name             String
-  birthYear        Int
-  parentId         String
-  teamId           Int?
-  photoConsent     Boolean           @default(false)
-  photoConsentWA   Boolean           @default(false)
-  photoConsentDate DateTime?
-  signatureData    String?
-  medicalCert      Boolean           @default(false)
-  publicProfile    Boolean           @default(false)
-  publicBio        String?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  badges           AthleteBadge[]
-  attendances      Attendance[]
-  team             Team?             @relation(fields: [teamId], references: [id])
-  parent           Parent            @relation(fields: [parentId], references: [id], onDelete: Cascade)
-  childPhotos      ChildPhoto[]
-  evaluations      Evaluation[]
-  fitnessData      FitnessData[]
-  fitnessDevices   FitnessDevice[]
-  medicalRecords   MedicalRecord[]
-  payments         Payment[]
-  physicalProfiles PhysicalProfile[]
-  points           Points[]
-  requests         Request[]
-  transfers        TransferLog[]
+  id                String             @id @default(cuid())
+  name              String
+  birthYear         Int
+  parentId          String
+  /// Acces propriu al sportivului, deschis de parinte din portalul lui.
+  /// Fara email: sub 16 ani copilul nu poate consimti singur la prelucrarea
+  /// datelor, deci nu-i cerem adresa. Numele de utilizator e derivat din nume.
+  username          String?            @unique
+  password          String?
+  accessEnabled     Boolean            @default(false)
+  teamId            Int?
+  photoConsent      Boolean            @default(false)
+  photoConsentWA    Boolean            @default(false)
+  photoConsentDate  DateTime?
+  signatureData     String?
+  medicalCert       Boolean            @default(false)
+  publicProfile     Boolean            @default(false)
+  publicBio         String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  badges            AthleteBadge[]
+  attendances       Attendance[]
+  team              Team?              @relation(fields: [teamId], references: [id])
+  parent            Parent             @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  childPhotos       ChildPhoto[]
+  evaluations       Evaluation[]
+  fitnessData       FitnessData[]
+  fitnessDevices    FitnessDevice[]
+  medicalRecords    MedicalRecord[]
+  payments          Payment[]
+  physicalProfiles  PhysicalProfile[]
+  points            Points[]
+  pushSubscriptions PushSubscription[]
+  requests          Request[]
+  transfers         TransferLog[]
 }
 
 model AccessRequest {
@@ -528,14 +535,20 @@ model TransferLog {
 
 model PushSubscription {
   id        String   @id @default(cuid())
-  parentId  String
+  /// Exact unul dintre parentId / childId este completat: dispozitivul apartine
+  /// ori parintelui, ori sportivului. Baza nu poate exprima „exact unul", deci
+  /// regula e tinuta in ruta de abonare.
+  parentId  String?
+  childId   String?
   endpoint  String   @unique
   p256dh    String
   auth      String
   createdAt DateTime @default(now())
-  parent    Parent   @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  parent    Parent?  @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  child     Child?   @relation(fields: [childId], references: [id], onDelete: Cascade)
 
   @@index([parentId])
+  @@index([childId])
 }
 
 model Document {

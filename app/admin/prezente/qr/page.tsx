@@ -69,9 +69,9 @@ export default function QRAttendancePage() {
 
   const getCheckinUrl = (qrToken: string) => {
     if (typeof window !== 'undefined') {
-      return `${window.location.origin}/parinti/checkin?token=${qrToken}`
+      return `${window.location.origin}/prezenta?token=${qrToken}`
     }
-    return `/parinti/checkin?token=${qrToken}`
+    return `/prezenta?token=${qrToken}`
   }
 
   return (

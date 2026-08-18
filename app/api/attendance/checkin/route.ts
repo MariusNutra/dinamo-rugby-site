@@ -1,16 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getParentId } from '@/lib/parent-auth'
+import { getAthleteChildId } from '@/lib/athlete-auth'
 
 // POST - Check in a child via QR token
+//
+// Se pot bifa doua feluri de utilizatori: parintele, pentru oricare dintre
+// copiii lui, si sportivul, doar pentru el insusi. Cand e logat sportivul,
+// `childId` din cerere se ignora — copilul vine din sesiune, nu din corpul
+// cererii, altfel un sportiv ar putea inregistra prezenta altuia.
 export async function POST(req: NextRequest) {
-  const parentId = await getParentId()
-  if (!parentId) {
+  const athleteChildId = await getAthleteChildId()
+  const parentId = athleteChildId ? null : await getParentId()
+
+  if (!athleteChildId && !parentId) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
 
   try {
-    const { qrToken, childId } = await req.json()
+    const corp = await req.json()
+    const qrToken = corp.qrToken
+    const childId: string = athleteChildId ?? corp.childId
 
     if (!qrToken || !childId) {
       return NextResponse.json({ error: 'qrToken și childId sunt obligatorii' }, { status: 400 })
@@ -30,10 +40,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Sesiunea a expirat' }, { status: 410 })
     }
 
-    // Validate child belongs to parent and to the right team
-    const child = await prisma.child.findFirst({
-      where: { id: childId, parentId },
-    })
+    // Pentru parinte, proprietarul intra in interogare. Pentru sportiv, id-ul
+    // vine deja din sesiune, dar accesul lui poate fi inchis intre timp de
+    // parinte — un cookie inca valid nu trece peste decizia asta.
+    const child = athleteChildId
+      ? await prisma.child.findFirst({ where: { id: childId, accessEnabled: true } })
+      : await prisma.child.findFirst({ where: { id: childId, parentId: parentId as string } })
 
     if (!child) {
       return NextResponse.json({ error: 'Copilul nu a fost găsit' }, { status: 404 })
