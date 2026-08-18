@@ -247,7 +247,47 @@ export default function AdminMagazinPage() {
               <p className="text-gray-500">Niciun produs in magazin</p>
             </div>
           ) : (
-            <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+            <>
+            {/* Fise pe telefon. Aici tabelul statea intr-un `overflow-hidden`,
+                deci cele 628px cerute pe un ecran de 356 nu erau doar ascunse —
+                nu se putea derula pana la ele: pretul, stocul si butoanele
+                pur si simplu nu existau pe telefon. */}
+            <ul className="space-y-2 xl:hidden">
+              {products.map(p => (
+                <li key={p.id} className="rounded-lg border bg-white px-3 py-2.5 shadow-sm">
+                  <div className="flex items-start gap-3">
+                    {p.image && <img src={p.image} alt={p.name} className="h-10 w-10 shrink-0 rounded object-cover" />}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium">{p.name}</p>
+                      <p className="line-clamp-1 text-xs text-gray-500">{p.description}</p>
+                    </div>
+                    <span className="shrink-0 font-bold text-dinamo-red">{p.price.toLocaleString('ro-RO')} RON</span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700">{p.category}</span>
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                      p.stock > 10 ? 'bg-green-100 text-green-700' :
+                      p.stock > 0 ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-red-100 text-red-700'
+                    }`}>
+                      Stoc {p.stock}
+                    </span>
+                    <button onClick={() => toggleActive(p)}
+                      className={`rounded px-2 py-1 text-xs ${p.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                      {p.active ? 'Activ' : 'Inactiv'}
+                    </button>
+                    <span className="ml-auto flex gap-1">
+                      <button onClick={() => startEdit(p)}
+                        className="rounded bg-blue-50 px-2 py-1 text-xs text-blue-600">Editeaza</button>
+                      <button onClick={() => handleDelete(p.id)}
+                        className="rounded bg-red-50 px-2 py-1 text-xs text-red-600">Sterge</button>
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            <div className="hidden rounded-lg border bg-white shadow-sm overflow-x-auto xl:block">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50">
                   <tr>
@@ -307,6 +347,7 @@ export default function AdminMagazinPage() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </>
       )}

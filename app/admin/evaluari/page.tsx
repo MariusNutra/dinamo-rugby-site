@@ -144,6 +144,7 @@ export default function EvaluariPage() {
           {evaluations.length === 0 ? (
             <p className="text-gray-400 text-sm text-center py-8">Nu exista evaluari pentru aceasta echipa.</p>
           ) : (
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50">
                 <tr>
@@ -170,6 +171,7 @@ export default function EvaluariPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       )}

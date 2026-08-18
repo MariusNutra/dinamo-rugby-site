@@ -69,7 +69,36 @@ export default function AuditPage() {
           Nu exista intrari in jurnal.
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+        <>
+          {/* Fise pe telefon: tabelul cere 791px pe un ecran de 356, deci IP-ul
+              si detaliile — motivul pentru care te uiti in jurnal — raman in
+              afara ecranului. */}
+          <ul className="space-y-2 xl:hidden">
+            {logs.map(log => (
+              <li key={log.id} className="rounded-xl bg-white px-3 py-2.5 shadow-md">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-bold ${ACTION_COLORS[log.action] || 'bg-gray-100 text-gray-600'}`}>
+                    {log.action}
+                  </span>
+                  <span className="shrink-0 text-xs text-gray-500">
+                    {new Date(log.createdAt).toLocaleString('ro-RO')}
+                  </span>
+                </div>
+                <p className="mt-1.5 text-sm text-gray-900">
+                  <span className="font-medium">{log.username || '\u2014'}</span>
+                  {' · '}
+                  <span className="text-gray-700">
+                    {log.entity}
+                    {log.entityId && <span className="ml-1 text-xs text-gray-400">#{log.entityId.slice(0, 8)}</span>}
+                  </span>
+                </p>
+                {log.details && <p className="mt-1 break-words text-xs text-gray-500">{log.details}</p>}
+                {log.ip && <p className="mt-1 font-mono text-xs text-gray-400">{log.ip}</p>}
+              </li>
+            ))}
+          </ul>
+
+        <div className="hidden rounded-xl bg-white shadow-md overflow-hidden xl:block">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -112,6 +141,7 @@ export default function AuditPage() {
             </table>
           </div>
         </div>
+        </>
       )}
     </div>
   )

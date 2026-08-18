@@ -256,8 +256,77 @@ export default function AdminAcorduriPage() {
         </select>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-lg shadow-sm border overflow-x-auto">
+      {/* Fise pe telefon: tabelul cere 866px pe un ecran de 356, deci starea
+          acordului, contactul si butoanele ramaneau in afara ecranului. */}
+      <ul className="space-y-2 xl:hidden">
+        {children.length === 0 ? (
+          <li className="rounded-lg border bg-white py-8 text-center text-gray-500">Niciun rezultat.</li>
+        ) : (
+          children.map(child => (
+            <li key={child.id} className="rounded-lg border bg-white px-3 py-2.5 shadow-sm">
+              <div className="flex items-baseline justify-between gap-2">
+                <p className="min-w-0 font-medium text-gray-900">{child.name}</p>
+                <span className="shrink-0 text-xs text-gray-500">
+                  {[child.birthYear, child.teamName].filter(Boolean).join(' · ')}
+                </span>
+              </div>
+
+              <div className="mt-1.5 text-sm">
+                {child.photoConsentDate ? (
+                  <span className="text-gray-700">
+                    Site <strong className={child.photoConsent ? 'text-green-600' : 'text-red-500'}>
+                      {child.photoConsent ? 'Da' : 'Nu'}
+                    </strong>
+                    {' · WhatsApp '}
+                    <strong className={child.photoConsentWA ? 'text-green-600' : 'text-red-500'}>
+                      {child.photoConsentWA ? 'Da' : 'Nu'}
+                    </strong>
+                    <span className="text-gray-500">
+                      {' · '}{new Date(child.photoConsentDate).toLocaleDateString('ro-RO')}
+                    </span>
+                  </span>
+                ) : (
+                  <span className="font-medium text-amber-600">Nesemnat</span>
+                )}
+              </div>
+
+              <p className="mt-1.5 text-sm text-gray-700">{child.parentName}</p>
+              <p className="break-all text-xs text-gray-500">{child.parentEmail}</p>
+              {child.parentPhone && (
+                <p className="text-xs">
+                  <a href={`tel:${child.parentPhone}`} className="text-dinamo-red hover:underline">{child.parentPhone}</a>
+                </p>
+              )}
+
+              {(child.signatureData || !child.photoConsentDate) && (
+                <div className="mt-2 flex gap-1">
+                  {child.signatureData && (
+                    <button
+                      onClick={() => viewSignature(child.id, child.name)}
+                      disabled={loadingSignature}
+                      className="rounded bg-blue-50 px-2 py-1 text-xs text-blue-600 transition-colors hover:bg-blue-100"
+                    >
+                      Semnatura
+                    </button>
+                  )}
+                  {!child.photoConsentDate && (
+                    <button
+                      onClick={() => sendReminder(child.id)}
+                      disabled={sendingReminder === child.id}
+                      className="rounded bg-amber-50 px-2 py-1 text-xs text-amber-600 transition-colors hover:bg-amber-100"
+                    >
+                      {sendingReminder === child.id ? '...' : 'Reminder'}
+                    </button>
+                  )}
+                </div>
+              )}
+            </li>
+          ))
+        )}
+      </ul>
+
+      {/* Tabel */}
+      <div className="hidden rounded-lg border bg-white shadow-sm overflow-x-auto xl:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-gray-50">
@@ -311,7 +380,7 @@ export default function AdminAcorduriPage() {
                   </td>
                   <td className="px-4 py-3">{child.parentName}</td>
                   <td className="px-4 py-3">
-                    <div className="text-xs">{child.parentEmail}</div>
+                    <div className="break-all text-xs">{child.parentEmail}</div>
                     {child.parentPhone && <div className="text-xs text-gray-500">{child.parentPhone}</div>}
                   </td>
                   <td className="px-4 py-3 text-center">

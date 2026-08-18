@@ -336,23 +336,23 @@ export default function AdminFederatiePage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-100 text-xs text-gray-500 uppercase">
-                      <th className="px-3 py-2 text-left">Nume</th>
-                      <th className="px-3 py-2 text-center">An nastere</th>
-                      <th className="px-3 py-2 text-center">Grupa</th>
-                      <th className="px-3 py-2 text-center">Cert. Medical</th>
+                      <th className="px-2 py-2 sm:px-3 text-left">Nume</th>
+                      <th className="px-2 py-2 sm:px-3 text-center">An nastere</th>
+                      <th className="px-2 py-2 sm:px-3 text-center">Grupa</th>
+                      <th className="px-2 py-2 sm:px-3 text-center">Cert. Medical</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredAthletes.slice(0, 10).map(a => (
                       <tr key={a.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="px-3 py-2.5 font-medium">{a.name}</td>
-                        <td className="px-3 py-2.5 text-center text-gray-600">{a.birthYear}</td>
-                        <td className="px-3 py-2.5 text-center">
+                        <td className="px-2 py-2.5 sm:px-3 font-medium">{a.name}</td>
+                        <td className="px-2 py-2.5 sm:px-3 text-center text-gray-600">{a.birthYear}</td>
+                        <td className="px-2 py-2.5 sm:px-3 text-center">
                           <span className="text-xs font-medium bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
                             {a.teamGrupa || 'Fara'}
                           </span>
                         </td>
-                        <td className="px-3 py-2.5 text-center">
+                        <td className="px-2 py-2.5 sm:px-3 text-center">
                           {a.medicalCert ? (
                             <span className="text-green-600 text-xs font-bold">Da</span>
                           ) : (

@@ -191,26 +191,26 @@ export default function StatisticiPage() {
                     <table className="w-full text-left">
                       <thead>
                         <tr className="bg-dinamo-blue text-white">
-                          <th className="px-4 py-3 text-sm font-semibold w-12">#</th>
-                          <th className="px-4 py-3 text-sm font-semibold">Nume</th>
-                          <th className="px-4 py-3 text-sm font-semibold">Echipa</th>
-                          <th className="px-4 py-3 text-sm font-semibold text-center">
+                          <th className="px-2 py-3 text-sm sm:px-4 font-semibold w-12">#</th>
+                          <th className="px-2 py-3 text-sm sm:px-4 font-semibold">Nume</th>
+                          <th className="px-2 py-3 text-sm sm:px-4 font-semibold">Echipa</th>
+                          <th className="px-2 py-3 text-sm sm:px-4 font-semibold text-center">
                             Total prezente
                           </th>
-                          <th className="px-4 py-3 text-sm font-semibold text-center">Procent</th>
+                          <th className="px-2 py-3 text-sm sm:px-4 font-semibold text-center">Procent</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {stats.topAttendance.map((entry, idx) => (
                           <tr key={entry.childId} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 text-sm font-bold text-dinamo-red">
+                            <td className="px-2 py-3 text-sm sm:px-4 font-bold text-dinamo-red">
                               {idx + 1}
                             </td>
-                            <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                            <td className="px-2 py-3 text-sm sm:px-4 font-medium text-gray-900">
                               {entry.name}
                             </td>
-                            <td className="px-4 py-3 text-sm text-gray-600">{entry.grupa}</td>
-                            <td className="px-4 py-3 text-sm text-center font-semibold">
+                            <td className="px-2 py-3 text-sm sm:px-4 text-gray-600">{entry.grupa}</td>
+                            <td className="px-2 py-3 text-sm sm:px-4 text-center font-semibold">
                               {entry.totalPresent}
                               <span className="text-gray-400 font-normal">
                                 {' '}
@@ -252,22 +252,22 @@ export default function StatisticiPage() {
                     <table className="w-full text-left">
                       <thead>
                         <tr className="bg-dinamo-blue text-white">
-                          <th className="px-4 py-3 text-sm font-semibold w-12">#</th>
-                          <th className="px-4 py-3 text-sm font-semibold">Nume</th>
-                          <th className="px-4 py-3 text-sm font-semibold">Echipa</th>
-                          <th className="px-4 py-3 text-sm font-semibold">Scor mediu</th>
+                          <th className="px-2 py-3 text-sm sm:px-4 font-semibold w-12">#</th>
+                          <th className="px-2 py-3 text-sm sm:px-4 font-semibold">Nume</th>
+                          <th className="px-2 py-3 text-sm sm:px-4 font-semibold">Echipa</th>
+                          <th className="px-2 py-3 text-sm sm:px-4 font-semibold">Scor mediu</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {stats.topEvaluations.map((entry, idx) => (
                           <tr key={entry.childId} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 text-sm font-bold text-dinamo-red">
+                            <td className="px-2 py-3 text-sm sm:px-4 font-bold text-dinamo-red">
                               {idx + 1}
                             </td>
-                            <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                            <td className="px-2 py-3 text-sm sm:px-4 font-medium text-gray-900">
                               {entry.name}
                             </td>
-                            <td className="px-4 py-3 text-sm text-gray-600">{entry.grupa}</td>
+                            <td className="px-2 py-3 text-sm sm:px-4 text-gray-600">{entry.grupa}</td>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-3">
                                 <div className="flex-1 bg-gray-200 rounded-full h-3">

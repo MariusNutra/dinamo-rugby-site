@@ -144,7 +144,7 @@ export default function AdminComenziPage() {
           </div>
 
           {/* Orders table - desktop */}
-          <div className="hidden md:block bg-white rounded-xl shadow-md border overflow-hidden">
+          <div className="hidden md:block bg-white rounded-xl shadow-md border overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50">
                 <tr>

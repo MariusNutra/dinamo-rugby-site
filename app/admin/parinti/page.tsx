@@ -339,8 +339,59 @@ export default function AdminParintiPage() {
         </div>
       )}
 
-      {/* Parents table */}
-      <div className="bg-white rounded-lg shadow-sm border overflow-x-auto">
+      {/* Fise pe telefon: tabelul cere 792px pe un ecran de 356, deci coloana
+          de actiuni (invitatie, stergere) ramanea in afara ecranului. */}
+      <ul className="space-y-2 xl:hidden">
+        {parents.length === 0 ? (
+          <li className="rounded-lg border bg-white py-8 text-center text-gray-500">Niciun parinte inregistrat.</li>
+        ) : (
+          parents.map(parent => (
+            <li key={parent.id} className="rounded-lg border bg-white px-3 py-2.5 shadow-sm">
+              <div className="flex items-baseline justify-between gap-2">
+                <p className="min-w-0 font-medium text-gray-900">{parent.name}</p>
+                <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-dinamo-blue text-xs font-bold text-white">
+                  {parent.children.length}
+                </span>
+              </div>
+              <p className="break-all text-sm text-gray-700">{parent.email}</p>
+              {parent.phone && (
+                <p className="text-sm">
+                  <a href={`tel:${parent.phone}`} className="text-dinamo-red hover:underline">{parent.phone}</a>
+                </p>
+              )}
+              <div className="mt-2 flex items-center gap-3">
+                <span className={`text-sm font-medium ${
+                  parent.acorduriSigned === parent.acorduriTotal && parent.acorduriTotal > 0
+                    ? 'text-green-600'
+                    : parent.acorduriSigned > 0
+                      ? 'text-amber-600'
+                      : 'text-gray-400'
+                }`}>
+                  Acorduri {parent.acorduriSigned}/{parent.acorduriTotal}
+                </span>
+                <span className="ml-auto flex gap-1">
+                  <button
+                    onClick={() => handleInvite(parent.id)}
+                    disabled={invitingId === parent.id}
+                    className="rounded-lg px-2 py-1.5 text-xs font-medium text-dinamo-blue transition-colors hover:bg-blue-50 disabled:opacity-50"
+                  >
+                    {invitingId === parent.id ? 'Se trimite...' : 'Trimite invitatie'}
+                  </button>
+                  <button
+                    onClick={() => handleDelete(parent.id, parent.name)}
+                    className="rounded-lg px-2 py-1.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-50"
+                  >
+                    Sterge
+                  </button>
+                </span>
+              </div>
+            </li>
+          ))
+        )}
+      </ul>
+
+      {/* Tabel */}
+      <div className="hidden rounded-lg border bg-white shadow-sm overflow-x-auto xl:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-gray-50">
@@ -363,7 +414,7 @@ export default function AdminParintiPage() {
               parents.map(parent => (
                 <tr key={parent.id} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium text-gray-900">{parent.name}</td>
-                  <td className="px-4 py-3 text-gray-700">{parent.email}</td>
+                  <td className="break-all px-4 py-3 text-gray-700">{parent.email}</td>
                   <td className="px-4 py-3 text-gray-700">{parent.phone || '—'}</td>
                   <td className="px-4 py-3 text-center">
                     <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-dinamo-blue text-white text-xs font-bold">
