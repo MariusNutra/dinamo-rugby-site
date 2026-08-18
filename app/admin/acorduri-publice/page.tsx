@@ -176,9 +176,11 @@ export default function AcorduriPublicePage() {
   const cuAcord = randuri.filter((r) => areVreunAcord(r.acord)).length
   const cuPoza = randuri.filter((r) => r.pozaUrl).length
 
-  const th = 'px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-gray-500'
+  const th = 'px-1.5 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-gray-500'
   const thSort = `${th} cursor-pointer select-none hover:text-dinamo-red`
-  const td = 'px-3 py-2.5 text-sm text-gray-700 whitespace-nowrap'
+  const td = 'px-1.5 py-2.5 text-sm text-gray-700'
+  /** Doar pentru celulele scurte, care nu trebuie rupte: data, grupa, telefon. */
+  const tdFix = `${td} whitespace-nowrap`
   const campEdit = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-dinamo-red focus:ring-2 focus:ring-dinamo-red/30'
   /** Insignele de acord, in ordinea in care apar si in formular. */
   const insigne = (a: Acord) => [
@@ -256,7 +258,66 @@ export default function AcorduriPublicePage() {
 
       {randuri.length > 0 && (
         <>
-          <div className="mt-4 overflow-x-auto rounded-lg border border-gray-200 bg-white">
+          {/* Pe telefon, cele zece coloane nu incap: tabelul intra in derulare
+              laterala si se vedeau doar data si numele. Aceleasi date, ca fise,
+              pana la `lg`; de acolo in sus tabelul incape si ramane el. */}
+          {/* Pe telefon, cele zece coloane nu incap: tabelul intra in derulare
+              laterala si se vedeau doar data si numele. Aceleasi date, ca fise
+              compacte — o fisa mai inalta decat un rand de tabel inseamna mai
+              multa derulare, adica exact problema de la care am plecat. */}
+          <ul className="mt-4 space-y-2 xl:hidden">
+            {randuriFiltrate.map((r) => (
+              <li key={r.id} className="rounded-lg border border-gray-200 bg-white px-3 py-2.5">
+                <div className="flex items-baseline justify-between gap-2">
+                  <p className="min-w-0 font-semibold text-gray-900">{r.nume}</p>
+                  <span className="shrink-0 rounded bg-gray-100 px-2 py-0.5 text-xs font-bold">{r.grupa}</span>
+                </div>
+
+                <p className="mt-0.5 text-xs text-gray-500">
+                  {[r.anNastere, r.pozitie, new Date(r.acord.createdAt).toLocaleDateString('ro-RO')]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+
+                <p className="mt-1.5 text-sm text-gray-700">
+                  {r.acord.parinteNume}
+                  {' · '}
+                  <a href={`tel:${r.acord.parinteTelefon}`} className="whitespace-nowrap text-dinamo-red hover:underline">
+                    {r.acord.parinteTelefon}
+                  </a>
+                </p>
+
+                <div className="mt-2 flex flex-wrap items-center gap-1">
+                  {areVreunAcord(r.acord) ? (
+                    insigne(r.acord).map((i) => (
+                      <span key={i} className="rounded bg-green-100 px-1.5 py-0.5 text-xs font-bold text-green-800">{i}</span>
+                    ))
+                  ) : (
+                    <span className="rounded bg-gray-200 px-1.5 py-0.5 text-xs font-bold text-gray-700">Refuz</span>
+                  )}
+                  {r.pozaUrl && (
+                    <span className="rounded bg-blue-100 px-1.5 py-0.5 text-xs font-bold text-blue-800">Poză</span>
+                  )}
+                  <span className="ml-auto flex gap-3">
+                    <button onClick={() => setDetaliu(r)}
+                      className="text-sm font-semibold text-dinamo-red underline hover:text-dinamo-dark">
+                      Vezi
+                    </button>
+                    <button onClick={() => deschideEditarea(r)}
+                      className="text-sm font-semibold text-gray-600 underline hover:text-dinamo-red">
+                      Editează
+                    </button>
+                    <button onClick={() => sterge(r)}
+                      className="text-sm font-semibold text-gray-400 underline hover:text-red-600">
+                      Șterge
+                    </button>
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-4 hidden overflow-x-auto rounded-lg border border-gray-200 bg-white xl:block">
             <table className="w-full min-w-[900px]">
               <thead className="border-b border-gray-200 bg-gray-50">
                 <tr>
@@ -267,43 +328,44 @@ export default function AcorduriPublicePage() {
                   <th className={th}>Post</th>
                   <th className={thSort} onClick={() => sorteazaDupa('parinte')}>Părinte{sageata('parinte')}</th>
                   <th className={th}>Telefon</th>
-                  <th className={th}>Acord</th>
-                  <th className={th}>Poză</th>
+                  <th className={th}>Acord / poză</th>
                   <th className={th}></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {randuriFiltrate.map((r) => (
                   <tr key={r.id} className="hover:bg-gray-50">
-                    <td className={`${td} text-gray-500`}>
+                    <td className={`${tdFix} text-gray-500`}>
                       {new Date(r.acord.createdAt).toLocaleDateString('ro-RO')}
                     </td>
                     <td className={`${td} font-semibold text-gray-900`}>{r.nume}</td>
-                    <td className={td}>
+                    <td className={tdFix}>
                       <span className="rounded bg-gray-100 px-2 py-0.5 text-xs font-bold">{r.grupa}</span>
                     </td>
-                    <td className={td}>{r.anNastere}</td>
+                    <td className={tdFix}>{r.anNastere}</td>
                     <td className={`${td} text-gray-500`}>{r.pozitie || '—'}</td>
                     <td className={td}>{r.acord.parinteNume}</td>
-                    <td className={td}>
+                    <td className={tdFix}>
                       <a href={`tel:${r.acord.parinteTelefon}`} className="text-dinamo-red hover:underline">
                         {r.acord.parinteTelefon}
                       </a>
                     </td>
-                    <td className={td}>
-                      {areVreunAcord(r.acord) ? (
-                        <span className="flex flex-wrap gap-1">
-                          {insigne(r.acord).map((i) => (
+                    <td className={tdFix}>
+                      <span className="flex gap-1">
+                        {areVreunAcord(r.acord) ? (
+                          insigne(r.acord).map((i) => (
                             <span key={i} className="rounded bg-green-100 px-1.5 py-0.5 text-xs font-bold text-green-800">{i}</span>
-                          ))}
-                        </span>
-                      ) : (
-                        <span className="rounded bg-gray-200 px-1.5 py-0.5 text-xs font-bold text-gray-700">Refuz</span>
-                      )}
+                          ))
+                        ) : (
+                          <span className="rounded bg-gray-200 px-1.5 py-0.5 text-xs font-bold text-gray-700">Refuz</span>
+                        )}
+                        {r.pozaUrl && (
+                          <span className="rounded bg-blue-100 px-1.5 py-0.5 text-xs font-bold text-blue-800">Poză</span>
+                        )}
+                      </span>
                     </td>
-                    <td className={td}>{r.pozaUrl ? '✓' : '—'}</td>
-                    <td className={td}>
-                      <div className="flex gap-3">
+                    <td className={tdFix}>
+                      <div className="flex gap-2">
                         <button onClick={() => setDetaliu(r)}
                           className="text-sm font-semibold text-dinamo-red underline hover:text-dinamo-dark">
                           Vezi
