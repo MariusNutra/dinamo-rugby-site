@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       const resetUrl = `https://dinamorugby.ro/reset-password?token=${resetToken}&type=parent`
       await sendEmail({
         to: normalizedEmail,
-        subject: 'Resetare parolă — CS Dinamo Rugby',
+        subject: 'Resetare parolă — Dinamo Rugby Juniori',
         html: resetPasswordEmailHtml(parent.name, resetUrl),
       })
 
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
       const resetUrl = `https://dinamorugby.ro/reset-password?token=${resetToken}&type=coach`
       await sendEmail({
         to: normalizedEmail,
-        subject: 'Resetare parolă — CS Dinamo Rugby',
+        subject: 'Resetare parolă — Dinamo Rugby Juniori',
         html: resetPasswordEmailHtml(coach.name, resetUrl),
       })
 
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
       const resetUrl = `https://dinamorugby.ro/reset-password?token=${resetToken}&type=admin`
       await sendEmail({
         to: normalizedEmail,
-        subject: 'Resetare parolă — CS Dinamo Rugby',
+        subject: 'Resetare parolă — Dinamo Rugby Juniori',
         html: resetPasswordEmailHtml(user.name, resetUrl),
       })
 
@@ -104,7 +104,7 @@ function resetPasswordEmailHtml(name: string, resetUrl: string): string {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #C8102E; margin: 0;">CS Dinamo București Rugby</h1>
+        <h1 style="color: #C8102E; margin: 0;">Dinamo Rugby Juniori</h1>
       </div>
       <h2 style="color: #333;">Resetare parolă</h2>
       <p>Salut ${name},</p>
@@ -118,7 +118,7 @@ function resetPasswordEmailHtml(name: string, resetUrl: string): string {
       <p style="color: #666; font-size: 14px;">Acest link expiră în 1 oră.</p>
       <p style="color: #666; font-size: 14px;">Dacă nu ai cerut resetarea parolei, poți ignora acest email.</p>
       <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-      <p style="color: #999; font-size: 12px; text-align: center;">CS Dinamo București Rugby Juniori</p>
+      <p style="color: #999; font-size: 12px; text-align: center;">Dinamo Rugby Juniori</p>
     </div>
   `
 }
