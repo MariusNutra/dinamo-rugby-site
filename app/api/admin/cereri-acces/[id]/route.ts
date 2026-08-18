@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requirePermission } from '@/lib/authz'
-import nodemailer from 'nodemailer'
-
-const transporter = nodemailer.createTransport({
-  host: 'localhost',
-  port: 25,
-  secure: false,
-  tls: { rejectUnauthorized: false },
-})
+import { sendEmail } from '@/lib/email'
+import { trimiteInvitatieParinte, anuntaAprobareParinteCuParola } from '@/lib/invitatie-parinte'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
@@ -82,44 +76,21 @@ export async function PATCH(
         return { parent, child, updatedRequest }
       })
 
-      // Send approval email
-      try {
-        await transporter.sendMail({
-          from: '"Dinamo Rugby Juniori" <noreply@dinamorugby.ro>',
-          to: request.email,
-          subject: 'Cererea ta a fost aprobata — Dinamo Rugby Juniori',
-          text: `Salut ${request.parentName},\n\nCererea ta de acces la Portalul Parintilor a fost aprobata!\n\nCopilul ${request.childName} a fost inregistrat${request.team ? ` in grupa ${request.team.grupa}` : ''}.\n\nAcceseaza portalul la adresa:\n${SITE_URL}/parinti\n\nFoloseste adresa de email ${request.email} pentru a solicita un link de conectare.\n\n— Echipa Dinamo Rugby Juniori`,
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <div style="text-align: center; padding: 20px 0;">
-                <h2 style="color: #1e3a5f; margin: 0;">Dinamo Rugby Juniori</h2>
-                <p style="color: #666; margin: 5px 0 0;">Portal Parinti</p>
-              </div>
-              <div style="background: #f0fdf4; border-radius: 8px; padding: 30px; margin: 20px 0;">
-                <p style="margin: 0 0 15px;">Salut <strong>${request.parentName}</strong>,</p>
-                <p style="margin: 0 0 15px; color: #16a34a; font-weight: bold;">Cererea ta de acces a fost aprobata!</p>
-                <p style="margin: 0 0 15px;">Copilul <strong>${request.childName}</strong> a fost inregistrat${request.team ? ` in grupa <strong>${request.team.grupa}</strong>` : ''}.</p>
-                <p style="margin: 0 0 25px;">Acceseaza portalul pentru a semna acordurile foto si a gestiona datele:</p>
-                <p style="text-align: center; margin: 0 0 25px;">
-                  <a href="${SITE_URL}/parinti" style="background: #DC2626; color: white; padding: 14px 35px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block;">
-                    Acceseaza Portalul
-                  </a>
-                </p>
-                <p style="color: #666; font-size: 13px; margin: 0;">Foloseste adresa <strong>${request.email}</strong> pentru a solicita un link de conectare.</p>
-              </div>
-              <p style="color: #999; font-size: 12px; text-align: center;">
-                Acest email a fost trimis de echipa Dinamo Rugby Juniori.
-              </p>
-            </div>
-          `,
-        })
-      } catch (emailError) {
-        console.error('Error sending approval email:', emailError)
+      // Contul nou n-are parola, deci mailul trebuie sa duca la setarea ei, nu la
+      // portal — altfel parintele ajunge pe un formular pe care nu-l poate trece.
+      const copiiPentruMail = [{ name: result.child.name, birthYear: result.child.birthYear, team: request.team }]
+      const trimis = result.parent.password
+        ? await anuntaAprobareParinteCuParola(result.parent, copiiPentruMail)
+        : await trimiteInvitatieParinte(result.parent, copiiPentruMail, { aprobareCerere: true })
+
+      if (!trimis) {
+        console.error('Cererea a fost aprobata, dar mailul catre parinte nu a plecat:', result.parent.email)
       }
 
       return NextResponse.json({
         success: true,
-        message: 'Cererea a fost aprobata',
+        message: trimis ? 'Cererea a fost aprobata' : 'Cererea a fost aprobata, dar emailul nu a plecat',
+        emailTrimis: trimis,
         parent: { id: result.parent.id, name: result.parent.name },
         child: { id: result.child.id, name: result.child.name },
       })
@@ -133,13 +104,10 @@ export async function PATCH(
         },
       })
 
-      // Send rejection email
-      try {
-        const reasonText = reason ? `\n\nMotiv: ${reason}` : ''
-        const reasonHtml = reason ? `<p style="margin: 0 0 15px; color: #666;">Motiv: ${reason}</p>` : ''
+      const reasonText = reason ? `\n\nMotiv: ${reason}` : ''
+      const reasonHtml = reason ? `<p style="margin: 0 0 15px; color: #666;">Motiv: ${reason}</p>` : ''
 
-        await transporter.sendMail({
-          from: '"Dinamo Rugby Juniori" <noreply@dinamorugby.ro>',
+      const trimis = await sendEmail({
           to: request.email,
           subject: 'Actualizare cerere acces — Dinamo Rugby Juniori',
           text: `Salut ${request.parentName},\n\nDin pacate, cererea ta de acces la Portalul Parintilor nu a fost aprobata.${reasonText}\n\nPentru mai multe informatii, contacteaza echipa Dinamo Rugby Juniori.\n\n— Echipa Dinamo Rugby Juniori`,
@@ -160,12 +128,17 @@ export async function PATCH(
               </p>
             </div>
           `,
-        })
-      } catch (emailError) {
-        console.error('Error sending rejection email:', emailError)
+      })
+
+      if (!trimis) {
+        console.error('Cererea a fost respinsa, dar mailul catre parinte nu a plecat:', request.email)
       }
 
-      return NextResponse.json({ success: true, message: 'Cererea a fost respinsa' })
+      return NextResponse.json({
+        success: true,
+        message: trimis ? 'Cererea a fost respinsa' : 'Cererea a fost respinsa, dar emailul nu a plecat',
+        emailTrimis: trimis,
+      })
     }
   } catch (error) {
     console.error('Error processing access request:', error)
