@@ -14,31 +14,40 @@ import { useEffect, useRef, useState } from 'react'
  * n-ar avea ce face.
  */
 
-type Platforma = 'ios-safari' | 'ios-alt-browser' | 'android' | 'desktop'
+type Platforma = 'ios' | 'android' | 'desktop'
 
 interface Pas {
   titlu: string
   text: string
 }
 
-const PASI_IPHONE: Pas[] = [
-  {
-    titlu: 'Apasă butonul de partajare',
-    text: 'E pătratul cu săgeata în sus, în bara Safari. Dacă nu-l vezi, trage puțin pagina în jos — bara se ascunde când derulezi. Dacă bara ta e sus, butonul e în dreapta sus.',
-  },
-  {
-    titlu: 'Alege „Adaugă la ecranul principal"',
-    text: 'E în lista care se deschide, mai jos de rândul cu iconițe. Pe telefoanele setate în engleză se numește „Add to Home Screen".',
-  },
-  {
-    titlu: 'Confirmă cu „Adaugă"',
-    text: 'Iconița Dinamo apare pe ecran, lângă celelalte aplicații. De acum o deschizi de acolo, fără browser.',
-  },
-  {
-    titlu: 'Intră o dată cu emailul și parola',
-    text: 'Chiar dacă erai conectat în Safari, aplicația de pe ecran pornește separat și îți cere din nou datele. Se întâmplă o singură dată.',
-  },
-]
+/**
+ * Pasii merg in ORICE browser de pe iPhone. Din iOS 16.4, si Chrome, Edge sau
+ * Firefox pot adauga pe ecranul principal — nu mai e nevoie sa-l trimiti pe om
+ * in Safari. Difera doar unde sta butonul de partajare, si asta scrie in pas.
+ */
+function pasiIPhone(butonSus: boolean): Pas[] {
+  return [
+    {
+      titlu: 'Apasă butonul de partajare',
+      text: butonSus
+        ? 'E pătratul cu săgeata în sus, în dreapta sus. Îl găsești și în meniul ⋮.'
+        : 'E pătratul cu săgeata în sus, în bara de jos. Dacă nu-l vezi, trage puțin pagina în jos — bara se ascunde când derulezi.',
+    },
+    {
+      titlu: 'Alege „Adaugă la ecranul principal"',
+      text: 'E în lista care se deschide, mai jos de rândul cu iconițe. Pe telefoanele setate în engleză se numește „Add to Home Screen".',
+    },
+    {
+      titlu: 'Confirmă cu „Adaugă"',
+      text: 'Iconița Dinamo apare pe ecran, lângă celelalte aplicații. De acum o deschizi de acolo, fără browser.',
+    },
+    {
+      titlu: 'Intră o dată cu emailul și parola',
+      text: 'Aplicația de pe ecran pornește separat de browser și îți cere din nou datele. Se întâmplă o singură dată.',
+    },
+  ]
+}
 
 const PASI_ANDROID: Pas[] = [
   {
@@ -114,6 +123,9 @@ export function InstalareClient() {
   // `null` cat timp nu stim pe ce suntem: se arata ambele seturi de pasi, ca
   // pagina sa fie utila si fara JavaScript, si sa nu clipeasca gol.
   const [platforma, setPlatforma] = useState<Platforma | null>(null)
+  // In Safari butonul de partajare e in bara de jos; in Chrome/Edge/Firefox de
+  // pe iPhone e in dreapta sus. Atat schimba browserul — pasii sunt aceiasi.
+  const [butonSus, setButonSus] = useState(false)
   const [instalabil, setInstalabil] = useState(false)
   const [instalat, setInstalat] = useState(false)
   const promptAmanat = useRef<{ prompt: () => void; userChoice: Promise<unknown> } | null>(null)
@@ -128,7 +140,10 @@ export function InstalareClient() {
     // adauga pe ecranul principal. Cine e in ele trebuie trimis in Safari.
     const safari = !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua)
 
-    if (ios) setPlatforma(safari ? 'ios-safari' : 'ios-alt-browser')
+    if (ios) {
+      setPlatforma('ios')
+      setButonSus(!safari)
+    }
     else if (android) setPlatforma('android')
     else setPlatforma('desktop')
 
@@ -208,29 +223,16 @@ export function InstalareClient() {
     )
   }
 
-  if (platforma === 'ios-alt-browser') {
-    return (
-      <Sectiune titlu="Deschide în Safari">
-        <p className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-amber-900">
-          <strong>Ești pe iPhone, dar nu în Safari.</strong> Pe iPhone, numai
-          Safari poate pune aplicația pe ecran. Copiază adresa{' '}
-          <strong>app.dinamorugby.ro</strong>, deschide-o în Safari și urmează
-          pașii de acolo.
-        </p>
-      </Sectiune>
-    )
-  }
-
-  if (platforma === 'ios-safari') {
+  if (platforma === 'ios') {
     return (
       <>
         <Sectiune
           titlu="Pune-o pe ecran"
-          subtitlu="Pe iPhone se adaugă manual. Durează mai puțin de un minut."
+          subtitlu="Pe iPhone se adaugă din browser, oricare ar fi el. Durează mai puțin de un minut."
         >
-          <Pasi pasi={PASI_IPHONE} />
+          <Pasi pasi={pasiIPhone(butonSus)} />
         </Sectiune>
-        <SageataPartajare />
+        {!butonSus && <SageataPartajare />}
       </>
     )
   }
@@ -249,8 +251,8 @@ export function InstalareClient() {
   // Inca nu stim telefonul (sau nu ruleaza JavaScript): aratam ambele seturi.
   return (
     <>
-      <Sectiune titlu="Pe iPhone" subtitlu="Din Safari.">
-        <Pasi pasi={PASI_IPHONE} />
+      <Sectiune titlu="Pe iPhone" subtitlu="Din browserul pe care îl folosești.">
+        <Pasi pasi={pasiIPhone(false)} />
       </Sectiune>
       <Sectiune titlu="Pe Android" subtitlu="Din Chrome.">
         <Pasi pasi={PASI_ANDROID} />
