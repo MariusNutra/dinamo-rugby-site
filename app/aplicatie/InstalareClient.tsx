@@ -24,7 +24,7 @@ interface Pas {
 const PASI_IPHONE: Pas[] = [
   {
     titlu: 'Apasă butonul de partajare',
-    text: 'E pătratul cu săgeata în sus, în bara de jos a Safari. Dacă nu-l vezi, trage puțin pagina în jos — bara se ascunde când derulezi.',
+    text: 'E pătratul cu săgeata în sus, în bara Safari. Dacă nu-l vezi, trage puțin pagina în jos — bara se ascunde când derulezi. Dacă bara ta e sus, butonul e în dreapta sus.',
   },
   {
     titlu: 'Alege „Adaugă la ecranul principal"',
@@ -70,6 +70,27 @@ function Pasi({ pasi }: { pasi: Pas[] }) {
         </li>
       ))}
     </ol>
+  )
+}
+
+/**
+ * Sageata catre butonul de partajare din Safari.
+ *
+ * Butonul e in bara browserului, nu in pagina, deci nu putem arata exact spre
+ * el — aratam in jos, spre mijlocul barii, unde sta pe majoritatea iPhone-urilor.
+ * Cine si-a mutat bara sus gaseste mentiunea in primul pas.
+ */
+function SageataPartajare() {
+  return (
+    <div
+      className="fixed inset-x-0 bottom-0 z-40 pb-[env(safe-area-inset-bottom)] pointer-events-none"
+      aria-hidden="true"
+    >
+      <div className="mx-auto mb-3 w-fit rounded-full bg-dinamo-red px-4 py-2 text-center text-sm font-semibold text-white shadow-lg">
+        Butonul de partajare, în bara Safari
+        <span className="mx-auto mt-1 block h-0 w-0 animate-bob border-x-[10px] border-x-transparent border-t-[12px] border-t-white motion-reduce:animate-none" />
+      </div>
+    </div>
   )
 }
 
@@ -202,12 +223,15 @@ export function InstalareClient() {
 
   if (platforma === 'ios-safari') {
     return (
-      <Sectiune
-        titlu="Pune-o pe ecran"
-        subtitlu="Pe iPhone se adaugă manual. Durează mai puțin de un minut."
-      >
-        <Pasi pasi={PASI_IPHONE} />
-      </Sectiune>
+      <>
+        <Sectiune
+          titlu="Pune-o pe ecran"
+          subtitlu="Pe iPhone se adaugă manual. Durează mai puțin de un minut."
+        >
+          <Pasi pasi={PASI_IPHONE} />
+        </Sectiune>
+        <SageataPartajare />
+      </>
     )
   }
 
