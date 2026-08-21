@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 export default function DownloadSection() {
   const [isMobile, setIsMobile] = useState(false)
   const [, setIsWindows] = useState(false)
   const [isIOS, setIsIOS] = useState(false)
-  const [showIosInstructions, setShowIosInstructions] = useState(false)
   const [pwaSupported, setPwaSupported] = useState(false)
   const deferredPrompt = useRef<Event | null>(null)
 
@@ -78,22 +78,15 @@ export default function DownloadSection() {
             <p className="text-sm text-gray-500 mb-4">Android &amp; iOS</p>
 
             {isIOS ? (
-              <>
-                <button
-                  onClick={() => setShowIosInstructions(!showIosInstructions)}
-                  className="w-full bg-dinamo-red text-white font-bold py-3 px-6 rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Instalează pe iOS
-                </button>
-                {showIosInstructions && (
-                  <div className="mt-3 text-left bg-red-50 rounded-lg p-3 text-sm text-gray-700">
-                    <p className="font-semibold mb-1">Din Safari:</p>
-                    <p>1. Apasă <strong>Share</strong> (📤)</p>
-                    <p>2. <strong>Adaugă pe ecranul principal</strong></p>
-                    <p>3. Confirmă cu <strong>Adaugă</strong></p>
-                  </div>
-                )}
-              </>
+              // Pe iPhone nu exista prompt de instalare, deci nu are ce sa faca
+              // un buton aici. Pasii stau pe /aplicatie, unde pagina ii arata
+              // direct, potrivit telefonului.
+              <Link
+                href="/aplicatie"
+                className="block w-full bg-dinamo-red text-white font-bold py-3 px-6 rounded-lg hover:bg-red-700 transition-colors text-center"
+              >
+                Vezi cum o pui pe ecran
+              </Link>
             ) : isMobile && pwaSupported ? (
               <button
                 onClick={handlePwaInstall}
