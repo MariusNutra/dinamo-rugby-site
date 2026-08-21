@@ -140,12 +140,19 @@ export function InstalareClient() {
     // adauga pe ecranul principal. Cine e in ele trebuie trimis in Safari.
     const safari = !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua)
 
+    // Telefonul se recunoaste dupa numele browserului, dar si dupa felul in
+    // care e atins: un telefon pus pe „site pentru desktop" trimite alt nume,
+    // insa degetul ramane deget. `pointer: coarse` il da de gol.
+    const atingere = window.matchMedia('(pointer: coarse)').matches
+
     if (ios) {
       setPlatforma('ios')
       setButonSus(!safari)
+    } else if (android || (atingere && window.innerWidth < 900)) {
+      setPlatforma('android')
+    } else {
+      setPlatforma('desktop')
     }
-    else if (android) setPlatforma('android')
-    else setPlatforma('desktop')
 
     setInstalat(
       window.matchMedia('(display-mode: standalone)').matches ||

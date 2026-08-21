@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 
 const DISMISS_KEY = 'dinamo_app_banner_dismissed'
@@ -9,6 +9,7 @@ const DISMISS_DAYS = 7
 export default function AppBanner() {
   const [visible, setVisible] = useState(false)
   const [hiding, setHiding] = useState(false)
+  const bandaRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     // Don't show if already in standalone mode (installed PWA)
@@ -31,6 +32,30 @@ export default function AppBanner() {
     setVisible(true)
   }, [])
 
+  // Banda sta fixata jos, peste pagina. Fara spatiul asta, ultimele randuri
+  // raman ascunse sub ea chiar si derulat pana la capat — pe telefon, „Administrare"
+  // si ultimul rand din subsol nu se puteau atinge. Inaltimea se masoara, nu se
+  // ghiceste: textul poate trece pe doua randuri la ecrane inguste.
+  useEffect(() => {
+    const banda = bandaRef.current
+    if (!visible || hiding || !banda) {
+      document.body.style.paddingBottom = ''
+      return
+    }
+
+    const sincronizeaza = () => {
+      document.body.style.paddingBottom = `${banda.offsetHeight}px`
+    }
+    sincronizeaza()
+
+    const observer = new ResizeObserver(sincronizeaza)
+    observer.observe(banda)
+    return () => {
+      observer.disconnect()
+      document.body.style.paddingBottom = ''
+    }
+  }, [visible, hiding])
+
   function handleDismiss() {
     localStorage.setItem(DISMISS_KEY, String(Date.now()))
     setHiding(true)
@@ -44,7 +69,8 @@ export default function AppBanner() {
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 z-[99999] bg-white shadow-[0_-2px_12px_rgba(0,0,0,0.15)] md:hidden ${
+      ref={bandaRef}
+      className={`fixed bottom-0 left-0 right-0 z-[99999] bg-white shadow-[0_-2px_12px_rgba(0,0,0,0.15)] pb-[env(safe-area-inset-bottom)] md:hidden ${
         hiding ? 'animate-slide-down' : 'animate-slide-up'
       }`}
     >
