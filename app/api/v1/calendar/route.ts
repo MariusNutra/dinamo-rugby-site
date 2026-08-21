@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { validateApiKey, checkEndpointPermission } from '@/lib/api-auth'
-import { verifyAppToken } from '@/lib/app-auth'
+import { verifyAppToken, canAccessChild } from '@/lib/app-auth'
+import { trainingOccurrences } from '@/lib/training-occurrences'
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204 })
@@ -37,47 +38,68 @@ export async function GET(request: NextRequest) {
     const offset = Math.max(0, isNaN(offsetParam) ? 0 : offsetParam)
 
     const now = new Date()
+    const childId = url.searchParams.get('childId')
+    const daysParam = parseInt(url.searchParams.get('days') || '28')
+    const days = Math.min(Math.max(1, isNaN(daysParam) ? 28 : daysParam), 90)
 
-    const [events, total] = await Promise.all([
-      prisma.calendarEvent.findMany({
-        where: {
-          date: { gte: now },
-        },
-        include: {
-          team: {
-            select: {
-              id: true,
-              grupa: true,
-              color: true,
-            },
+    // Cu `childId`, programul e al copilului: evenimentele echipei lui plus
+    // cele fara echipa (sunt ale clubului intreg), plus antrenamentele grupei.
+    // Fara `childId` — cazul cheilor de API — raspunsul ramane ce era.
+    let team: { id: number; grupa: string } | null = null
+    if (childId) {
+      if (!appUser || !(await canAccessChild(appUser, childId))) {
+        return NextResponse.json(
+          { error: { code: 'FORBIDDEN', message: 'Forbidden' } },
+          { status: 403 }
+        )
+      }
+      const child = await prisma.child.findUnique({
+        where: { id: childId },
+        include: { team: { select: { id: true, grupa: true } } },
+      })
+      team = child?.team ?? null
+    }
+
+    const where = team
+      ? { date: { gte: now }, OR: [{ teamId: team.id }, { teamId: null }] }
+      : { date: { gte: now } }
+
+    const events = await prisma.calendarEvent.findMany({
+      where,
+      include: {
+        team: {
+          select: {
+            id: true,
+            grupa: true,
+            color: true,
           },
         },
-        orderBy: { date: 'asc' },
-        skip: offset,
-        take: limit,
-      }),
-      prisma.calendarEvent.count({
-        where: {
-          date: { gte: now },
-        },
-      }),
-    ])
+      },
+      orderBy: { date: 'asc' },
+    })
 
-    const data = events.map((event) => ({
-      id: event.id,
-      title: event.title,
-      type: event.type,
-      date: event.date.toISOString(),
-      startTime: event.startTime,
-      endTime: event.endTime,
-      location: event.location,
-      description: event.description,
-      team: event.team,
-    }))
+    const trainings = team ? await trainingOccurrences(team.grupa, days, now) : []
+
+    const merged = [
+      ...events.map((event) => ({
+        id: event.id,
+        title: event.title,
+        type: event.type,
+        date: event.date.toISOString(),
+        startTime: event.startTime,
+        endTime: event.endTime,
+        location: event.location,
+        description: event.description,
+        team: event.team,
+      })),
+      ...trainings,
+    ].sort((a, b) => a.date.localeCompare(b.date))
+
+    const data = merged.slice(offset, offset + limit)
 
     return NextResponse.json({
       data,
-      meta: { total, timestamp: new Date().toISOString() },
+      meta: { total: merged.length, timestamp: new Date().toISOString() },
     })
   } catch (err) {
     console.error('API v1 /calendar error:', err)
