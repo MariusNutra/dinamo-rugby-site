@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
-import { getParentId } from '@/lib/parent-auth'
+import { resolveParentId } from '@/lib/parent-identity'
 
 // GET - Get messages in a conversation
 export async function GET(
@@ -9,7 +9,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const user = await getAuthUser()
-  const parentId = await getParentId()
+  const parentId = await resolveParentId(req)
 
   if (!user && !parentId) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
@@ -104,7 +104,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const user = await getAuthUser()
-  const parentId = await getParentId()
+  const parentId = await resolveParentId(req)
 
   if (!user && !parentId) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })

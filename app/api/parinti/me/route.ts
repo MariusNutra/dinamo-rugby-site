@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getParentId } from '@/lib/parent-auth'
+import { resolveParentId } from '@/lib/parent-identity'
 
-export async function GET() {
-  const parentId = await getParentId()
+export async function GET(req: NextRequest) {
+  const parentId = await resolveParentId(req)
   if (!parentId) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }
@@ -74,7 +74,7 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
-  const parentId = await getParentId()
+  const parentId = await resolveParentId(req)
   if (!parentId) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
   }

@@ -78,6 +78,30 @@ export async function canAccessChild(
 }
 
 /**
+ * Require a parent JWT. Returns the Parent (with children) or a 401 response.
+ *
+ * Rolul `athlete` foloseste acelasi `parentId` in token, dar are voie numai la
+ * copilul lui — de aceea rutele care scriu date verifica in plus `canAccessChild`.
+ */
+export async function requireParent(req: NextRequest) {
+  const payload = verifyAppToken(req)
+  if (!payload?.parentId) {
+    return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
+  }
+
+  const parent = await prisma.parent.findUnique({
+    where: { id: payload.parentId },
+    include: { children: { select: { id: true, name: true, teamId: true } } },
+  })
+
+  if (!parent) {
+    return { error: NextResponse.json({ error: 'Parent not found' }, { status: 401 }) }
+  }
+
+  return { parent, payload }
+}
+
+/**
  * Require a coach JWT. Returns the Coach (with team) or a 401 response.
  */
 export async function requireCoach(req: NextRequest) {

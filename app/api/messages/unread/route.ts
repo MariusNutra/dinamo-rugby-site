@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
-import { getParentId } from '@/lib/parent-auth'
+import { resolveParentId } from '@/lib/parent-identity'
 
 // GET - Get unread conversation count
-export async function GET() {
+export async function GET(req: NextRequest) {
   const user = await getAuthUser()
-  const parentId = await getParentId()
+  const parentId = await resolveParentId(req)
 
   if (!user && !parentId) {
     return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })

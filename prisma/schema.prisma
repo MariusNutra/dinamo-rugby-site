@@ -258,6 +258,7 @@ model Child {
   pushSubscriptions PushSubscription[]
   requests          Request[]
   transfers         TransferLog[]
+  participation     ParticipationIntent[]
 }
 
 model AccessRequest {
@@ -679,6 +680,26 @@ model AttendanceSession {
 
   @@index([teamId])
   @@index([qrToken])
+}
+
+/// Anuntul parintelui (sau al sportivului) ca vine la antrenamentul dintr-o zi.
+/// NU e prezenta: prezenta se ia la teren, prin QR, de catre antrenor. Aici e
+/// doar intentia, ca antrenorul sa stie pe cine sa puna la socoteala.
+model ParticipationIntent {
+  id        String   @id @default(cuid())
+  childId   String
+  /// Ziua antrenamentului, normalizata la 00:00 UTC.
+  date      DateTime
+  attending Boolean  @default(true)
+  note      String?
+  /// Cine a anuntat: "parent" sau "athlete".
+  source    String   @default("parent")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  child     Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@unique([childId, date])
+  @@index([date])
 }
 
 model Request {

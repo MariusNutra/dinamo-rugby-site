@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireCoach } from '@/lib/app-auth'
 import { generateQRToken } from '@/lib/qr'
+import { startOfDay, nextDay as dayAfter } from '@/lib/day'
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204 })
@@ -18,11 +19,13 @@ export async function GET(request: NextRequest, props: { params: Promise<{ teamI
   }
 
   const url = new URL(request.url)
-  const dateParam = url.searchParams.get('date')
-  const targetDate = dateParam ? new Date(dateParam) : new Date()
-  targetDate.setHours(0, 0, 0, 0)
-  const nextDay = new Date(targetDate)
-  nextDay.setDate(nextDay.getDate() + 1)
+  let targetDate: Date
+  try {
+    targetDate = startOfDay(url.searchParams.get('date'))
+  } catch {
+    return NextResponse.json({ error: 'Data invalida' }, { status: 400 })
+  }
+  const nextDay = dayAfter(targetDate)
 
   // Find or create session for this team + date
   let session = await prisma.attendanceSession.findFirst({
@@ -62,15 +65,31 @@ export async function GET(request: NextRequest, props: { params: Promise<{ teamI
     attendances.map((a) => [a.childId, a.present ? 'present' : 'absent'])
   )
 
+  // Anuntul familiei pentru ziua asta. E separat de prezenta: spune pe cine
+  // asteptam, nu cine a venit.
+  const intents = await prisma.participationIntent.findMany({
+    where: {
+      date: targetDate,
+      childId: { in: children.map((c) => c.id) },
+    },
+  })
+  const intentMap = new Map(intents.map((i) => [i.childId, i]))
+
   return NextResponse.json({
     data: {
       sessionId: session.id,
       date: targetDate.toISOString(),
-      players: children.map((c) => ({
-        childId: c.id,
-        name: c.name,
-        status: attendanceMap.get(c.id) || 'unmarked',
-      })),
+      players: children.map((c) => {
+        const intent = intentMap.get(c.id)
+        return {
+          childId: c.id,
+          name: c.name,
+          status: attendanceMap.get(c.id) || 'unmarked',
+          // 'yes' | 'no' | null — null inseamna ca familia n-a anuntat nimic.
+          announced: intent ? (intent.attending ? 'yes' : 'no') : null,
+          announcedNote: intent?.note ?? null,
+        }
+      }),
     },
   })
 }
